@@ -1,0 +1,14 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+	<j:if test="${job.downstreamProjects.size() > 0}">
+		<ul style="list-style-type: none;margin-left:-25px">
+			<j:forEach var="project" items="${job.downstreamProjects}">
+				<li>
+					<t:jobLink job="${project}" />
+					<p:column-job-dependency3 job="${project}" />
+				</li>
+			</j:forEach>
+		</ul>
+	</j:if>
+</j:jelly>

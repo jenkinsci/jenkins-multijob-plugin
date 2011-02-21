@@ -1,0 +1,6 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+		<f:entry title="Job Name" field="jobNames">
+			<f:textbox name="jobNames" value="${instance.jobNames}" />
+		</f:entry>
+</j:jelly>
