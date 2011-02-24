@@ -147,7 +147,7 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 
 		@Override
 		public String getDisplayName() {
-			return "Reactor";
+			return "Reactor Phase";
 		}
 
 		@Override
