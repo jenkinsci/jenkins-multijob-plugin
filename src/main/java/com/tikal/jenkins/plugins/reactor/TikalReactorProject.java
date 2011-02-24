@@ -1,10 +1,12 @@
 package com.tikal.jenkins.plugins.reactor;
 
 import hudson.Extension;
+import hudson.Indenter;
 import hudson.model.DependencyGraph;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.Hudson;
+import hudson.model.Job;
 import hudson.model.Project;
 
 public class TikalReactorProject extends Project<TikalReactorProject, TikalReactorBuild> implements TopLevelItem {
@@ -50,5 +52,7 @@ public class TikalReactorProject extends Project<TikalReactorProject, TikalReact
 		super.buildDependencyGraph(graph);
 	}
 
-
+	public boolean isTopmostReactor() {
+		return getUpstreamProjects().size() == 0;
+	}
 }

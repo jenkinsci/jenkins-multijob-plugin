@@ -89,7 +89,7 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 				failed = true;
 			}
 		}
-		return !failed;
+		return true;//!failed;
 	}
 
 	@SuppressWarnings("rawtypes")
