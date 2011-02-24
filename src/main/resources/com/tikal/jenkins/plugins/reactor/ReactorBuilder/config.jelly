@@ -1,6 +1,21 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-		<f:entry title="Job Name" field="jobNames">
-			<f:textbox name="jobNames" value="${instance.jobNames}" />
+		<f:entry title="Reactor Name" field="reactorName">
+			<f:textbox name="reactorName" value="${instance.reactorName}" />
 		</f:entry>
+		<f:entry title="Sub Jobs" field="subProjects">
+    		<f:repeatable field="subProjects" noAddButton="true" minimum="1">
+      			<table width="100%">
+        			<f:entry title="Job Name" field="jobName" >
+          				<f:textbox />
+        			</f:entry>
+			        <f:entry>
+			          <div align="right">
+			            <input type="button" value="${%Add more Jobs...}" class="repeatable-add show-if-last" />
+			            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
+			          </div>
+			        </f:entry>
+      			</table>
+    		</f:repeatable>
+  		</f:entry>
 </j:jelly>
