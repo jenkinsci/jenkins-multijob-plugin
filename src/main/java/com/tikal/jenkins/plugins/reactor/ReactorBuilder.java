@@ -162,15 +162,6 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 			return true;
 		}
 
-		public AutoCompletionCandidates doAutoCompleteState(
-				@QueryParameter String value) {
-			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (TopLevelItem jobName : Hudson.getInstance().getItems())
-				if (jobName.getName().toLowerCase()
-						.startsWith(value.toLowerCase()))
-					c.add(jobName.getName());
-			return c;
-		}
 
 	}
 

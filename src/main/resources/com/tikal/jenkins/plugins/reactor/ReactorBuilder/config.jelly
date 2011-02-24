@@ -3,7 +3,7 @@
 		<f:entry title="Phase Name" field="reactorName">
 			<f:textbox name="reactorName" value="${instance.reactorName}" />
 		</f:entry>
-		<f:entry title="Jobs" field="subProjects">
+		<f:entry title="Phase Jobs" field="subProjects">
     		<f:repeatable field="subProjects" noAddButton="true" minimum="1">
       			<table width="100%">
         			<f:entry title="Job Name" field="jobName" >

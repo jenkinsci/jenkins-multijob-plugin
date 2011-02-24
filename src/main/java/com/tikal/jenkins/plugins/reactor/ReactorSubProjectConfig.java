@@ -28,12 +28,9 @@ public class ReactorSubProjectConfig implements
 		this.jobName = jobName;
 	}
 
-	public ReactorSubProjectDescriptor getDescriptor() {
-		// TODO Auto-generated method stub
-		return (ReactorSubProjectDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
-	}
-
-	
+   public Descriptor<ReactorSubProjectConfig> getDescriptor() {
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
+    }
 
 	public String getDisplayName() {
 		// TODO Auto-generated method stub
@@ -45,5 +42,23 @@ public class ReactorSubProjectConfig implements
 		super();
 		this.jobName = jobName;
 	}
+
+	@Extension
+    public static class DescriptorImpl extends Descriptor<ReactorSubProjectConfig> {
+        @Override
+        public String getDisplayName() {
+            return "Phase Config"; 
+        }
+
+		public AutoCompletionCandidates doAutoCompleteJobName(
+				@QueryParameter String value) {
+			AutoCompletionCandidates c = new AutoCompletionCandidates();
+			for (TopLevelItem jobName : Hudson.getInstance().getItems())
+				if (jobName.getName().toLowerCase()
+						.startsWith(value.toLowerCase()))
+					c.add(jobName.getName());
+			return c;
+		}
+    }
 
 }
