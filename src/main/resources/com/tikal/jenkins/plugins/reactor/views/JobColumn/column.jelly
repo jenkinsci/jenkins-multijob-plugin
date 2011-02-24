@@ -1,5 +1,14 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <td style="${job.getCss()}">
-        <a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName}</a>
-    </td>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:i="jelly:fmt">
+	<td style="${job.getCss()}">
+		<j:choose>
+			<j:when test="${job.phaseName!=null}">
+				<a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName} (${job.phaseName})</a>
+			</j:when>
+			<j:otherwise>
+				<a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName}</a>
+			</j:otherwise>
+		</j:choose>
+	</td>
 </j:jelly>

@@ -35,10 +35,13 @@ public class ProjectWrapper implements TopLevelItem {
 
 	final int nestLevel;
 
-	public ProjectWrapper(TikalReactorProject reactor, AbstractProject project, int nestLevel) {
+	final String phaseName;
+
+	public ProjectWrapper(TikalReactorProject reactor, AbstractProject project, int nestLevel, String phaseName) {
 		this.project = project;
 		this.reactor = reactor;
 		this.nestLevel = nestLevel;
+		this.phaseName = phaseName;
 	}
 
 	public Collection<? extends Job> getAllJobs() {
@@ -206,7 +209,7 @@ public class ProjectWrapper implements TopLevelItem {
 	}
 
 	public String getCss() {
-		return "padding-left: " + getNestLevel() * 2 + "em";
+		return "padding-left: " + (getNestLevel() + 1) * 2 + "em";
 	}
 
 	public String getRelativeShift() {
@@ -228,4 +231,9 @@ public class ProjectWrapper implements TopLevelItem {
 	public boolean isBuildable() {
 		return reactor == null && getProject().isBuildable();
 	}
+
+	public String getPhaseName() {
+		return phaseName;
+	}
+
 }
