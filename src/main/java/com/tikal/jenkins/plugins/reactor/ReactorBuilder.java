@@ -1,20 +1,23 @@
 package com.tikal.jenkins.plugins.reactor;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
+import hudson.Util;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
-import hudson.model.ParametersAction;
+import hudson.model.DependencyGraph.Dependency;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
-import hudson.model.DependencyGraph.Dependency;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
+import hudson.model.ParametersAction;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -25,7 +28,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 public class ReactorBuilder extends Builder implements DependecyDeclarer {
 
-	final private List<ReactorSubProjectConfig> subProjects;
+	private List<ReactorSubProjectConfig> subProjects;
 
 	final private String reactorName;
 
@@ -33,7 +36,11 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 	public ReactorBuilder(String reactorName,
 			List<ReactorSubProjectConfig> subProjects) {
 		this.reactorName = reactorName;
-		this.subProjects = subProjects;
+		this.subProjects = (List<ReactorSubProjectConfig>)new ArrayList<ReactorSubProjectConfig>(Util.fixNull(subProjects));
+	}
+	
+	public ReactorBuilder(String reactorName,ReactorSubProjectConfig... subProjs) {
+		this(reactorName,Arrays.asList(subProjs));
 	}
 
 	// @SuppressWarnings("rawtypes")
@@ -107,6 +114,9 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 	public List<ReactorSubProjectConfig> getSubProjects() {
 		return subProjects;
 	}
+	public void setSubProjects( List<ReactorSubProjectConfig> jobs ) {
+		subProjects = jobs ;
+	}
 
 	@Override
 	public DescriptorImpl getDescriptor() {
@@ -137,6 +147,15 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 		public boolean configure(StaplerRequest req, JSONObject formData) {
 			save();
 			return true;
+		}
+		public AutoCompletionCandidates doAutoCompleteState(
+				@QueryParameter String value) {
+			AutoCompletionCandidates c = new AutoCompletionCandidates();
+			for (TopLevelItem jobName : Hudson.getInstance().getItems())
+				if (jobName.getName().toLowerCase().startsWith(
+						value.toLowerCase()))
+					c.add(jobName.getName());
+			return c;
 		}
 		
 
