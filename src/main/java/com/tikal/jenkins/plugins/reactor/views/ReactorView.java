@@ -89,7 +89,7 @@ public class ReactorView extends ListView {
 			if (item instanceof TikalReactorProject) {
 				TikalReactorProject project = (TikalReactorProject) item;
 				if (project.getUpstreamProjects().size() == 0) {
-					addSubprojects(null, project, 0, out);
+					addSubprojects(null, project, 0, null, out);
 				}
 			}
 		}
@@ -97,8 +97,8 @@ public class ReactorView extends ListView {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addSubprojects(TikalReactorProject reactorProject, AbstractProject project, int nestLevel, List<TopLevelItem> out) {
-		out.add((TopLevelItem) new ProjectWrapper(reactorProject, project, nestLevel));
+	private void addSubprojects(TikalReactorProject reactorProject, AbstractProject project, int nestLevel, String phaseName, List<TopLevelItem> out) {
+		out.add((TopLevelItem) new ProjectWrapper(reactorProject, project, nestLevel, phaseName));
 		// out.add((TopLevelItem) project);
 		List<Builder> builders = null;
 		if (project instanceof TikalReactorProject) {
@@ -112,6 +112,7 @@ public class ReactorView extends ListView {
 			if (builder instanceof ReactorBuilder) {
 				ReactorBuilder reactorBuilder = (ReactorBuilder) builder;
 				List<ReactorSubProjectConfig> subProjects = reactorBuilder.getSubProjects();
+				String currentPhaseName = reactorBuilder.getReactorName();
 				for (ReactorSubProjectConfig projectConfig : subProjects) {
 					TopLevelItem it = Hudson.getInstance().getItem(projectConfig.getJobName());
 					if (it instanceof TikalReactorProject) {
@@ -125,7 +126,7 @@ public class ReactorView extends ListView {
 							if (cause != null) {
 								if (cause.getUpstreamProject().equals(project.getName())) {
 									// out.add((TopLevelItem) p);
-									addSubprojects(reactorProject, p, nestLevel + 1, out);
+									addSubprojects(reactorProject, p, nestLevel + 1, currentPhaseName, out);
 									break;
 								}
 							}
