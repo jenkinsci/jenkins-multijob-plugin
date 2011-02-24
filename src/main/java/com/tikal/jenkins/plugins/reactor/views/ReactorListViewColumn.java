@@ -38,7 +38,7 @@ abstract class ReactorListViewColumn extends ListViewColumn {
 	}
 
 	private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(JobColumn.class, StatusColumn.class, WeatherColumn.class,
-			LastSuccessColumn.class, BuildButtonColumn.class);
+			LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, BuildButtonColumn.class);
 
 	private static final Logger LOGGER = Logger.getLogger(ReactorListViewColumn.class.getName());
 }
