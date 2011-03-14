@@ -21,11 +21,15 @@ import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -55,15 +59,15 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private List<AbstractProject> getSubJobs() {
+	private Map<AbstractProject,ReactorSubProjectConfig> getSubJobs() {
 		Hudson hudson = Hudson.getInstance();
-		List<AbstractProject> projects = new ArrayList<AbstractProject>(
+		Map<AbstractProject,ReactorSubProjectConfig> projects = new HashMap<AbstractProject,ReactorSubProjectConfig>(
 				subProjects.size());
 		for (ReactorSubProjectConfig project : subProjects) {
 			TopLevelItem item = hudson.getItem(project.getJobName());
 			if (item instanceof AbstractProject) {
 				AbstractProject job = (AbstractProject) item;
-				projects.add(job);
+				projects.put(job,project);
 			}
 		}
 		return projects;
@@ -73,16 +77,16 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 	@SuppressWarnings("rawtypes")
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
-		List<AbstractProject> projects = getSubJobs();
+		Map<AbstractProject,ReactorSubProjectConfig> projects = getSubJobs();
 
 		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
 
-		for (AbstractProject project : projects) {
+		for (AbstractProject project : projects.keySet()) {
 			listener.getLogger().printf("Starting build job - '%s'\n",
 					project.getName());
-
+			ReactorSubProjectConfig projectConfig = projects.get(project);
 			List<Action> actions = new ArrayList<Action>();
-			prepareActions(build, project, actions);
+			prepareActions(build, project, projectConfig ,listener,actions);
 			Future future = project.scheduleBuild2(project.getQuietPeriod(),
 					new UpstreamCause((Run) build),
 					actions.toArray(new Action[0]));
@@ -113,9 +117,13 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 
 	@SuppressWarnings("rawtypes")
 	private void prepareActions(AbstractBuild build, AbstractProject project,
-			List<Action> actions) {
-		ParametersAction parametersAction = build
-				.getAction(ParametersAction.class);
+			ReactorSubProjectConfig projectConfig, BuildListener listener,List<Action> actions) throws IOException, InterruptedException {
+		ParametersAction parametersAction = null;
+		if (projectConfig.hasProperties())
+			parametersAction = (ParametersAction) projectConfig.getAction(build,listener);
+		else
+			parametersAction = build.getAction(ParametersAction.class);
+		
 		actions.add(parametersAction);
 	}
 
@@ -162,7 +170,7 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 			return true;
 		}
 
-		public AutoCompletionCandidates doAutoCompleteState(
+		public AutoCompletionCandidates doAutoCompleteJobName(
 				@QueryParameter String value) {
 			AutoCompletionCandidates c = new AutoCompletionCandidates();
 			for (TopLevelItem jobName : Hudson.getInstance().getItems())
@@ -171,7 +179,10 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 					c.add(jobName.getName());
 			return c;
 		}
-
+		
+		public FormValidation doCheckJobName(@QueryParameter String value) {
+			  return FormValidation.error("There's a problem here");
+		}
 	}
 
 	public void buildDependencyGraph(AbstractProject owner,
@@ -197,4 +208,23 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 			}
 		}
 	}
+    public boolean onJobRenamed(String oldName, String newName) {
+        boolean changed = false;
+        for (Iterator i = subProjects.iterator(); i.hasNext(); ) {
+        	ReactorSubProjectConfig subProject = (ReactorSubProjectConfig) i.next();
+        	String jobName = subProject.getJobName();
+        	if (newName != null && jobName.trim().equals(oldName)) {
+        		subProject.setJobName(newName);
+                changed = true;
+        	} else if (newName == null) {
+        		i.remove();
+        	}
+        }
+        return changed;
+    }
+
+    public boolean onDeleted(String oldName) {
+        return onJobRenamed(oldName, null);
+    }
+
 }
