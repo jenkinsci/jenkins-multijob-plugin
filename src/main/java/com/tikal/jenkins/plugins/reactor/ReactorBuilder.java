@@ -2,7 +2,11 @@ package com.tikal.jenkins.plugins.reactor;
 
 import hudson.Extension;
 import hudson.Launcher;
+import hudson.MarkupText;
 import hudson.Util;
+import hudson.console.ConsoleAnnotator;
+import hudson.console.ConsoleNote;
+import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Build;
@@ -30,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import net.sf.json.JSONObject;
+
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -78,8 +83,9 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
 
 		for (AbstractProject project : projects) {
-			listener.getLogger().printf("Starting build job - '%s'\n",
-					project.getName());
+			
+			listener.getLogger().printf("Starting build job %s.\n", HyperlinkNote.encodeTo('/'+project.getUrl(), project.getFullName()) );
+		
 
 			List<Action> actions = new ArrayList<Action>();
 			prepareActions(build, project, actions);
@@ -99,7 +105,7 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 				Build jobBuild = (Build) future.get();
 				Result result = jobBuild.getResult();
 				listener.getLogger().printf("Job '%s' finished: %s.\n",
-						jobBuild.getProject().getName(), result);
+						HyperlinkNote.encodeTo('/'+jobBuild.getProject().getUrl(), jobBuild.getProject().getFullName()), result);
 				if (Result.FAILURE.equals(result)
 						|| Result.ABORTED.equals(result)) {
 					failed = true;
@@ -131,11 +137,9 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 		subProjects = jobs;
 	}
 
-	@Override
-	public DescriptorImpl getDescriptor() {
-		return (DescriptorImpl) super.getDescriptor();
-	}
+	
 
+	
 	@Extension
 	public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
@@ -161,7 +165,8 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 			save();
 			return true;
 		}
-
+		
+		
 
 	}
 
