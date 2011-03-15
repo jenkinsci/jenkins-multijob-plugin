@@ -1,16 +1,19 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-		<f:entry title="Phase name" field="reactorName">
+		<f:entry title="Phase name" field="reactorName"
+                help="/plugin/tikal-plugin/help-reactorName.html">
 			<f:textbox name="reactorName" value="${instance.reactorName}" />
 		</f:entry>
 		<f:entry title="Phase Jobs" field="subProjects">
     		<f:repeatable field="subProjects" noAddButton="true" minimum="1">
       			<table width="100%">
-        			<f:entry title="Job name" field="jobName" >
+        			<f:entry title="Job name" field="jobName"
+                             help="/plugin/tikal-plugin/help-jobName.html">
           				<f:textbox />
         			</f:entry>
 					<f:advanced>
-					<f:entry title="Parameters" field="jobProperties">
+					<f:entry title="Parameters" field="jobProperties"
+                             help="/plugin/tikal-plugin/help-jobProperties.html">
     					<f:textarea name="jobProperties" value="${instance.jobProperties}"/>
   					</f:entry>
   					</f:advanced>
