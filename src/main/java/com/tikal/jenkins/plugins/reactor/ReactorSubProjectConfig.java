@@ -10,9 +10,11 @@ import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
+import hudson.model.FileParameterValue;
 import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.StringParameterValue;
+import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -71,14 +73,52 @@ public class ReactorSubProjectConfig implements
 		public AutoCompletionCandidates doAutoCompleteJobName(
 				@QueryParameter String value) {
 			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (TopLevelItem jobName : Hudson.getInstance().getItems())
-				if (jobName.getName().toLowerCase()
+			for (TopLevelItem job : Hudson.getInstance().getItems()) {
+				String localJobName=job.getName();
+				if (localJobName.toLowerCase()
 						.startsWith(value.toLowerCase()))
-					c.add(jobName.getName());
+						c.add(job.getName());
+			}
 			return c;
 		}
-    }
+		public FormValidation doCheckJobName(@QueryParameter String value) {
+			boolean jobFound=false;
+			for (TopLevelItem job : Hudson.getInstance().getItems()) {
+				String localJobName=job.getName();
+				if (localJobName.toLowerCase()
+						.equals(value.toLowerCase()))
+				{
+					jobFound=true;
+				}
+			}
+			if (jobFound)
+				
+				return FormValidation.ok();
+			else
+				return FormValidation.errorWithMarkup("Invalid job name");
+		}
+		
+		 public String doFillJobProperties(@QueryParameter String jobName) {
+			 	
+	            return "fill=in";
+	        }
 
+	}
+
+	public List<ParameterValue> getJobParameters(AbstractBuild<?, ?> build, TaskListener listener) {
+		ParametersAction action = build.getAction(ParametersAction.class);
+		List<ParameterValue> values = new ArrayList<ParameterValue>(action.getParameters().size());
+		if (action != null) {
+			for (ParameterValue value : action.getParameters())
+				// FileParameterValue is currently not reusable, so omit these:
+				if (!(value instanceof FileParameterValue))
+					values.add(value);
+		}
+
+		return values;
+		
+	}
+	
 	public Action getAction(AbstractBuild build, TaskListener listener)
 			throws IOException, InterruptedException {
 

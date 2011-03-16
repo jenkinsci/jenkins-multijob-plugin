@@ -5,7 +5,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
-import hudson.model.AutoCompletionCandidates;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
@@ -22,11 +21,9 @@ import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +34,6 @@ import java.util.concurrent.Future;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 public class ReactorBuilder extends Builder implements DependecyDeclarer {
@@ -46,19 +42,15 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 
 	final private String reactorName;
 
+	private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
+
 	@DataBoundConstructor
-	public ReactorBuilder(String reactorName,
-			List<ReactorSubProjectConfig> subProjects) {
+	public ReactorBuilder(String reactorName, List<ReactorSubProjectConfig> subProjects, ContinuationCondition continuationCondition) {
 		this.reactorName = reactorName;
-		this.subProjects = (List<ReactorSubProjectConfig>) new ArrayList<ReactorSubProjectConfig>(
-				Util.fixNull(subProjects));
+		this.subProjects = (List<ReactorSubProjectConfig>) new ArrayList<ReactorSubProjectConfig>(Util.fixNull(subProjects));
+		this.continuationCondition = continuationCondition;
 	}
-
-	public ReactorBuilder(String reactorName,
-			ReactorSubProjectConfig... subProjs) {
-		this(reactorName, Arrays.asList(subProjs));
-	}
-
+	
 	@SuppressWarnings("rawtypes")
 	private Map<AbstractProject,ReactorSubProjectConfig> getSubJobs() {
 		Hudson hudson = Hudson.getInstance();
@@ -104,8 +96,7 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 				Result result = jobBuild.getResult();
 				listener.getLogger().printf("Job '%s' finished: %s.\n",
 						HyperlinkNote.encodeTo('/'+jobBuild.getProject().getUrl(), jobBuild.getProject().getFullName()), result);
-				if (Result.FAILURE.equals(result)
-						|| Result.ABORTED.equals(result)) {
+				if (!continuationCondition.isContinue(jobBuild)) {
 					failed = true;
 				}
 			} catch (ExecutionException e) {
@@ -167,19 +158,6 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 			save();
 			return true;
 		}
-		public AutoCompletionCandidates doAutoCompleteJobName(
-				@QueryParameter String value) {
-			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (TopLevelItem jobName : Hudson.getInstance().getItems())
-				if (jobName.getName().toLowerCase()
-						.startsWith(value.toLowerCase()))
-					c.add(jobName.getName());
-			return c;
-		}
-		
-		public FormValidation doCheckJobName(@QueryParameter String value) {
-			  return FormValidation.error("There's a problem here");
-		}
 	}
 
 	public void buildDependencyGraph(AbstractProject owner,
@@ -223,5 +201,47 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
     public boolean onDeleted(String oldName) {
         return onJobRenamed(oldName, null);
     }
+
+	public static enum ContinuationCondition {
+
+		SUCCESSFUL("Successful") {
+			@Override
+			public boolean isContinue(Build build) {
+				return build.getResult().equals(Result.SUCCESS);
+			}
+		},
+		UNSTABLE("Stable or Unstable but not Failed") {
+			@Override
+			public boolean isContinue(Build build) {
+				return build.getResult().isBetterOrEqualTo(Result.UNSTABLE);
+			}
+		},
+		COMPLETED("Complete (always continue)") {
+			@Override
+			public boolean isContinue(Build build) {
+				return build.getResult().isBetterOrEqualTo(Result.FAILURE);
+			}
+		};
+
+		abstract public boolean isContinue(Build build);
+
+		private ContinuationCondition(String label) {
+			this.label = label;
+		}
+
+		final private String label;
+
+		public String getLabel() {
+			return label;
+		}
+	}
+
+	public ContinuationCondition getContinuationCondition() {
+		return continuationCondition;
+	}
+
+	public void setContinuationCondition(ContinuationCondition continuationCondition) {
+		this.continuationCondition = continuationCondition;
+	}
 
 }
