@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.tikal.jenkins.plugins.reactor.views;
+package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.Extension;
 import hudson.views.ListViewColumnDescriptor;

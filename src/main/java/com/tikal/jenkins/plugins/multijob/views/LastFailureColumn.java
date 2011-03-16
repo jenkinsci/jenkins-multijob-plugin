@@ -21,23 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.tikal.jenkins.plugins.reactor.views;
+package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.Extension;
 import hudson.views.ListViewColumnDescriptor;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class LastDurationColumn extends ReactorListViewColumn {
+public class LastFailureColumn extends MultiJobListViewColumn {
 	@DataBoundConstructor
-	public LastDurationColumn() {
+	public LastFailureColumn() {
 	}
 
 	@Extension
 	public static class DescriptorImpl extends ListViewColumnDescriptor {
 		@Override
 		public String getDisplayName() {
-			return "Last Duration";
+			return "Last Failure";
 		}
 	}
 }

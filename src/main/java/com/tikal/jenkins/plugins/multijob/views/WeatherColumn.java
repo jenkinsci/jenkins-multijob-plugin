@@ -1,11 +1,11 @@
-package com.tikal.jenkins.plugins.reactor.views;
+package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.Extension;
 import hudson.views.ListViewColumnDescriptor;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class WeatherColumn extends ReactorListViewColumn {
+public class WeatherColumn extends MultiJobListViewColumn {
 	@DataBoundConstructor
 	public WeatherColumn() {
 	}

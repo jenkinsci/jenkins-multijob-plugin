@@ -1,4 +1,4 @@
-package com.tikal.jenkins.plugins.reactor.views;
+package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.Extension;
 import hudson.Indenter;
@@ -35,21 +35,21 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import com.tikal.jenkins.plugins.reactor.ReactorSubProjectConfig;
-import com.tikal.jenkins.plugins.reactor.ReactorBuilder;
-import com.tikal.jenkins.plugins.reactor.TikalReactorProject;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
+import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 
-public class ReactorView extends ListView {
+public class MultiJobView extends ListView {
 
 	private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,
-			ReactorListViewColumn.createDefaultInitialColumnList());
+			MultiJobListViewColumn.createDefaultInitialColumnList());
 
 	@DataBoundConstructor
-	public ReactorView(String name) {
+	public MultiJobView(String name) {
 		super(name);
 	}
 
-	public ReactorView(String name, ViewGroup owner) {
+	public MultiJobView(String name, ViewGroup owner) {
 		super(name, owner);
 	}
 
@@ -61,7 +61,7 @@ public class ReactorView extends ListView {
 	@Extension
 	public static final class DescriptorImpl extends ViewDescriptor {
 		public String getDisplayName() {
-			return "Reactor View";
+			return "MultiJob View";
 		}
 
 		/**
@@ -85,10 +85,10 @@ public class ReactorView extends ListView {
 		Collection<TopLevelItem> items = Hudson.getInstance().getItems();
 		List<TopLevelItem> out = new ArrayList<TopLevelItem>();
 		for (TopLevelItem item : items) {
-			if (item instanceof TikalReactorProject) {
-				TikalReactorProject project = (TikalReactorProject) item;
+			if (item instanceof MultiJobProject) {
+				MultiJobProject project = (MultiJobProject) item;
 				if (project.getUpstreamProjects().size() == 0) {
-					addSubprojects(null, project, 0, null, out);
+					addSubProjects(null, project, 0, null, out);
 				}
 			}
 		}
@@ -96,25 +96,25 @@ public class ReactorView extends ListView {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void addSubprojects(TikalReactorProject reactorProject, AbstractProject project, int nestLevel, String phaseName, List<TopLevelItem> out) {
-		out.add((TopLevelItem) new ProjectWrapper(reactorProject, project, nestLevel, phaseName));
+	private void addSubProjects(MultiJobProject multiJobProject, AbstractProject project, int nestLevel, String phaseName, List<TopLevelItem> out) {
+		out.add((TopLevelItem) new ProjectWrapper(multiJobProject, project, nestLevel, phaseName));
 		// out.add((TopLevelItem) project);
 		List<Builder> builders = null;
-		if (project instanceof TikalReactorProject) {
+		if (project instanceof MultiJobProject) {
 			builders = ((Project) project).getBuilders();
-			reactorProject = (TikalReactorProject) project;
+			multiJobProject = (MultiJobProject) project;
 		}
 		if (builders == null) {
 			return;
 		}
 		for (Builder builder : builders) {
-			if (builder instanceof ReactorBuilder) {
-				ReactorBuilder reactorBuilder = (ReactorBuilder) builder;
-				List<ReactorSubProjectConfig> subProjects = reactorBuilder.getSubProjects();
-				String currentPhaseName = reactorBuilder.getReactorName();
-				for (ReactorSubProjectConfig projectConfig : subProjects) {
+			if (builder instanceof MultiJobBuilder) {
+				MultiJobBuilder multiJobBuilder = (MultiJobBuilder) builder;
+				List<PhaseJobsConfig> phaseJobs = multiJobBuilder.getPhaseJobs();
+				String currentPhaseName = multiJobBuilder.getPhaseName();
+				for (PhaseJobsConfig projectConfig : phaseJobs) {
 					TopLevelItem it = Hudson.getInstance().getItem(projectConfig.getJobName());
-					if (it instanceof TikalReactorProject) {
+					if (it instanceof MultiJobProject) {
 						// reactorProject = (TikalReactorProject) it;
 					}
 					if (it instanceof AbstractProject) {
@@ -125,7 +125,7 @@ public class ReactorView extends ListView {
 							if (cause != null) {
 								if (cause.getUpstreamProject().equals(project.getName())) {
 									// out.add((TopLevelItem) p);
-									addSubprojects(reactorProject, p, nestLevel + 1, currentPhaseName, out);
+									addSubProjects(multiJobProject, p, nestLevel + 1, currentPhaseName, out);
 									break;
 								}
 							}
@@ -144,7 +144,7 @@ public class ReactorView extends ListView {
 		try {
 			Field field = ListView.class.getDeclaredField("columns");
 			field.setAccessible(true);
-			field.set(this, new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this, ReactorListViewColumn.createDefaultInitialColumnList()));
+			field.set(this, new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this, MultiJobListViewColumn.createDefaultInitialColumnList()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

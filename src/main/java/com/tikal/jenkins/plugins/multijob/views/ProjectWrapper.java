@@ -1,4 +1,4 @@
-package com.tikal.jenkins.plugins.reactor.views;
+package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.model.BallColor;
 import hudson.model.HealthReport;
@@ -25,11 +25,11 @@ import java.util.List;
 
 import org.acegisecurity.AccessDeniedException;
 
-import com.tikal.jenkins.plugins.reactor.TikalReactorProject;
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 
 public class ProjectWrapper implements TopLevelItem {
 
-	final TikalReactorProject reactor;
+	final MultiJobProject multiJob;
 
 	final AbstractProject project;
 
@@ -37,9 +37,9 @@ public class ProjectWrapper implements TopLevelItem {
 
 	final String phaseName;
 
-	public ProjectWrapper(TikalReactorProject reactor, AbstractProject project, int nestLevel, String phaseName) {
+	public ProjectWrapper(MultiJobProject reactor, AbstractProject project, int nestLevel, String phaseName) {
 		this.project = project;
-		this.reactor = reactor;
+		this.multiJob = reactor;
 		this.nestLevel = nestLevel;
 		this.phaseName = phaseName;
 	}
@@ -147,12 +147,12 @@ public class ProjectWrapper implements TopLevelItem {
 	}
 
 	Run findLastBuildForResult(Result result) {
-		if (reactor != null) {
+		if (multiJob != null) {
 			RunList<Run> list = project.getBuilds();
 			for (Run run : list) {
 				UpstreamCause cause = (UpstreamCause) run.getCause(UpstreamCause.class);
 				if (cause != null) {
-					if (cause.getUpstreamProject().equals(reactor.getName())) {
+					if (cause.getUpstreamProject().equals(multiJob.getName())) {
 						if (result == null) {
 							return run;
 						}
@@ -229,7 +229,7 @@ public class ProjectWrapper implements TopLevelItem {
 	}
 
 	public boolean isBuildable() {
-		return reactor == null && getProject().isBuildable();
+		return multiJob == null && getProject().isBuildable();
 	}
 
 	public String getPhaseName() {

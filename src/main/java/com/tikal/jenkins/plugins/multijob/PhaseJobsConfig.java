@@ -1,4 +1,4 @@
-package com.tikal.jenkins.plugins.reactor;
+package com.tikal.jenkins.plugins.multijob;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -26,8 +26,8 @@ import org.apache.tools.ant.filters.StringInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-public class ReactorSubProjectConfig implements
-		Describable<ReactorSubProjectConfig> {
+public class PhaseJobsConfig implements
+		Describable<PhaseJobsConfig> {
 
 	private String jobName;
 	private String jobProperties;
@@ -48,7 +48,7 @@ public class ReactorSubProjectConfig implements
 		this.jobName = jobName;
 	}
 
-   public Descriptor<ReactorSubProjectConfig> getDescriptor() {
+   public Descriptor<PhaseJobsConfig> getDescriptor() {
         return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
@@ -57,17 +57,16 @@ public class ReactorSubProjectConfig implements
 	}
 
 	@DataBoundConstructor
-	public ReactorSubProjectConfig(String jobName, String jobProperties) {
-		super();
+	public PhaseJobsConfig(String jobName, String jobProperties) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 	}
 
 	@Extension
-    public static class DescriptorImpl extends Descriptor<ReactorSubProjectConfig> {
+    public static class DescriptorImpl extends Descriptor<PhaseJobsConfig> {
         @Override
         public String getDisplayName() {
-            return "Phase Config"; 
+            return "Phase Jobs Config"; 
         }
 
 		public AutoCompletionCandidates doAutoCompleteJobName(
@@ -82,20 +81,19 @@ public class ReactorSubProjectConfig implements
 			return c;
 		}
 		public FormValidation doCheckJobName(@QueryParameter String value) {
-			boolean jobFound=false;
-			for (TopLevelItem job : Hudson.getInstance().getItems()) {
-				String localJobName=job.getName();
-				if (localJobName.toLowerCase()
-						.equals(value.toLowerCase()))
-				{
-					jobFound=true;
+			FormValidation result = FormValidation.errorWithMarkup("Invalid job name");
+			if (!value.isEmpty()) {
+				for (TopLevelItem job : Hudson.getInstance().getItems()) {
+					String localJobName=job.getName();
+					if (localJobName.toLowerCase()
+							.equals(value.toLowerCase()))
+						result=FormValidation.ok();
 				}
+			} else {
+				result=FormValidation.ok();
 			}
-			if (jobFound)
-				
-				return FormValidation.ok();
-			else
-				return FormValidation.errorWithMarkup("Invalid job name");
+			
+			return result;
 		}
 		
 		 public String doFillJobProperties(@QueryParameter String jobName) {

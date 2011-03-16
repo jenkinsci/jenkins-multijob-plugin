@@ -1,4 +1,4 @@
-package com.tikal.jenkins.plugins.reactor.views;
+package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-abstract class ReactorListViewColumn extends ListViewColumn {
+abstract class MultiJobListViewColumn extends ListViewColumn {
 	public static List<ListViewColumn> createDefaultInitialColumnList() {
 		// OK, set up default list of columns:
 		// create all instances
@@ -40,5 +40,5 @@ abstract class ReactorListViewColumn extends ListViewColumn {
 	private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(JobColumn.class, StatusColumn.class, WeatherColumn.class,
 			LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, BuildButtonColumn.class);
 
-	private static final Logger LOGGER = Logger.getLogger(ReactorListViewColumn.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(MultiJobListViewColumn.class.getName());
 }

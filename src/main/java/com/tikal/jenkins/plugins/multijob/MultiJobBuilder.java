@@ -1,11 +1,10 @@
-package com.tikal.jenkins.plugins.reactor;
+package com.tikal.jenkins.plugins.multijob;
 
 import hudson.Extension;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
-import hudson.model.AutoCompletionCandidates;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
@@ -22,7 +21,6 @@ import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,48 +34,39 @@ import java.util.concurrent.Future;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-public class ReactorBuilder extends Builder implements DependecyDeclarer {
+public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
-	private List<ReactorSubProjectConfig> subProjects;
-
-	final private String phaseName;
-
+	private String phaseName;
+	private List<PhaseJobsConfig> phaseJobs;
 	private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
 
 	@DataBoundConstructor
-	public ReactorBuilder(String reactorName, List<ReactorSubProjectConfig> subProjects, ContinuationCondition continuationCondition) {
-		this.phaseName = reactorName;
-		this.subProjects = (List<ReactorSubProjectConfig>) new ArrayList<ReactorSubProjectConfig>(Util.fixNull(subProjects));
+	public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs, ContinuationCondition continuationCondition) {
+		this.phaseName = phaseName;
+		this.phaseJobs = Util.fixNull(phaseJobs);
 		this.continuationCondition = continuationCondition;
 	}
 
+	@Override
 	@SuppressWarnings("rawtypes")
-	private Map<AbstractProject, ReactorSubProjectConfig> getSubJobs() {
+	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 		Hudson hudson = Hudson.getInstance();
-		Map<AbstractProject, ReactorSubProjectConfig> projects = new HashMap<AbstractProject, ReactorSubProjectConfig>(subProjects.size());
-		for (ReactorSubProjectConfig project : subProjects) {
+		Map<AbstractProject, PhaseJobsConfig> projects = new HashMap<AbstractProject, PhaseJobsConfig>(phaseJobs.size());
+		for (PhaseJobsConfig project : phaseJobs) {
 			TopLevelItem item = hudson.getItem(project.getJobName());
 			if (item instanceof AbstractProject) {
 				AbstractProject job = (AbstractProject) item;
 				projects.put(job, project);
 			}
 		}
-		return projects;
-	}
-
-	@Override
-	@SuppressWarnings("rawtypes")
-	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-		Map<AbstractProject, ReactorSubProjectConfig> projects = getSubJobs();
 
 		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
 
 		for (AbstractProject project : projects.keySet()) {
 			listener.getLogger().printf("Starting build job %s.\n", HyperlinkNote.encodeTo('/' + project.getUrl(), project.getFullName()));
-			ReactorSubProjectConfig projectConfig = projects.get(project);
+			PhaseJobsConfig projectConfig = projects.get(project);
 			List<Action> actions = new ArrayList<Action>();
 			prepareActions(build, project, projectConfig, listener, actions);
 			Future future = project.scheduleBuild2(project.getQuietPeriod(), new UpstreamCause((Run) build), actions.toArray(new Action[0]));
@@ -106,7 +95,7 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void prepareActions(AbstractBuild build, AbstractProject project, ReactorSubProjectConfig projectConfig, BuildListener listener,
+	private void prepareActions(AbstractBuild build, AbstractProject project, PhaseJobsConfig projectConfig, BuildListener listener,
 			List<Action> actions) throws IOException, InterruptedException {
 		ParametersAction parametersAction = null;
 		if (projectConfig.hasProperties())
@@ -117,16 +106,20 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 		actions.add(parametersAction);
 	}
 
-	public String getReactorName() {
+	public String getPhaseName() {
 		return phaseName;
 	}
-
-	public List<ReactorSubProjectConfig> getSubProjects() {
-		return subProjects;
+	
+	public void setPhaseName(String phaseName) {
+		this.phaseName = phaseName;
 	}
 
-	public void setSubProjects(List<ReactorSubProjectConfig> jobs) {
-		subProjects = jobs;
+	public List<PhaseJobsConfig> getPhaseJobs() {
+		return phaseJobs;
+	}
+
+	public void setPhaseJobs(List<PhaseJobsConfig> phaseJobs) {
+		phaseJobs = phaseJobs;
 	}
 
 	@Extension
@@ -135,17 +128,17 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 		@SuppressWarnings("rawtypes")
 		@Override
 		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
-			return jobType.equals(TikalReactorProject.class);
+			return jobType.equals(MultiJobProject.class);
 		}
 
 		@Override
 		public String getDisplayName() {
-			return "Reactor Phase";
+			return "MultiJob Phase";
 		}
 
 		@Override
 		public Builder newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-			return req.bindJSON(ReactorBuilder.class, formData);
+			return req.bindJSON(MultiJobBuilder.class, formData);
 		}
 
 		@Override
@@ -154,25 +147,15 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 			return true;
 		}
 
-		public AutoCompletionCandidates doAutoCompleteJobName(@QueryParameter String value) {
-			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (TopLevelItem jobName : Hudson.getInstance().getItems())
-				if (jobName.getName().toLowerCase().startsWith(value.toLowerCase()))
-					c.add(jobName.getName());
-			return c;
-		}
-
-		public FormValidation doCheckJobName(@QueryParameter String value) {
-			return FormValidation.error("There's a problem here");
-		}
 	}
 
 	public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
-		// ReactorSubProjectConfig[] jobNames = getSubProjects();
 		Hudson hudson = Hudson.getInstance();
-		if (getSubProjects() == null)
+		List<PhaseJobsConfig> phaseJobsConfigs = getPhaseJobs();
+		
+		if (phaseJobsConfigs == null)
 			return;
-		for (ReactorSubProjectConfig project : getSubProjects()) {
+		for (PhaseJobsConfig project : phaseJobsConfigs) {
 			TopLevelItem topLevelItem = hudson.getItem(project.getJobName());
 			if (topLevelItem instanceof AbstractProject) {
 				Dependency dependency = new Dependency(owner, (AbstractProject) topLevelItem) {
@@ -190,11 +173,11 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 
 	public boolean onJobRenamed(String oldName, String newName) {
 		boolean changed = false;
-		for (Iterator i = subProjects.iterator(); i.hasNext();) {
-			ReactorSubProjectConfig subProject = (ReactorSubProjectConfig) i.next();
-			String jobName = subProject.getJobName();
+		for (Iterator i = phaseJobs.iterator(); i.hasNext();) {
+			PhaseJobsConfig phaseJobs = (PhaseJobsConfig) i.next();
+			String jobName = phaseJobs.getJobName();
 			if (newName != null && jobName.trim().equals(oldName)) {
-				subProject.setJobName(newName);
+				phaseJobs.setJobName(newName);
 				changed = true;
 			} else if (newName == null) {
 				i.remove();
@@ -203,7 +186,7 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 		return changed;
 	}
 
-	public boolean onDeleted(String oldName) {
+	public boolean onJobDeleted(String oldName) {
 		return onJobRenamed(oldName, null);
 	}
 

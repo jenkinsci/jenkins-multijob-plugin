@@ -1,4 +1,4 @@
-package com.tikal.jenkins.plugins.reactor;
+package com.tikal.jenkins.plugins.multijob;
 
 import hudson.Extension;
 import hudson.Indenter;
@@ -9,19 +9,19 @@ import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Project;
 
-public class TikalReactorProject extends Project<TikalReactorProject, TikalReactorBuild> implements TopLevelItem {
+public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> implements TopLevelItem {
 
-	private TikalReactorProject(ItemGroup parent, String name) {
+	private MultiJobProject(ItemGroup parent, String name) {
 		super(parent, name);
 	}
 
-	public TikalReactorProject(Hudson parent, String name) {
+	public MultiJobProject(Hudson parent, String name) {
 		super(parent, name);
 	}
 
 	@Override
-	protected Class<TikalReactorBuild> getBuildClass() {
-		return TikalReactorBuild.class;
+	protected Class<MultiJobBuild> getBuildClass() {
+		return MultiJobBuild.class;
 	}
 
 	@Override
@@ -38,11 +38,11 @@ public class TikalReactorProject extends Project<TikalReactorProject, TikalReact
 
 	public static final class DescriptorImpl extends AbstractProjectDescriptor {
 		public String getDisplayName() {
-			return "Reactor Project";
+			return "MultiJob Project";
 		}
 
-		public TikalReactorProject newInstance(String name) {
-			return new TikalReactorProject(Hudson.getInstance(), name);
+		public MultiJobProject newInstance(String name) {
+			return new MultiJobProject(Hudson.getInstance(), name);
 		}
 	}
 
@@ -52,7 +52,7 @@ public class TikalReactorProject extends Project<TikalReactorProject, TikalReact
 		super.buildDependencyGraph(graph);
 	}
 
-	public boolean isTopmostReactor() {
+	public boolean isTopMost() {
 		return getUpstreamProjects().size() == 0;
 	}
 }
