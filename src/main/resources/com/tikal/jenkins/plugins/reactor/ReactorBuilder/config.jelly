@@ -2,7 +2,7 @@
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 		<f:entry title="Phase name" field="reactorName"
                 help="/plugin/tikal-plugin/help-reactorName.html">
-			<f:textbox name="reactorName" value="${instance.reactorName}" />
+			<f:textbox name="phaseName" value="${instance.phaseName}" />
 		</f:entry>
 		<f:entry title="Phase jobs" field="subProjects">
     		<f:repeatable field="subProjects" noAddButton="true" minimum="1">
