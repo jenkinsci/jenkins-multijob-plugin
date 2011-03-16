@@ -29,7 +29,8 @@
 		</f:repeatable>
 	</f:entry>
 	<f:entry title="Mark phase as successful when subjobs status is:"
-		field="continuationCondition">
+		field="continuationCondition"
+        help="/plugin/tikal-plugin/help-continuationCondition.html">
 		<f:enum field="continuationCondition">
 			${it.getLabel()}
 		</f:enum>
