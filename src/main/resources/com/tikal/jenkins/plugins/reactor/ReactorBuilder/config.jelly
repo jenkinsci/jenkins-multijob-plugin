@@ -1,29 +1,37 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-		<f:entry title="Phase name" field="reactorName"
-                help="/plugin/tikal-plugin/help-reactorName.html">
-			<f:textbox name="reactorName" value="${instance.reactorName}" />
-		</f:entry>
-		<f:entry title="Phase Jobs" field="subProjects">
-    		<f:repeatable field="subProjects" noAddButton="true" minimum="1">
-      			<table width="100%">
-        			<f:entry title="Job name" field="jobName"
-                             help="/plugin/tikal-plugin/help-jobName.html">
-          				<f:textbox />
-        			</f:entry>
-					<f:advanced>
+	<f:entry title="Phase name" field="reactorName"
+		help="/plugin/tikal-plugin/help-reactorName.html">
+		<f:textbox name="reactorName" value="${instance.reactorName}" />
+	</f:entry>
+	<f:entry title="Phase Jobs" field="subProjects">
+		<f:repeatable field="subProjects" noAddButton="true"
+			minimum="1">
+			<table width="100%">
+				<f:entry title="Job name" field="jobName"
+					help="/plugin/tikal-plugin/help-jobName.html">
+					<f:textbox />
+				</f:entry>
+				<f:advanced>
 					<f:entry title="Parameters" field="jobProperties"
-                             help="/plugin/tikal-plugin/help-jobProperties.html">
-    					<f:textarea name="jobProperties" value="${instance.jobProperties}"/>
-  					</f:entry>
-  					</f:advanced>
-			        <f:entry>
-			          <div align="right">
-			            <input type="button" value="${%Add jobs...}" class="repeatable-add show-if-last" />
-			            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
-			          </div>
-			        </f:entry>
-      			</table>
-    		</f:repeatable>
-  		</f:entry>
+						help="/plugin/tikal-plugin/help-jobProperties.html">
+						<f:textarea name="jobProperties" value="${instance.jobProperties}" />
+					</f:entry>
+				</f:advanced>
+				<f:entry>
+					<div align="right">
+						<input type="button" value="${%Add jobs...}" class="repeatable-add show-if-last" />
+						<input type="button" value="${%Delete}"
+							class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
+					</div>
+				</f:entry>
+			</table>
+		</f:repeatable>
+	</f:entry>
+	<f:entry title="Mark phase as successful when subjobs status is:"
+		field="continuationCondition">
+		<f:enum field="continuationCondition">
+			${it.getLabel()}
+		</f:enum>
+	</f:entry>
 </j:jelly>
