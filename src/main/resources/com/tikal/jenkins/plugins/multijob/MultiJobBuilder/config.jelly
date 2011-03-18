@@ -16,6 +16,10 @@
                          help="/plugin/tikal-plugin/help-jobProperties.html">
 					<f:textarea name="jobProperties" value="${instance.jobProperties}" />
 					</f:entry>
+					<f:entry title="Current job parameters" field="currParams"
+						help="/plugin/tikal-plugin/help-currParams.html">
+  						<f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
+  					</f:entry>
 				</f:advanced>
 		        <f:entry>
 		          <div align="right">

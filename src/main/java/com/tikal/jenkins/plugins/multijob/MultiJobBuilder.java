@@ -98,12 +98,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	private void prepareActions(AbstractBuild build, AbstractProject project, PhaseJobsConfig projectConfig, BuildListener listener,
 			List<Action> actions) throws IOException, InterruptedException {
 		ParametersAction parametersAction = null;
-		if (projectConfig.hasProperties())
+		if (projectConfig.hasProperties()){
 			parametersAction = (ParametersAction) projectConfig.getAction(build, listener);
-		else
-			parametersAction = build.getAction(ParametersAction.class);
-
-		actions.add(parametersAction);
+			actions.add(parametersAction);
+		}
+		
+		ParametersAction currParametersAction = null;
+		if (projectConfig.isCurrParams()) {
+			currParametersAction = build.getAction(ParametersAction.class);
+			actions.add(currParametersAction);
+		}
 	}
 
 	public String getPhaseName() {

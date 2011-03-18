@@ -31,6 +31,15 @@ public class PhaseJobsConfig implements
 
 	private String jobName;
 	private String jobProperties;
+	private boolean currParams;
+
+	public boolean isCurrParams() {
+		return currParams;
+	}
+
+	public void setCurrParams(boolean currParams) {
+		this.currParams = currParams;
+	}
 
 	public String getJobProperties() {
 		return jobProperties;
@@ -57,9 +66,10 @@ public class PhaseJobsConfig implements
 	}
 
 	@DataBoundConstructor
-	public PhaseJobsConfig(String jobName, String jobProperties) {
+	public PhaseJobsConfig(String jobName, String jobProperties, boolean currParams) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
+		this.currParams = currParams;
 	}
 
 	@Extension
