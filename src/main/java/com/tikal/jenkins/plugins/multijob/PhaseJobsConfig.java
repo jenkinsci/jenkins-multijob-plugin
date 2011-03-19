@@ -1,4 +1,4 @@
-package com.tikal.jenkins.plugins.reactor;
+package com.tikal.jenkins.plugins.multijob;
 
 import hudson.EnvVars;
 import hudson.Extension;
@@ -10,9 +10,11 @@ import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
+import hudson.model.FileParameterValue;
 import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.StringParameterValue;
+import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,8 +26,8 @@ import org.apache.tools.ant.filters.StringInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-public class ReactorSubProjectConfig implements
-		Describable<ReactorSubProjectConfig> {
+public class PhaseJobsConfig implements
+		Describable<PhaseJobsConfig> {
 
 	private String jobName;
 	private String jobProperties;
@@ -46,7 +48,7 @@ public class ReactorSubProjectConfig implements
 		this.jobName = jobName;
 	}
 
-   public Descriptor<ReactorSubProjectConfig> getDescriptor() {
+   public Descriptor<PhaseJobsConfig> getDescriptor() {
         return Hudson.getInstance().getDescriptorOrDie(getClass());
     }
 
@@ -55,30 +57,66 @@ public class ReactorSubProjectConfig implements
 	}
 
 	@DataBoundConstructor
-	public ReactorSubProjectConfig(String jobName, String jobProperties) {
-		super();
+	public PhaseJobsConfig(String jobName, String jobProperties) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 	}
 
 	@Extension
-    public static class DescriptorImpl extends Descriptor<ReactorSubProjectConfig> {
+    public static class DescriptorImpl extends Descriptor<PhaseJobsConfig> {
         @Override
         public String getDisplayName() {
-            return "Phase Config"; 
+            return "Phase Jobs Config"; 
         }
 
 		public AutoCompletionCandidates doAutoCompleteJobName(
 				@QueryParameter String value) {
 			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (TopLevelItem jobName : Hudson.getInstance().getItems())
-				if (jobName.getName().toLowerCase()
+			for (TopLevelItem job : Hudson.getInstance().getItems()) {
+				String localJobName=job.getName();
+				if (localJobName.toLowerCase()
 						.startsWith(value.toLowerCase()))
-					c.add(jobName.getName());
+						c.add(job.getName());
+			}
 			return c;
 		}
-    }
+		public FormValidation doCheckJobName(@QueryParameter String value) {
+			FormValidation result = FormValidation.errorWithMarkup("Invalid job name");
+			if (!value.isEmpty()) {
+				for (TopLevelItem job : Hudson.getInstance().getItems()) {
+					String localJobName=job.getName();
+					if (localJobName.toLowerCase()
+							.equals(value.toLowerCase()))
+						result=FormValidation.ok();
+				}
+			} else {
+				result=FormValidation.ok();
+			}
+			
+			return result;
+		}
+		
+		 public String doFillJobProperties(@QueryParameter String jobName) {
+			 	
+	            return "fill=in";
+	        }
 
+	}
+
+	public List<ParameterValue> getJobParameters(AbstractBuild<?, ?> build, TaskListener listener) {
+		ParametersAction action = build.getAction(ParametersAction.class);
+		List<ParameterValue> values = new ArrayList<ParameterValue>(action.getParameters().size());
+		if (action != null) {
+			for (ParameterValue value : action.getParameters())
+				// FileParameterValue is currently not reusable, so omit these:
+				if (!(value instanceof FileParameterValue))
+					values.add(value);
+		}
+
+		return values;
+		
+	}
+	
 	public Action getAction(AbstractBuild build, TaskListener listener)
 			throws IOException, InterruptedException {
 

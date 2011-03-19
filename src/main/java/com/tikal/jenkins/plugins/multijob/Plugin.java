@@ -1,4 +1,4 @@
-package com.tikal.jenkins.plugins.reactor;
+package com.tikal.jenkins.plugins.multijob;
 
 import hudson.Extension;
 import hudson.model.Item;
@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class Plugin extends hudson.Plugin {
 
 	/**
-	 * If a job is renamed, update all reactor-jobs with the new name.
+	 * If a job is renamed, update all multiJob-jobs with the new name.
 	 */
 	@Extension
 	public static final class RenameListener extends ItemListener {
@@ -24,16 +24,16 @@ public class Plugin extends hudson.Plugin {
 		public void onRenamed(Item renamedItem, String oldName, String newName) {
 			Collection<TopLevelItem> items = Hudson.getInstance().getItems();
 			for (TopLevelItem item : items) {
-				if (item instanceof TikalReactorProject) {
+				if (item instanceof MultiJobProject) {
 					boolean changed = false;
 					List<Builder> builders = null;
-					TikalReactorProject project = (TikalReactorProject) item;
+					MultiJobProject project = (MultiJobProject) item;
 					builders = project.getBuilders();
 					if (builders != null) {
 						for (Builder builder : builders) {
-							if (builder instanceof ReactorBuilder) {
-								ReactorBuilder reactorBuilder = (ReactorBuilder) builder;
-								changed |= reactorBuilder.onJobRenamed(oldName,
+							if (builder instanceof MultiJobBuilder) {
+								MultiJobBuilder multiJobBuilder = (MultiJobBuilder) builder;
+								changed |= multiJobBuilder.onJobRenamed(oldName,
 										newName);
 								if (changed)
 									try {
@@ -59,17 +59,16 @@ public class Plugin extends hudson.Plugin {
 			String oldName = deletedItem.getName();
 			Collection<TopLevelItem> items = Hudson.getInstance().getItems();
 			for (TopLevelItem item : items) {
-				if (item instanceof TikalReactorProject) {
+				if (item instanceof MultiJobProject) {
 					boolean changed = false;
 					List<Builder> builders = null;
-					TikalReactorProject project = (TikalReactorProject) item;
+					MultiJobProject project = (MultiJobProject) item;
 					builders = project.getBuilders();
 					if (builders != null) {
 						for (Builder builder : builders) {
-							if (builder instanceof ReactorBuilder) {
-								ReactorBuilder reactorBuilder = (ReactorBuilder) builder;
-								changed |= reactorBuilder.onJobRenamed(oldName,
-										null);
+							if (builder instanceof MultiJobBuilder) {
+								MultiJobBuilder multiJobBuilder = (MultiJobBuilder) builder;
+								changed |= multiJobBuilder.onJobDeleted(oldName);
 								if (changed)
 									try {
 										project.save();
