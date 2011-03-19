@@ -31,6 +31,15 @@ public class PhaseJobsConfig implements
 
 	private String jobName;
 	private String jobProperties;
+	private boolean currParams;
+
+	public boolean isCurrParams() {
+		return currParams;
+	}
+
+	public void setCurrParams(boolean currParams) {
+		this.currParams = currParams;
+	}
 
 	public String getJobProperties() {
 		return jobProperties;
@@ -57,9 +66,10 @@ public class PhaseJobsConfig implements
 	}
 
 	@DataBoundConstructor
-	public PhaseJobsConfig(String jobName, String jobProperties) {
+	public PhaseJobsConfig(String jobName, String jobProperties, boolean currParams) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
+		this.currParams = currParams;
 	}
 
 	@Extension
@@ -72,27 +82,25 @@ public class PhaseJobsConfig implements
 		public AutoCompletionCandidates doAutoCompleteJobName(
 				@QueryParameter String value) {
 			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (TopLevelItem job : Hudson.getInstance().getItems()) {
-				String localJobName=job.getName();
+			for (String localJobName : Hudson.getInstance().getJobNames()) {
 				if (localJobName.toLowerCase()
 						.startsWith(value.toLowerCase()))
-						c.add(job.getName());
+						c.add(localJobName);
 			}
 			return c;
 		}
+		
 		public FormValidation doCheckJobName(@QueryParameter String value) {
 			FormValidation result = FormValidation.errorWithMarkup("Invalid job name");
-			if (!value.isEmpty()) {
-				for (TopLevelItem job : Hudson.getInstance().getItems()) {
-					String localJobName=job.getName();
+			if (value.isEmpty()){
+				result = FormValidation.errorWithMarkup("Job name must not be empty");
+			} else {
+				for (String localJobName : Hudson.getInstance().getJobNames()) {
 					if (localJobName.toLowerCase()
 							.equals(value.toLowerCase()))
 						result=FormValidation.ok();
 				}
-			} else {
-				result=FormValidation.ok();
-			}
-			
+			} 
 			return result;
 		}
 		
