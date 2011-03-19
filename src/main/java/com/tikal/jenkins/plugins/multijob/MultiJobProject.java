@@ -1,16 +1,15 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.Extension;
-import hudson.Indenter;
 import hudson.model.DependencyGraph;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.Hudson;
-import hudson.model.Job;
 import hudson.model.Project;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> implements TopLevelItem {
 
+	@SuppressWarnings("rawtypes")
 	private MultiJobProject(ItemGroup parent, String name) {
 		super(parent, name);
 	}
@@ -41,6 +40,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> imp
 			return "MultiJob Project";
 		}
 
+		@SuppressWarnings("rawtypes")
 		public MultiJobProject newInstance(ItemGroup itemGroup, String name) {
 			return new MultiJobProject(itemGroup, name);
 		}

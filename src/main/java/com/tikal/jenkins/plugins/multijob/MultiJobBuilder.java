@@ -52,7 +52,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("rawtypes")
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
 		Hudson hudson = Hudson.getInstance();
 		MultiJobBuild thisBuild = (MultiJobBuild) build;
@@ -109,12 +109,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	private void prepareActions(AbstractBuild build, AbstractProject project, PhaseJobsConfig projectConfig, BuildListener listener, List<Action> actions)
 			throws IOException, InterruptedException {
 		ParametersAction parametersAction = null;
-		if (projectConfig.hasProperties())
+		if (projectConfig.hasProperties()) {
 			parametersAction = (ParametersAction) projectConfig.getAction(build, listener);
-		else
-			parametersAction = build.getAction(ParametersAction.class);
+			actions.add(parametersAction);
+		}
 
-		actions.add(parametersAction);
+		ParametersAction currParametersAction = null;
+		if (projectConfig.isCurrParams()) {
+			currParametersAction = build.getAction(ParametersAction.class);
+			actions.add(currParametersAction);
+		}
 	}
 
 	public String getPhaseName() {
@@ -185,7 +189,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 	public boolean onJobRenamed(String oldName, String newName) {
 		boolean changed = false;
-		for (Iterator<PhaseJobsConfig> i = phaseJobs.iterator(); i.hasNext();) {
+		for (Iterator i = phaseJobs.iterator(); i.hasNext();) {
 			PhaseJobsConfig phaseJobs = (PhaseJobsConfig) i.next();
 			String jobName = phaseJobs.getJobName();
 			if (newName != null && jobName.trim().equals(oldName)) {
@@ -202,7 +206,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		return onJobRenamed(oldName, null);
 	}
 
-	@SuppressWarnings("rawtypes")
 	public static enum ContinuationCondition {
 
 		SUCCESSFUL("Successful") {
