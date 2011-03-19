@@ -3,12 +3,12 @@
 	xmlns:i="jelly:fmt">
 	<td style="${job.getCss()}">
 		<j:choose>
-			<j:when test="${job.phaseName!=null}">
-				<a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName} (${job.phaseName})</a>
+			<j:when test="${job.phase}">
+				${job.displayName}
 			</j:when>
-			<j:otherwise>
+			<j:when test="${!job.phase}">
 				<a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName}</a>
-			</j:otherwise>
+			</j:when>
 		</j:choose>
 	</td>
 </j:jelly>
