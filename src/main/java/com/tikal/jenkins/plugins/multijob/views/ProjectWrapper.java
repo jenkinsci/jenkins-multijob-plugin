@@ -5,7 +5,6 @@ import hudson.model.HealthReport;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Result;
-import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.AbstractProject;
 import hudson.model.Hudson;
@@ -26,7 +25,7 @@ import org.acegisecurity.AccessDeniedException;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 
 @SuppressWarnings("rawtypes")
-public class ProjectWrapper implements TopLevelItem {
+public class ProjectWrapper extends AbstractWrapper {
 
 	final MultiJobProject multijob;
 
@@ -36,13 +35,10 @@ public class ProjectWrapper implements TopLevelItem {
 
 	final int nestLevel;
 
-	final String phaseName;
-
-	public ProjectWrapper(MultiJobProject multijob, AbstractProject project, BuildState buildState, int nestLevel, String phaseName) {
+	public ProjectWrapper(MultiJobProject multijob, AbstractProject project, BuildState buildState, int nestLevel) {
 		this.project = project;
 		this.multijob = multijob;
 		this.nestLevel = nestLevel;
-		this.phaseName = phaseName;
 		this.buildState = buildState;
 	}
 
@@ -146,6 +142,9 @@ public class ProjectWrapper implements TopLevelItem {
 	}
 
 	Run findLastBuildForResult(Result result) {
+		if (buildState == null) {
+			return null;
+		}
 		if (Result.SUCCESS.equals(result)) {
 			return project.getBuildByNumber(buildState.getLastSuccessBuildNumber());
 		}
@@ -185,14 +184,14 @@ public class ProjectWrapper implements TopLevelItem {
 	}
 
 	public String getCss() {
-		return "padding-left: " + (getNestLevel() + 1) * 2 + "em";
-	}
-
-	public String getRelativeShift() {
-		int i = getNestLevel();
-		if (i == 0)
-			return null;
-		return "position:relative; left: " + i * 2 + "em";
+		StringBuilder builder = new StringBuilder();
+		if (project instanceof MultiJobProject) {
+			builder.append("font-weight:bold;");
+		}
+		builder.append("padding-left:");
+		builder.append(String.valueOf((getNestLevel() + 1) * 20));
+		builder.append("px");
+		return builder.toString();
 	}
 
 	public HealthReport getBuildHealth() {
@@ -206,10 +205,6 @@ public class ProjectWrapper implements TopLevelItem {
 
 	public boolean isBuildable() {
 		return multijob == null && getProject().isBuildable();
-	}
-
-	public String getPhaseName() {
-		return phaseName;
 	}
 
 }

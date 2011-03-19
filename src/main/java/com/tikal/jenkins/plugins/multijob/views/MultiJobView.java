@@ -101,21 +101,28 @@ public class MultiJobView extends ListView {
 
 	@SuppressWarnings("rawtypes")
 	private void addMultiProject(MultiJobProject parent, MultiJobProject project, BuildState buildState, int nestLevel, String phaseName, List<TopLevelItem> out) {
-		out.add(new ProjectWrapper(parent, project, buildState, nestLevel, phaseName));
+		out.add(new ProjectWrapper(parent, project, buildState, nestLevel));
 		List<Builder> builders = project.getBuilders();
 		for (Builder builder : builders) {
+			int phaseNestLevel = nestLevel + 1;
 			if (builder instanceof MultiJobBuilder) {
 				MultiJobBuilder reactorBuilder = (MultiJobBuilder) builder;
 				List<PhaseJobsConfig> subProjects = reactorBuilder.getPhaseJobs();
 				String currentPhaseName = reactorBuilder.getPhaseName();
+				PhaseWrapper phaseWrapper = new PhaseWrapper(phaseNestLevel, currentPhaseName);
+				out.add(phaseWrapper);
 				for (PhaseJobsConfig projectConfig : subProjects) {
 					TopLevelItem tli = Hudson.getInstance().getItem(projectConfig.getJobName());
 					if (tli instanceof MultiJobProject) {
 						MultiJobProject subProject = (MultiJobProject) tli;
-						addMultiProject(project, subProject, createBuildState(buildState, project, subProject), nestLevel + 1, currentPhaseName, out);
+						BuildState jobBuildState = createBuildState(buildState, project, subProject);
+						phaseWrapper.addChildBuildState(jobBuildState);
+						addMultiProject(project, subProject, jobBuildState, phaseNestLevel + 1, currentPhaseName, out);
 					} else {
 						AbstractProject subProject = (AbstractProject) tli;
-						addSimpleProject(project, subProject, createBuildState(buildState, project, subProject), nestLevel + 1, currentPhaseName, out);
+						BuildState jobBuildState = createBuildState(buildState, project, subProject);
+						phaseWrapper.addChildBuildState(jobBuildState);
+						addSimpleProject(project, subProject, jobBuildState, phaseNestLevel + 1, out);
 					}
 				}
 			}
@@ -123,9 +130,8 @@ public class MultiJobView extends ListView {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void addSimpleProject(MultiJobProject parent, AbstractProject project, BuildState buildState, int nestLevel, String phaseName,
-			List<TopLevelItem> out) {
-		out.add(new ProjectWrapper(parent, project, buildState, nestLevel, phaseName));
+	private void addSimpleProject(MultiJobProject parent, AbstractProject project, BuildState buildState, int nestLevel, List<TopLevelItem> out) {
+		out.add(new ProjectWrapper(parent, project, buildState, nestLevel));
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -182,7 +188,7 @@ public class MultiJobView extends ListView {
 				}
 			}
 		}
-		return new BuildState(previousBuildNumber, lastBuildNumber, lastSuccessBuildNumber, lastFailureBuildNumber);
+		return new BuildState(project.getName(), previousBuildNumber, lastBuildNumber, lastSuccessBuildNumber, lastFailureBuildNumber);
 	}
 
 	private BuildState createBuildState(MultiJobProject project) {
@@ -191,7 +197,7 @@ public class MultiJobView extends ListView {
 		MultiJobBuild previousBuild = lastBuild.getPreviousBuild();
 		MultiJobBuild lastSuccessfulBuild = project.getLastSuccessfulBuild();
 		MultiJobBuild lastFailedBuild = project.getLastFailedBuild();
-		return new BuildState(previousBuild == null ? 0 : previousBuild.getNumber(), lastBuild == null ? 0 : lastBuild.getNumber(),
+		return new BuildState(project.getName(), previousBuild == null ? 0 : previousBuild.getNumber(), lastBuild == null ? 0 : lastBuild.getNumber(),
 				lastSuccessfulBuild == null ? 0 : lastSuccessfulBuild.getNumber(), lastFailedBuild == null ? 0 : lastFailedBuild.getNumber());
 	}
 
