@@ -59,12 +59,14 @@ public class PhaseWrapper extends AbstractWrapper {
 		for (BuildState buildState : childrenBuildState) {
 			AbstractProject project = (AbstractProject) Hudson.getInstance().getItem(buildState.getJobName());
 			AbstractBuild build = (AbstractBuild) project.getBuildByNumber(buildState.getLastBuildNumber());
-			if (result == null) {
-				result = build.getResult();
-				worseBuild = build;
-			} else {
-				if (build.getResult().isWorseThan(worseBuild.getResult())) {
+			if (build != null) {
+				if (result == null) {
+					result = build.getResult();
 					worseBuild = build;
+				} else {
+					if (build.getResult().isWorseThan(worseBuild.getResult())) {
+						worseBuild = build;
+					}
 				}
 			}
 		}
