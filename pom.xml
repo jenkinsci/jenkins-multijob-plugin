@@ -2,10 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.jvnet.hudson.plugins</groupId>
+		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.393</version>
-		<relativePath>../pom.xml</relativePath>
+		<version>1.401</version>
 	</parent>
 
 	<groupId>com.tikal.jenkins.plugins</groupId>
@@ -16,7 +15,7 @@
 	<repositories>
 		<repository>
 			<id>tikal-public</id>
-			<url>${public.repository.url}</url>
+			<url>http://maven.glassfish.org/content/groups/public/</url>
 		</repository>
 	</repositories>
 
@@ -27,8 +26,7 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-	<properties>
-		<public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url><!-- 
-			<public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url> -->
+	<properties><!-- <public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url> -->
+		<public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url>
 	</properties>
 </project>
