@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-abstract class MultiJobListViewColumn extends ListViewColumn {
+abstract public class MultiJobListViewColumn extends ListViewColumn {
 	public static List<ListViewColumn> createDefaultInitialColumnList() {
 		// OK, set up default list of columns:
 		// create all instances

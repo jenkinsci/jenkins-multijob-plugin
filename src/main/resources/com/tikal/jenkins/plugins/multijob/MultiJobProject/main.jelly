@@ -1,0 +1,52 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:p="/lib/hudson/project">
+
+	<j:choose>
+		<j:when test="${it.topMost}">
+			<br />
+			<t:projectView jobs="${it.view.getRootItem(it)}"
+				jobBaseUrl="${it.rootUrl}" showViewTabs="false" columnExtensions="${it.view.columns}">
+			</t:projectView>
+		</j:when>
+	</j:choose>
+
+
+	<p:projectActionFloatingBox />
+
+	<table style="margin-top: 1em; margin-left:1em;">
+
+		<j:forEach var="act" items="${it.prominentActions}">
+			<t:summary icon="${act.iconFileName}" href="${act.urlName}">
+				${act.displayName}
+      </t:summary>
+		</j:forEach>
+		<t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
+			${%Workspace}
+    </t:summary>
+
+		<t:artifactList caption="${%Last Successful Artifacts}"
+			build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
+			permission="${it.lastSuccessfulBuild.ARTIFACTS}" />
+
+		<t:summary icon="notepad.gif" href="changes">
+			${%Recent Changes}
+		</t:summary>
+
+		<j:set var="tr" value="${it.lastCompletedBuild.testResultAction}" />
+		<j:if test="${tr!=null}">
+			<t:summary icon="clipboard.gif">
+				<a href="lastCompletedBuild/testReport/">${%Latest Test Result}</a>
+				<st:nbsp />
+				<t:test-result it="${tr}" />
+			</t:summary>
+		</j:if>
+	</table>
+
+	<!-- merge fragments from the actions -->
+	<j:forEach var="a" items="${it.actions}">
+		<st:include page="jobMain.jelly" it="${a}" optional="true" />
+	</j:forEach>
+
+	<p:upstream-downstream />
+</j:jelly>

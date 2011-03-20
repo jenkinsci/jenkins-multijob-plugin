@@ -95,6 +95,12 @@ public class MultiJobView extends ListView {
 		return out;
 	}
 
+	public List<TopLevelItem> getRootItem(MultiJobProject multiJobProject) {
+		List<TopLevelItem> out = new ArrayList<TopLevelItem>();
+		addTopLevelProject(multiJobProject, out);
+		return out;
+	}
+
 	private void addTopLevelProject(MultiJobProject project, List<TopLevelItem> out) {
 		addMultiProject(null, project, createBuildState(project), 0, null, out);
 	}

@@ -4,8 +4,16 @@ import hudson.Extension;
 import hudson.model.DependencyGraph;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
+import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Project;
+import hudson.util.DescribableList;
+import hudson.views.ListViewColumn;
+
+import java.util.List;
+
+import com.tikal.jenkins.plugins.multijob.views.MultiJobListViewColumn;
+import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> implements TopLevelItem {
 
@@ -48,11 +56,19 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> imp
 
 	@Override
 	protected void buildDependencyGraph(DependencyGraph graph) {
-		// TODO Auto-generated method stub
 		super.buildDependencyGraph(graph);
 	}
 
 	public boolean isTopMost() {
 		return getUpstreamProjects().size() == 0;
+	}
+
+	public MultiJobView getView() {
+		MultiJobView view = new MultiJobView("");
+		return view;
+	}
+
+	public String getRootUrl() {
+		return Hudson.getInstance().getRootUrl();
 	}
 }
