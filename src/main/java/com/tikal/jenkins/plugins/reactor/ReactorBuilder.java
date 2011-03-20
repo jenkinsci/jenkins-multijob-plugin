@@ -94,8 +94,8 @@ public class ReactorBuilder extends Builder implements DependecyDeclarer {
 			try {
 				Build jobBuild = (Build) future.get();
 				Result result = jobBuild.getResult();
-				listener.getLogger().printf("Job '%s' finished: %s.\n",
-						HyperlinkNote.encodeTo('/' + jobBuild.getProject().getUrl(), jobBuild.getProject().getFullName()), result);
+				listener.getLogger().printf("Build   "+ HyperlinkNote.encodeTo("/" + jobBuild.getUrl()+"/",  String.valueOf(jobBuild.getNumber())),"Console :"+
+						HyperlinkNote.encodeTo('/' + jobBuild.getUrl()+"/console",  result.toString()));
 				if (!continuationCondition.isContinue(jobBuild)) {
 					failed = true;
 				}
