@@ -86,8 +86,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			try {
 				Build jobBuild = (Build) future.get();
 				Result result = jobBuild.getResult();
-				listener.getLogger().printf("Build   "+ HyperlinkNote.encodeTo("/" + jobBuild.getUrl()+"/",  String.valueOf(jobBuild.getNumber())),"Console :"+
-						HyperlinkNote.encodeTo('/' + jobBuild.getUrl()+"/console",  result.toString()));
+				listener.getLogger().println("Finished Build : "+ HyperlinkNote.encodeTo("/" + jobBuild.getUrl()+"/" , String.valueOf(jobBuild.getNumber())) + " of Job : " +  HyperlinkNote.encodeTo('/' + jobBuild.getProject().getUrl(), jobBuild.getProject().getFullName()) + " with status :"+
+						HyperlinkNote.encodeTo('/' + jobBuild.getUrl()+"/console/",  result.toString()));
 				if (!continuationCondition.isContinue(jobBuild)) {
 					failed = true;
 				}

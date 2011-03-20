@@ -26,7 +26,18 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-	<properties><!-- <public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url> -->
-		<public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url>
+	<properties>
+		<!-- <public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url> -->
+		<public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url>
 	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.jvnet.hudson.main</groupId>
+			<artifactId>hudson-war</artifactId>
+			<type>war</type>
+			<version>1.395<!-- replace this with the version you want--></version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
 </project>
