@@ -24,12 +24,7 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.Extension;
-import hudson.model.Result;
-import hudson.model.AbstractProject;
-import hudson.model.Run;
 import hudson.views.ListViewColumnDescriptor;
-
-import java.util.List;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 

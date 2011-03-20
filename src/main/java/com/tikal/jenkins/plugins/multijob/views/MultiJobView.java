@@ -140,7 +140,7 @@ public class MultiJobView extends ListView {
 		out.add(new ProjectWrapper(parent, project, buildState, nestLevel));
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	private BuildState createBuildState(BuildState parentBuildState, MultiJobProject multiJobProject, AbstractProject project) {
 		int previousBuildNumber = 0;
 		int lastBuildNumber = 0;
