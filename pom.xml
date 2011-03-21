@@ -15,7 +15,7 @@
 	<repositories>
 		<repository>
 			<id>tikal-public</id>
-			<url>${public.repository.url}</url>
+			<url>http://dev.tikalk.com/nexus/content/groups/public/</url>
 		</repository>
 	</repositories>
 
