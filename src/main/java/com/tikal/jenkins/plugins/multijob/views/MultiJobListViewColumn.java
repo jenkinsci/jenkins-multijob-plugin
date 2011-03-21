@@ -34,7 +34,7 @@ abstract public class MultiJobListViewColumn extends ListViewColumn {
 
 	@SuppressWarnings("unchecked")
 	private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(JobColumn.class, StatusColumn.class, WeatherColumn.class,
-			LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, BuildButtonColumn.class);
+			LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, ConsoleColumn.class, BuildButtonColumn.class);
 
 	private static final Logger LOGGER = Logger.getLogger(MultiJobListViewColumn.class.getName());
 }
