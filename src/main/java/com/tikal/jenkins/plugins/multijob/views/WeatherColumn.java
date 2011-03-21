@@ -1,6 +1,5 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
-import hudson.Extension;
 import hudson.views.ListViewColumnDescriptor;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -10,7 +9,6 @@ public class WeatherColumn extends MultiJobListViewColumn {
 	public WeatherColumn() {
 	}
 
-	@Extension
 	public static class DescriptorImpl extends ListViewColumnDescriptor {
 		@Override
 		public String getDisplayName() {
