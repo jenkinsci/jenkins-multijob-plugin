@@ -200,7 +200,7 @@ public class MultiJobView extends ListView {
 	private BuildState createBuildState(MultiJobProject project) {
 
 		MultiJobBuild lastBuild = project.getLastBuild();
-		MultiJobBuild previousBuild = lastBuild.getPreviousBuild();
+		MultiJobBuild previousBuild = (lastBuild == null) ? null : lastBuild.getPreviousBuild();
 		MultiJobBuild lastSuccessfulBuild = project.getLastSuccessfulBuild();
 		MultiJobBuild lastFailedBuild = project.getLastFailedBuild();
 		return new BuildState(project.getName(), previousBuild == null ? 0 : previousBuild.getNumber(), lastBuild == null ? 0 : lastBuild.getNumber(),
