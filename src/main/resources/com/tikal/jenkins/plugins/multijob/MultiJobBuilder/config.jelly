@@ -1,23 +1,23 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 		<f:entry title="Phase name" field="phaseName"
-                help="/plugin/tikal-plugin/help-phaseName.html">
+                help="/plugin/jenkins-multijob-plugin/help-phaseName.html">
 			<f:textbox name="phaseName" value="${instance.phaseName}" />
 		</f:entry>
 		<f:entry title="Phase jobs" field="phaseJobs">
     		<f:repeatable field="phaseJobs" noAddButton="true" minimum="1">
     			<table width="100%">
     			<f:entry title="Job name" field="jobName"
-                         help="/plugin/tikal-plugin/help-jobName.html">
+                         help="/plugin/jenkins-multijob-plugin/help-jobName.html">
       				<f:textbox />
     			</f:entry>
 				<f:advanced>
 					<f:entry title="Parameters" field="jobProperties"
-                         help="/plugin/tikal-plugin/help-jobProperties.html">
+                         help="/plugin/jenkins-multijob-plugin/help-jobProperties.html">
 					<f:textarea name="jobProperties" value="${instance.jobProperties}" />
 					</f:entry>
 					<f:entry title="Current job parameters" field="currParams"
-						help="/plugin/tikal-plugin/help-currParams.html">
+						help="/plugin/jenkins-multijob-plugin/help-currParams.html">
   						<f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
   					</f:entry>
 				</f:advanced>
