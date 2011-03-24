@@ -5,7 +5,7 @@
 			<j:when test="${lsBuild!=null}">
 				${lsBuild.timestampString}
 				(
-				<a href="${lsBuild.url}">${lsBuild.displayName}</a>
+				<a href="${jobBaseUrl}${lsBuild.url}">${lsBuild.displayName}</a>
 				)
 			</j:when>
 			<j:otherwise>

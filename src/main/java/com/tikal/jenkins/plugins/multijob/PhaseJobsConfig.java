@@ -4,15 +4,23 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
+import hudson.model.BooleanParameterDefinition;
+import hudson.model.ChoiceParameterDefinition;
 import hudson.model.Describable;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
 import hudson.model.ParameterValue;
+import hudson.model.StringParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.FileParameterValue;
 import hudson.model.Hudson;
+import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterValue;
 import hudson.util.FormValidation;
 
@@ -26,8 +34,7 @@ import org.apache.tools.ant.filters.StringInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-public class PhaseJobsConfig implements
-		Describable<PhaseJobsConfig> {
+public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	private String jobName;
 	private String jobProperties;
@@ -57,9 +64,9 @@ public class PhaseJobsConfig implements
 		this.jobName = jobName;
 	}
 
-   public Descriptor<PhaseJobsConfig> getDescriptor() {
-        return Hudson.getInstance().getDescriptorOrDie(getClass());
-    }
+	public Descriptor<PhaseJobsConfig> getDescriptor() {
+		return Hudson.getInstance().getDescriptorOrDie(getClass());
+	}
 
 	public String getDisplayName() {
 		return getClass().getSimpleName();
@@ -73,41 +80,59 @@ public class PhaseJobsConfig implements
 	}
 
 	@Extension
-    public static class DescriptorImpl extends Descriptor<PhaseJobsConfig> {
-        @Override
-        public String getDisplayName() {
-            return "Phase Jobs Config"; 
-        }
+	public static class DescriptorImpl extends Descriptor<PhaseJobsConfig> {
+		@Override
+		public String getDisplayName() {
+			return "Phase Jobs Config";
+		}
 
-		public AutoCompletionCandidates doAutoCompleteJobName(
-				@QueryParameter String value) {
+		public AutoCompletionCandidates doAutoCompleteJobName(@QueryParameter String value) {
 			AutoCompletionCandidates c = new AutoCompletionCandidates();
 			for (String localJobName : Hudson.getInstance().getJobNames()) {
-				if (localJobName.toLowerCase()
-						.startsWith(value.toLowerCase()))
-						c.add(localJobName);
+				if (localJobName.toLowerCase().startsWith(value.toLowerCase()))
+					c.add(localJobName);
 			}
 			return c;
 		}
-		
+
 		public FormValidation doCheckJobName(@QueryParameter String value) {
 			FormValidation result = FormValidation.errorWithMarkup("Invalid job name");
-			if (value.isEmpty()){
+			if (value.isEmpty()) {
 				result = FormValidation.errorWithMarkup("Job name must not be empty");
 			} else {
 				for (String localJobName : Hudson.getInstance().getJobNames()) {
-					if (localJobName.toLowerCase()
-							.equals(value.toLowerCase()))
-						result=FormValidation.ok();
+					if (localJobName.toLowerCase().equals(value.toLowerCase())) {
+						AbstractProject project = ((AbstractProject) Hudson.getInstance().getItem(localJobName));
+						List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
+						result = FormValidation.ok();
+					}
 				}
-			} 
+			}
 			return result;
 		}
-		
-		 public String doFillJobProperties(@QueryParameter String jobName) {
-			 	
-	            return "fill=in";
-	        }
+
+		public List<ParameterDefinition> getParameterDefinition(AbstractProject project) {
+			List<ParameterDefinition> list = new ArrayList<ParameterDefinition>();
+			Map<JobPropertyDescriptor, JobProperty> map = project.getProperties();
+			for (Map.Entry<JobPropertyDescriptor, JobProperty> entry : map.entrySet()) {
+				JobProperty property = entry.getValue();
+				if (property instanceof ParametersDefinitionProperty) {
+					ParametersDefinitionProperty pdp = (ParametersDefinitionProperty) property;
+					for (ParameterDefinition parameterDefinition : pdp.getParameterDefinitions()) {
+						if (parameterDefinition instanceof StringParameterDefinition || parameterDefinition instanceof BooleanParameterDefinition
+								|| parameterDefinition instanceof ChoiceParameterDefinition) {
+							list.add(parameterDefinition);
+						}
+					}
+				}
+			}
+			return list;
+		}
+
+		public String doFillJobProperties(@QueryParameter String jobName) {
+
+			return "fill=in";
+		}
 
 	}
 
@@ -122,11 +147,10 @@ public class PhaseJobsConfig implements
 		}
 
 		return values;
-		
+
 	}
-	
-	public Action getAction(AbstractBuild build, TaskListener listener)
-			throws IOException, InterruptedException {
+
+	public Action getAction(AbstractBuild build, TaskListener listener) throws IOException, InterruptedException {
 
 		EnvVars env = build.getEnvironment(listener);
 
@@ -135,13 +159,12 @@ public class PhaseJobsConfig implements
 
 		List<ParameterValue> values = new ArrayList<ParameterValue>();
 		for (Map.Entry<Object, Object> entry : p.entrySet()) {
-			values.add(new StringParameterValue(entry.getKey().toString(), env
-					.expand(entry.getValue().toString())));
+			values.add(new StringParameterValue(entry.getKey().toString(), env.expand(entry.getValue().toString())));
 		}
 
 		return new ParametersAction(values);
 	}
-	
+
 	public boolean hasProperties() {
 		return !this.jobProperties.isEmpty();
 	}
