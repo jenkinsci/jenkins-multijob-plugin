@@ -2,26 +2,8 @@ package com.tikal.jenkins.plugins.multijob;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.Action;
-import hudson.model.AutoCompletionCandidates;
-import hudson.model.BooleanParameterDefinition;
-import hudson.model.ChoiceParameterDefinition;
-import hudson.model.Describable;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.ParameterValue;
-import hudson.model.StringParameterDefinition;
-import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import hudson.model.FileParameterValue;
-import hudson.model.Hudson;
-import hudson.model.ParameterDefinition;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
-import hudson.model.StringParameterValue;
+import hudson.model.*;
+import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
@@ -102,16 +84,58 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			} else {
 				for (String localJobName : Hudson.getInstance().getJobNames()) {
 					if (localJobName.toLowerCase().equals(value.toLowerCase())) {
-						AbstractProject project = ((AbstractProject) Hudson.getInstance().getItem(localJobName));
-						List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
-						result = FormValidation.ok();
+                        savePhaseJobConfigParameters(localJobName);
+                        result = FormValidation.ok();
 					}
 				}
 			}
 			return result;
 		}
 
-		public List<ParameterDefinition> getParameterDefinition(AbstractProject project) {
+        private void savePhaseJobConfigParameters(String localJobName) {
+            AbstractProject project = ((AbstractProject) Hudson.getInstance().getItem(localJobName));
+            List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
+            StringBuilder sb = new StringBuilder();
+            for (ParameterDefinition pdef : parameterDefinitions) {
+                String paramValue = null;
+                if (pdef instanceof StringParameterDefinition) {
+                    StringParameterDefinition stringParameterDefinition = (StringParameterDefinition) pdef;
+                    paramValue = stringParameterDefinition.getDefaultParameterValue().value;
+                } else if (pdef instanceof BooleanParameterDefinition) {
+                    BooleanParameterDefinition booleanParameterDefinition = (BooleanParameterDefinition) pdef;
+                    paramValue = String.valueOf(booleanParameterDefinition.getDefaultParameterValue().value);
+                }
+                sb.append(pdef.getName()).append("=").append(paramValue).append("\n");
+            }
+
+            AbstractProject item = getCurrentJob();
+            if (item instanceof MultiJobProject) {
+                MultiJobProject parentProject = (MultiJobProject) item;
+                List<Builder> builders = parentProject.getBuilders();
+                if (builders != null) {
+                    for (Builder builder : builders) {
+                        if (builder instanceof MultiJobBuilder) {
+                            MultiJobBuilder multiJobBuilder = (MultiJobBuilder) builder;
+                            List<PhaseJobsConfig> phaseJobs = multiJobBuilder.getPhaseJobs();
+                            for (PhaseJobsConfig phaseJob : phaseJobs) {
+                                if (phaseJob.getJobName().equals(localJobName)) {
+                                    phaseJob.setJobProperties(sb.toString());
+                                    save();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private AbstractProject getCurrentJob() {
+            String nameUrl = Descriptor.getCurrentDescriptorByNameUrl();
+            String jobName = nameUrl.substring(nameUrl.lastIndexOf("/")+1);
+            return (AbstractProject) Hudson.getInstance().getItem(jobName);
+        }
+
+        public List<ParameterDefinition> getParameterDefinition(AbstractProject project) {
 			List<ParameterDefinition> list = new ArrayList<ParameterDefinition>();
 			Map<JobPropertyDescriptor, JobProperty> map = project.getProperties();
 			for (Map.Entry<JobPropertyDescriptor, JobProperty> entry : map.entrySet()) {

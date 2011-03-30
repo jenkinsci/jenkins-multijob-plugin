@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.401</version>
+		<version>1.403</version>
 	</parent>
 
 	<groupId>com.tikal.jenkins.plugins</groupId>
@@ -12,8 +12,9 @@
 	<version>1.0-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 
-	<properties><!-- <public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url> -->
-		<public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url>
+	<properties>
+        <public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url>
+		<!--<public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url>-->
 	</properties>
 	
 	<repositories>
@@ -21,12 +22,20 @@
 			<id>tikal-public</id>
 			<url>http://dev.tikalk.com/nexus/content/groups/public/</url>
 		</repository>
+		<repository>
+			<id>maven.glassfish.org-public</id>
+			<url>http://maven.glassfish.org/content/groups/public</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
 		<pluginRepository>
 			<id>tikal-public</id>
 			<url>${public.repository.url}</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>maven.glassfish.org-public</id>
+			<url>http://maven.glassfish.org/content/groups/public</url>
 		</pluginRepository>
 	</pluginRepositories>
 
