@@ -6,7 +6,7 @@
 		<artifactId>plugin</artifactId>
 		<version>1.403</version>
 	</parent>
-
+  
 	<groupId>com.tikal.jenkins.plugins</groupId>
 	<artifactId>jenkins-multijob-plugin</artifactId>
 	<version>1.0-SNAPSHOT</version>
