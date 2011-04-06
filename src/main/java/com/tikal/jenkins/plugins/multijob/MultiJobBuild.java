@@ -1,6 +1,8 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.Build;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +13,19 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 	public MultiJobBuild(MultiJobProject project) throws IOException {
 		super(project);
+	}
+
+	ChangeLogSet<? extends Entry> changeLogSet = ChangeLogSet.createEmpty(this);
+
+	@Override
+	public ChangeLogSet<? extends Entry> getChangeSet() {
+		System.out.println("MultiJobBuild.getChangeSet() " + changeLogSet);
+		return changeLogSet != null ? changeLogSet : super.getChangeSet();
+	}
+
+	public void setChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
+		System.out.println("MultiJobBuild.setChangeLogSet() " + changeLogSet);
+		this.changeLogSet = changeLogSet;
 	}
 
 	public MultiJobBuild(MultiJobProject project, File buildDir) throws IOException {

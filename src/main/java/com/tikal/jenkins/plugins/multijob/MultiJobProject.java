@@ -4,15 +4,9 @@ import hudson.Extension;
 import hudson.model.DependencyGraph;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
-import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Project;
-import hudson.util.DescribableList;
-import hudson.views.ListViewColumn;
 
-import java.util.List;
-
-import com.tikal.jenkins.plugins.multijob.views.MultiJobListViewColumn;
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> implements TopLevelItem {
