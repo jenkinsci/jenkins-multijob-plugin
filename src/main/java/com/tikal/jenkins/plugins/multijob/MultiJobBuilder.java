@@ -89,11 +89,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				Build jobBuild = (Build) future.get();
 				Result result = jobBuild.getResult();
 
-				// ChangeLogSet logSet = jobBuild.getChangeSet();
-
 				ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
 				if (changeLogSet != null) {
-					((MultiJobBuild) build).setChangeLogSet(jobBuild.getChangeSet());
+					((MultiJobBuild) build).addChangeLogSet(changeLogSet);
 				}
 
 				listener.getLogger().println(
