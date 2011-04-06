@@ -1,17 +1,13 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.Build;
-import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
@@ -88,30 +84,4 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 					+ buildNumber + "]";
 		}
 	}
-
-	static class MultiJobChangeLogSet extends ChangeLogSet<hudson.scm.ChangeLogSet.Entry> {
-
-		Set<Entry> set = new HashSet<Entry>();
-
-		protected MultiJobChangeLogSet(AbstractBuild<?, ?> build) {
-			super(build);
-		}
-
-		public Iterator<hudson.scm.ChangeLogSet.Entry> iterator() {
-			return set.iterator();
-		}
-
-		@Override
-		public boolean isEmptySet() {
-			// TODO Auto-generated method stub
-			return set.isEmpty();
-		}
-
-		public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
-			for (Entry entry : changeLogSet) {
-				set.add(entry);
-			}
-		}
-	}
-
 }
