@@ -20,7 +20,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	@Override
 	public ChangeLogSet<? extends Entry> getChangeSet() {
 		System.out.println("MultiJobBuild.getChangeSet() " + changeLogSet);
-		return changeLogSet != null ? changeLogSet : super.getChangeSet();
+		return changeLogSet;
 	}
 
 	public void setChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
