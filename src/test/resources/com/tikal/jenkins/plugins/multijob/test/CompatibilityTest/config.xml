@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <version>1.0</version>
+  <numExecutors>2</numExecutors>
+  <mode>NORMAL</mode>
+  <authorizationStrategy class="hudson.security.AuthorizationStrategy$Unsecured"/>
+  <securityRealm class="hudson.security.SecurityRealm$None"/>
+  <jdks/>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+  <clouds/>
+  <slaves/>
+  <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+  <views>
+    <hudson.model.AllView>
+      <owner class="hudson" reference="../../.."/>
+      <name>All</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+    </hudson.model.AllView>
+    <com.tikal.jenkins.plugins.multijob.views.MultiJobView>
+      <owner class="hudson" reference="../../.."/>
+      <name>Reactor</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <jobNames class="tree-set">
+        <comparator class="hudson.util.CaseInsensitiveComparator"/>
+        <string>reactor-1</string>
+        <string>test1</string>
+      </jobNames>
+      <jobFilters/>
+      <columns>
+        <com.tikal.jenkins.plugins.multijob.views.JobColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.StatusColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.WeatherColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.LastSuccessColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.LastFailureColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+      <columns defined-in="com.tikal.jenkins.plugins.multijob.views.MultiJobView">
+        <com.tikal.jenkins.plugins.multijob.views.JobColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.StatusColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.WeatherColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.LastSuccessColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.LastFailureColumn/>
+        <com.tikal.jenkins.plugins.multijob.views.LastDurationColumn/>
+        <hudson.views.BuildButtonColumn/>
+      </columns>
+    </com.tikal.jenkins.plugins.multijob.views.MultiJobView>
+  </views>
+  <primaryView>All</primaryView>
+  <slaveAgentPort>0</slaveAgentPort>
+  <label></label>
+  <nodeProperties/>
+  <globalNodeProperties/>
+  <disabledAdministrativeMonitors/>
+</hudson>
