@@ -111,8 +111,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 	@SuppressWarnings("rawtypes")
 	private void addSubBuild(MultiJobBuild thisBuild, MultiJobProject thisProject, Build jobBuild) {
-		SubBuild subBuild = new SubBuild(thisProject.getName(), thisBuild.getNumber(), jobBuild.getProject().getName(), jobBuild.getNumber());
-		thisBuild.getSubBuilds().add(subBuild);
+		thisBuild.addSubBuild(thisProject.getName(), thisBuild.getNumber(), jobBuild.getProject().getName(), jobBuild.getNumber(), phaseName, jobBuild);
 	}
 
 	@SuppressWarnings("rawtypes")

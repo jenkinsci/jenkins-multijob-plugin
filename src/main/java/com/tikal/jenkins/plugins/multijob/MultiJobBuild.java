@@ -1,13 +1,19 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.Build;
+import hudson.model.Project;
+import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
@@ -19,14 +25,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 	@Override
 	public ChangeLogSet<? extends Entry> getChangeSet() {
-		return changeSets;
+		return super.getChangeSet();
 	}
 
 	public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
 		this.changeSets.addChangeLogSet(changeLogSet);
 	}
 
-	public MultiJobBuild(MultiJobProject project, File buildDir) throws IOException {
+	public MultiJobBuild(MultiJobProject project, File buildDir)
+			throws IOException {
 		super(project, buildDir);
 	}
 
@@ -36,30 +43,113 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		run(new RunnerImpl());
 	}
 
-	protected class RunnerImpl extends Build<MultiJobProject, MultiJobBuild>.RunnerImpl {
+	protected class RunnerImpl extends
+			Build<MultiJobProject, MultiJobBuild>.RunnerImpl {
+
+	}
+
+	public List<SubBuild> getBuilders() {
+
+		MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
+		List<SubBuild> subBuilds = multiJobBuild.getSubBuilds();
+
+		for (SubBuild subBuild : subBuilds) {
+			Run build = getBuild(subBuild);
+			if (build != null) {
+				subBuild.setIcon(build.getIconColor().getImage());
+				subBuild.setDuration(build.getDurationString());
+				subBuild.setUrl(build.getUrl());
+			} else {
+				subBuild.setIcon("grey.png");
+				subBuild.setDuration("not built yet");
+				subBuild.setUrl(null);
+			}
+		}
+
+		return subBuilds;
+	}
+
+	private Run getBuild(SubBuild subBuild) {
+		List<Project> projects = getParent().getParent().getProjects();
+		Run build = null;
+		for (Project project : projects) {
+			List upstreamProjects = project.getUpstreamProjects();
+			if (upstreamProjects.contains(getProject())) {
+				if (subBuild.getJobName().equalsIgnoreCase(project.getName())) {
+					build = project.getBuildByNumber(subBuild.getBuildNumber());
+				}
+			}
+		}
+		return build;
+	}
+
+	public void addSubBuild(String parentJobName, int parentBuildNumber,
+			String jobName, int buildNumber, String phaseName, Build refBuild) {
+
+		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
+				jobName, buildNumber, phaseName);
+
+		getSubBuilds().add(subBuild);
 
 	}
 
 	private List<SubBuild> subBuilds;
 
 	public List<SubBuild> getSubBuilds() {
-		if (subBuilds == null) {
+
+		if (subBuilds == null)
 			subBuilds = new ArrayList<SubBuild>();
-		}
+
 		return subBuilds;
 	}
 
 	public static class SubBuild {
+
 		final String parentJobName;
 		final int parentBuildNumber;
 		final String jobName;
 		final int buildNumber;
+		final String phaseName;
 
-		public SubBuild(String parentJobName, int parentBuildNumber, String jobName, int buildNumber) {
+		private String icon;
+		private String duration;
+		private String url;
+
+		public SubBuild(String parentJobName, int parentBuildNumber,
+				String jobName, int buildNumber, String phaseName) {
 			this.parentJobName = parentJobName;
 			this.parentBuildNumber = parentBuildNumber;
 			this.jobName = jobName;
 			this.buildNumber = buildNumber;
+			this.phaseName = phaseName;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
+		public void setDuration(String duration) {
+			this.duration = duration;
+		}
+
+		public void setIcon(String icon) {
+			this.icon = icon;
+		}
+
+		public String getDuration() {
+			return duration;
+		}
+
+		public String getIcon() {
+			return icon;
+		}
+
+		public String getUrl() {
+			return url;
+		}
+
+		public String getPhaseName() {
+			return phaseName;
 		}
 
 		public String getParentJobName() {
@@ -80,8 +170,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 		@Override
 		public String toString() {
-			return "SubBuild [parentJobName=" + parentJobName + ", parentBuildNumber=" + parentBuildNumber + ", jobName=" + jobName + ", buildNumber="
-					+ buildNumber + "]";
+			return "SubBuild [parentJobName=" + parentJobName
+					+ ", parentBuildNumber=" + parentBuildNumber + ", jobName="
+					+ jobName + ", buildNumber=" + buildNumber + "]";
 		}
 	}
 }

@@ -1,0 +1,34 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:p="/lib/hudson/project">
+
+
+	<table border="0" style="margin-top: 1em; margin-left:1em;">
+
+	 <j:forEach var="builder" items="${it.getBuilders()}">
+	 		<tr>
+	 			<td class="no-wrap">
+	 				<a href="${m.key.shortUrl}">
+                		<img src="${imagesURL}/16x16/${builder.icon}" alt=""/>
+              		</a>
+	 			</td>
+	 			<td class="no-wrap">${builder.phaseName}</td>
+	 			<td class="no-wrap">${builder.jobName}</td>
+	 			<td class="no-wrap">
+	 				<j:choose>
+		 				<j:when test="${builder.url.length() > 0}">
+			 				<a href="/${builder.url}">
+		                		build #${builder.buildNumber}
+		              		</a>
+	              		</j:when>
+	              	</j:choose>
+	 			</td>
+	 			<td class="no-wrap">( ${builder.duration} )</td>
+	 		</tr>
+     </j:forEach>
+
+	</table>
+
+	<p:upstream-downstream />
+
+</j:jelly>
