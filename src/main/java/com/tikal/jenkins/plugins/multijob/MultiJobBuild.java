@@ -1,6 +1,7 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.Build;
+import hudson.model.AbstractProject;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
@@ -70,13 +71,17 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	}
 
 	private Run getBuild(SubBuild subBuild) {
-		List<Project> projects = getParent().getParent().getProjects();
+
 		Run build = null;
-		for (Project project : projects) {
-			List upstreamProjects = project.getUpstreamProjects();
+		List<AbstractProject> downstreamProjects = getProject()
+				.getDownstreamProjects();
+		for (AbstractProject downstreamProject : downstreamProjects) {
+			List upstreamProjects = downstreamProject.getUpstreamProjects();
 			if (upstreamProjects.contains(getProject())) {
-				if (subBuild.getJobName().equalsIgnoreCase(project.getName())) {
-					build = project.getBuildByNumber(subBuild.getBuildNumber());
+				if (subBuild.getJobName().equalsIgnoreCase(
+						downstreamProject.getName())) {
+					build = downstreamProject.getBuildByNumber(subBuild
+							.getBuildNumber());
 				}
 			}
 		}
