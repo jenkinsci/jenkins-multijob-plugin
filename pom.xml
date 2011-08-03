@@ -19,12 +19,12 @@
 	
 	<repositories>
 		<repository>
-			<id>tikal-public</id>
-			<url>http://dev.tikalk.com/nexus/content/groups/public/</url>
-		</repository>
-		<repository>
 			<id>maven.glassfish.org-public</id>
 			<url>http://maven.glassfish.org/content/groups/public</url>
+		</repository>
+		<repository>
+			<id>tikal-public</id>
+			<url>http://dev.tikalk.com/nexus/content/groups/public/</url>
 		</repository>
 	</repositories>
 
