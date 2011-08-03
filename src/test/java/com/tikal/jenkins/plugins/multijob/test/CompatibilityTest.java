@@ -31,7 +31,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 
-public class CompatibilityTest extends HudsonTestCase {
+public class CompatibilityTest extends MultiJobProjectTestCase {
 
 	@LocalData
 	public void test() throws Exception {

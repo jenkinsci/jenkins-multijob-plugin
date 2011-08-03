@@ -71,6 +71,10 @@ public class Plugin extends hudson.Plugin {
 								changed |= multiJobBuilder.onJobDeleted(oldName);
 								if (changed)
 									try {
+										int phaseJobsCounter = multiJobBuilder.getPhaseJobs().size();
+										if(phaseJobsCounter==0){
+											project.getBuildersList().remove(multiJobBuilder);
+										}
 										project.save();
 									} catch (IOException e) {
 										Logger.getLogger(
