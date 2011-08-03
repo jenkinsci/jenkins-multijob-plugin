@@ -9,6 +9,7 @@ import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
+import hudson.model.ParameterValue;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -144,6 +145,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 	public void setPhaseJobs(List<PhaseJobsConfig> phaseJobs) {
 		this.phaseJobs = phaseJobs;
+	}
+	public boolean phaseNameExist(String phaseName){
+		 for (PhaseJobsConfig phaseJob : phaseJobs) {
+             if (phaseJob.getDisplayName().equals(phaseName)){ 
+            	  return true;	 
+             }
+		 }
+		return false;
 	}
 
 	@Extension
