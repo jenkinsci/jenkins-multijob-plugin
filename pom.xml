@@ -1,4 +1,3 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -7,6 +6,12 @@
 		<artifactId>plugin</artifactId>
 		<version>1.403</version>
 	</parent>
+	<!-- parent>
+		<groupId>org.jvnet.hudson.plugins</groupId>
+		<artifactId>hudson-plugin-parent</artifactId>
+		<version>2.1.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent-->
  
 	<groupId>com.tikal.jenkins.plugins</groupId>
 	<artifactId>jenkins-multijob-plugin</artifactId>
@@ -14,8 +19,8 @@
 	<packaging>hpi</packaging>
 
 	<properties>
-        <public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url>
-		<!--<public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url>-->
+        <!-- public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url-->
+		<public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url>
 	</properties>
 	
 	<repositories>
