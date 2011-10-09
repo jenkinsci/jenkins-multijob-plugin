@@ -1,6 +1,7 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Project;
 import hudson.model.Run;
@@ -89,7 +90,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	}
 
 	public void addSubBuild(String parentJobName, int parentBuildNumber,
-			String jobName, int buildNumber, String phaseName, Build refBuild) {
+			String jobName, int buildNumber, String phaseName, AbstractBuild refBuild) {
 
 		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
 				jobName, buildNumber, phaseName);

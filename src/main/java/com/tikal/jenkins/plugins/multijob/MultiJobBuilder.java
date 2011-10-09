@@ -71,7 +71,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 		}
 
-		List<Future<AbstractBuild>> futuresList = new ArrayList<Future<AbstractBuild>>();
+		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
 
 		for (AbstractProject project : projects.keySet()) {
 			listener.getLogger().printf(
@@ -94,7 +94,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				future.cancel(true);
 			}
 			try {
-				Build jobBuild = (Build) future.get();
+				AbstractBuild jobBuild = (AbstractBuild) future.get();
 				Result result = jobBuild.getResult();
 
 				ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
@@ -128,7 +128,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 	@SuppressWarnings("rawtypes")
 	private void addSubBuild(MultiJobBuild thisBuild,
-			MultiJobProject thisProject, Build jobBuild) {
+			MultiJobProject thisProject, AbstractBuild jobBuild) {
 		thisBuild.addSubBuild(thisProject.getName(), thisBuild.getNumber(),
 				jobBuild.getProject().getName(), jobBuild.getNumber(),
 				phaseName, jobBuild);
@@ -256,24 +256,24 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 		SUCCESSFUL("Successful") {
 			@Override
-			public boolean isContinue(Build build) {
+			public boolean isContinue(AbstractBuild build) {
 				return build.getResult().equals(Result.SUCCESS);
 			}
 		},
 		UNSTABLE("Stable or Unstable but not Failed") {
 			@Override
-			public boolean isContinue(Build build) {
+			public boolean isContinue(AbstractBuild build) {
 				return build.getResult().isBetterOrEqualTo(Result.UNSTABLE);
 			}
 		},
 		COMPLETED("Complete (always continue)") {
 			@Override
-			public boolean isContinue(Build build) {
+			public boolean isContinue(AbstractBuild build) {
 				return build.getResult().isBetterOrEqualTo(Result.FAILURE);
 			}
 		};
 
-		abstract public boolean isContinue(Build build);
+		abstract public boolean isContinue(AbstractBuild build);
 
 		private ContinuationCondition(String label) {
 			this.label = label;
