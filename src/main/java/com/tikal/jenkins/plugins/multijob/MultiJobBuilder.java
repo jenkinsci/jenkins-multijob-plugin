@@ -6,6 +6,7 @@ import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.Build;
+import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
@@ -70,7 +71,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 		}
 
-		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
+		List<Future<AbstractBuild>> futuresList = new ArrayList<Future<AbstractBuild>>();
 
 		for (AbstractProject project : projects.keySet()) {
 			listener.getLogger().printf(
