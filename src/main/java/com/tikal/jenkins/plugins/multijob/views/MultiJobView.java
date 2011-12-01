@@ -47,6 +47,7 @@ public class MultiJobView extends ListView {
 	@DataBoundConstructor
 	public MultiJobView(String name) {
 		super(name);
+		initColumns();
 	}
 
 	public MultiJobView(String name, ViewGroup owner) {
