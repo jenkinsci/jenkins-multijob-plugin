@@ -29,6 +29,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.ServletException;
 
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -47,7 +48,6 @@ public class MultiJobView extends ListView {
 	@DataBoundConstructor
 	public MultiJobView(String name) {
 		super(name);
-		initColumns();
 	}
 
 	public MultiJobView(String name, ViewGroup owner) {
@@ -172,7 +172,7 @@ public class MultiJobView extends ListView {
 			for (SubBuild subBuild : subBuilds) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					AbstractBuild build = (AbstractBuild) project.getBuildByNumber(subBuild.getBuildNumber());
-					if (Result.SUCCESS.equals(build.getResult())) {
+					if (build != null && Result.SUCCESS.equals(build.getResult())) {
 						lastSuccessBuildNumber = subBuild.getBuildNumber();
 						break;
 					} else {
@@ -185,8 +185,8 @@ public class MultiJobView extends ListView {
 			List<SubBuild> subBuilds = lastParentFailureBuild.getSubBuilds();
 			for (SubBuild subBuild : subBuilds) {
 				if (subBuild.getJobName().equals(project.getName())) {
-					AbstractBuild build = (AbstractBuild) project.getBuildByNumber(subBuild.getBuildNumber());
-					if (Result.FAILURE.equals(build.getResult())) {
+					AbstractBuild build = (AbstractBuild)   project.getBuildByNumber(subBuild.getBuildNumber());
+					if (build != null && Result.FAILURE.equals(((AbstractBuild)build).getResult())) {
 						lastFailureBuildNumber = subBuild.getBuildNumber();
 						break;
 					} else {
