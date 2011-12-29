@@ -84,7 +84,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			} else {
 				for (String localJobName : Hudson.getInstance().getJobNames()) {
 					if (localJobName.toLowerCase().equals(value.toLowerCase())) {
-                        savePhaseJobConfigParameters(localJobName);
+                        //savePhaseJobConfigParameters(localJobName);
                         result = FormValidation.ok();
 					}
 				}
