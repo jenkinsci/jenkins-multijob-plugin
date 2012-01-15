@@ -13,37 +13,40 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent-->
  
-	<groupId>com.tikal.jenkins.plugins</groupId>
 	<artifactId>jenkins-multijob-plugin</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>hpi</packaging>
+	<name>Jenkins Multijob plugin</name>
+	<description>Enabling full hierarchy of Jenkins jobs</description>
+	<url>http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin</url>
 
-	<properties>
-        <!-- public.repository.url>http://maven.glassfish.org/content/groups/public/</public.repository.url-->
-		<public.repository.url>http://dev.tikalk.com/nexus/content/groups/public/</public.repository.url>
-	</properties>
-	
-	<repositories>
-		<repository>
-			<id>maven.glassfish.org-public</id>
-			<url>http://maven.glassfish.org/content/groups/public</url>
-		</repository>
-		<repository>
-			<id>tikal-public</id>
-			<url>http://dev.tikalk.com/nexus/content/groups/public/</url>
-		</repository>
-	</repositories>
+	<distributionManagement>
+    		<repository>
+      			<id>maven.jenkins-ci.org</id>
+      			<url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+    		</repository>
+  	</distributionManagement>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>tikal-public</id>
-			<url>${public.repository.url}</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>maven.glassfish.org-public</id>
-			<url>http://maven.glassfish.org/content/groups/public</url>
-		</pluginRepository>
-	</pluginRepositories>
+
+  	<developers>
+    		<developer>
+      			<id>ronil</id>
+      			<name>Roni Licht</name>
+      			<email>roni@tikalk.com</email>
+    		</developer>
+		<developer>
+                        <id>itaior</id>
+                        <name>Itai Or</name>
+                        <email>itai@tikalk.com</email>
+                </developer>
+  	</developers>
+
+	<scm>
+		<connection>scm:git:ssh://github.com:jenkinsci/tikal-multijob-plugin.git</connection>
+    		<developerConnection>scm:git:ssh://git@git@github.com:jenkinsci/tikal-multijob-plugin.git</developerConnection>
+    		<url>https://github.com/jenkinsci/tikal-multijob-plugin.git</url>
+	</scm>
+
 
 	<dependencies>
 		<dependency>
