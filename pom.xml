@@ -28,6 +28,11 @@
 
 
   	<developers>
+		<developer>
+                        <id>alex-n</id>
+                        <name>Alex Nickolaevsky</name>
+                        <email>alex@tikalk.com</email>
+                </developer>
     		<developer>
       			<id>ronil</id>
       			<name>Roni Licht</name>
