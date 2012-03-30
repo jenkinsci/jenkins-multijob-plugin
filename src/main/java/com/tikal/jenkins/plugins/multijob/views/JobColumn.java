@@ -16,5 +16,8 @@ public class JobColumn extends MultiJobListViewColumn {
 		public String getDisplayName() {
 			return " MultiJob - Job";
 		}
+		public boolean shownByDefault() {
+	        return false;
+	    }		
 	}
 }

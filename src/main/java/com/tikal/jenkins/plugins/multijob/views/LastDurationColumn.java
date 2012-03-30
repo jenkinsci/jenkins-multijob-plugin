@@ -16,5 +16,8 @@ public class LastDurationColumn extends MultiJobListViewColumn {
 		public String getDisplayName() {
 			return "MultiJob - Last Duration";
 		}
+		public boolean shownByDefault() {
+	        return false;
+	    }		
 	}
 }
