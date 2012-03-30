@@ -1,12 +1,8 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.Extension;
-import hudson.model.Descriptor;
-import hudson.views.ListViewColumn;
 import hudson.views.ListViewColumnDescriptor;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class ConsoleColumn extends MultiJobListViewColumn {
@@ -20,5 +16,8 @@ public class ConsoleColumn extends MultiJobListViewColumn {
 		public String getDisplayName() {
 			return "MultiJob - Console";
 		}
+		public boolean shownByDefault() {
+	        return false;
+	    }
 	}
 }

@@ -16,5 +16,8 @@ public class LastSuccessColumn extends MultiJobListViewColumn {
 		public String getDisplayName() {
 			return "MultiJob - Last Success";
 		}
+		public boolean shownByDefault() {
+	        return false;
+	    }		
 	}
 }
