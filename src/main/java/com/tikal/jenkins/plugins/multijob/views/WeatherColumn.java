@@ -16,5 +16,8 @@ public class WeatherColumn extends MultiJobListViewColumn {
 		public String getDisplayName() {
 			return "MultiJob - Weather";
 		}
+		public boolean shownByDefault() {
+	        return false;
+	    }
 	}
 }

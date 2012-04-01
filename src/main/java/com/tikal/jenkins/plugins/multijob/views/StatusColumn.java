@@ -16,5 +16,8 @@ public class StatusColumn extends MultiJobListViewColumn {
 		public String getDisplayName() {
 			return "MultiJob  - Status";
 		}
+		public boolean shownByDefault() {
+	        return false;
+	    }
 	}
 }
