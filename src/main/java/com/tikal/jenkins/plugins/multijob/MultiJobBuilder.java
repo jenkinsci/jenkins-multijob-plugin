@@ -6,11 +6,9 @@ import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.Build;
-import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
-import hudson.model.ParameterValue;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -105,8 +103,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				listener.getLogger().println(
 						"Finished Build : "
 								+ HyperlinkNote.encodeTo(
-										"/" + jobBuild.getUrl() + "/",
-										String.valueOf(jobBuild.getNumber()))
+										"/" + jobBuild.getUrl() /*+ "/"*/,
+										String.valueOf(jobBuild.getDisplayName()))
 								+ " of Job : "
 								+ HyperlinkNote.encodeTo('/' + jobBuild
 										.getProject().getUrl(), jobBuild
