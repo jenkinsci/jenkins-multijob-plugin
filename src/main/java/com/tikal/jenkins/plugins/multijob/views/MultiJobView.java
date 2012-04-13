@@ -172,11 +172,9 @@ public class MultiJobView extends ListView {
 			for (SubBuild subBuild : subBuilds) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					AbstractBuild build = (AbstractBuild) project.getBuildByNumber(subBuild.getBuildNumber());
-					if (build != null && Result.SUCCESS.equals(build.getResult())) {
+					if (build != null) {
 						lastSuccessBuildNumber = subBuild.getBuildNumber();
 						break;
-					} else {
-						lastParentSuccessBuild = multiJobProject.getBuildByNumber(parentBuildState.getPreviousBuildNumber());
 					}
 				}
 			}
@@ -186,41 +184,41 @@ public class MultiJobView extends ListView {
 			for (SubBuild subBuild : subBuilds) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					AbstractBuild build = (AbstractBuild)   project.getBuildByNumber(subBuild.getBuildNumber());
-					if (build != null && Result.FAILURE.equals(((AbstractBuild)build).getResult())) {
+					if (build != null) {
 						lastFailureBuildNumber = subBuild.getBuildNumber();
 						break;
-					} else {
-						lastParentFailureBuild = multiJobProject.getBuildByNumber(parentBuildState.getPreviousBuildNumber());
 					}
 				}
 			}
 		}
 		
 		//Fallback for example after a restart.
-        if (lastSuccessBuildNumber == 0) {
-            if (null != project.getLastSuccessfulBuild()) {
-            	lastSuccessBuildNumber = project.getLastSuccessfulBuild().getNumber();
-            }
-        }
+		if (lastSuccessBuildNumber == 0)
+		{
+			if (null != project.getLastSuccessfulBuild())
+				lastSuccessBuildNumber = project.getLastSuccessfulBuild().getNumber();
+		}
 
-        if (lastFailureBuildNumber == 0) {
-            if (null != project.getLastFailedBuild()) {
-                lastFailureBuildNumber = project.getLastFailedBuild().getNumber();
-            }
-        }
+		if (lastFailureBuildNumber == 0)
+		{
+			if (null != project.getLastFailedBuild())
+				lastFailureBuildNumber = project.getLastFailedBuild().getNumber();
+		}
 
-        if (lastBuildNumber == 0) {
-            if (null != project.getLastBuild()) {
-                lastBuildNumber = project.getLastBuild().getNumber();
-            }
-        }
-		
+		if (lastBuildNumber == 0)
+		{
+	
+			if (null != project.getLastBuild())
+				lastBuildNumber = project.getLastBuild().getNumber();
+		}
+
 		return new BuildState(project.getName(), previousBuildNumber, lastBuildNumber, lastSuccessBuildNumber, lastFailureBuildNumber);
 	}
 
 	private BuildState createBuildState(MultiJobProject project) {
+
 		MultiJobBuild lastBuild = project.getLastBuild();
-		MultiJobBuild previousBuild = (lastBuild == null ? null : lastBuild.getPreviousBuild());
+		MultiJobBuild previousBuild = lastBuild == null ? null : lastBuild.getPreviousBuild();
 		MultiJobBuild lastSuccessfulBuild = project.getLastSuccessfulBuild();
 		MultiJobBuild lastFailedBuild = project.getLastFailedBuild();
 		return new BuildState(project.getName(), previousBuild == null ? 0 : previousBuild.getNumber(), lastBuild == null ? 0 : lastBuild.getNumber(),

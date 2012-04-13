@@ -1,18 +1,13 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
-	xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
 	<j:set var="lsBuild" value="${job.getLastSuccessfulBuild()}" />
 	<td data="${lsBuild.timestampString2 ?: '-'}">
 		<j:choose>
 			<j:when test="${lsBuild!=null}">
-				${lsBuild.timestampString}
-				(
-				<a href="${jobBaseUrl}${lsBuild.url}">${lsBuild.displayName}</a>
-				)
+				<a href="${jobBaseUrl}${lsBuild.url}">${lsBuild.timestampString}(${lsBuild.displayName})</a>
 			</j:when>
 			<j:otherwise>
 				<j:choose>
-					<j:when test="${job.phase}"></j:when>
+					<j:when test="${job.phase}"/>
 					<j:otherwise>
 						${%N/A}
 					</j:otherwise>
