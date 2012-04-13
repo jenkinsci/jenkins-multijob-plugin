@@ -172,11 +172,9 @@ public class MultiJobView extends ListView {
 			for (SubBuild subBuild : subBuilds) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					AbstractBuild build = (AbstractBuild) project.getBuildByNumber(subBuild.getBuildNumber());
-					if (build != null && Result.SUCCESS.equals(build.getResult())) {
+					if (build != null) {
 						lastSuccessBuildNumber = subBuild.getBuildNumber();
 						break;
-					} else {
-						lastParentSuccessBuild = multiJobProject.getBuildByNumber(parentBuildState.getPreviousBuildNumber());
 					}
 				}
 			}
@@ -186,11 +184,9 @@ public class MultiJobView extends ListView {
 			for (SubBuild subBuild : subBuilds) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					AbstractBuild build = (AbstractBuild)   project.getBuildByNumber(subBuild.getBuildNumber());
-					if (build != null && Result.FAILURE.equals(((AbstractBuild)build).getResult())) {
+					if (build != null) {
 						lastFailureBuildNumber = subBuild.getBuildNumber();
 						break;
-					} else {
-						lastParentFailureBuild = multiJobProject.getBuildByNumber(parentBuildState.getPreviousBuildNumber());
 					}
 				}
 			}

@@ -1,0 +1,18 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+	<j:set var="lsBuild" value="${job.getLastSuccessfulBuild()}" />
+	<td data="${lsBuild.timestampString2 ?: '-'}">
+		<j:choose>
+			<j:when test="${lsBuild!=null}">
+				<t:ballColorTd it="${lsBuild.iconColor}" />
+			</j:when>
+			<j:otherwise>
+				<j:choose>
+					<j:when test="${job.phase}"/>
+					<j:otherwise>
+						<t:ballColorTd it="${job.iconColor}" />
+					</j:otherwise>
+				</j:choose>
+			</j:otherwise>
+		</j:choose>
+	</td>
+</j:jelly>
