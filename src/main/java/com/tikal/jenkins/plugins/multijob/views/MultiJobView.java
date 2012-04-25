@@ -192,26 +192,6 @@ public class MultiJobView extends ListView {
 			}
 		}
 		
-		//Fallback for example after a restart.
-		if (lastSuccessBuildNumber == 0)
-		{
-			if (null != project.getLastSuccessfulBuild())
-				lastSuccessBuildNumber = project.getLastSuccessfulBuild().getNumber();
-		}
-
-		if (lastFailureBuildNumber == 0)
-		{
-			if (null != project.getLastFailedBuild())
-				lastFailureBuildNumber = project.getLastFailedBuild().getNumber();
-		}
-
-		if (lastBuildNumber == 0)
-		{
-	
-			if (null != project.getLastBuild())
-				lastBuildNumber = project.getLastBuild().getNumber();
-		}
-
 		return new BuildState(project.getName(), previousBuildNumber, lastBuildNumber, lastSuccessBuildNumber, lastFailureBuildNumber);
 	}
 
