@@ -5,16 +5,16 @@ import hudson.views.ListViewColumnDescriptor;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class LastSuccessConsoleColumn extends MultiJobListViewColumn {
+public class LastBuildConsoleColumn extends MultiJobListViewColumn {
 	@DataBoundConstructor
-	public LastSuccessConsoleColumn() {
+	public LastBuildConsoleColumn() {
 	}
 
     @Extension
 	public static class DescriptorImpl extends ListViewColumnDescriptor {
 		@Override
 		public String getDisplayName() {
-			return "MultiJob - Last Success Console";
+			return "MultiJob - Last Build Console";
 		}
 		public boolean shownByDefault() {
 	        return false;

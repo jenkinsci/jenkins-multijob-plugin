@@ -1,9 +1,9 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<j:set var="lsBuild" value="${job.getLastSuccessfulBuild()}" />
-	<td data="${lsBuild.timestampString2 ?: '-'}">
+	<j:set var="lBuild" value="${job.getLastBuild()}"/>
+	<td data="${lBuild.timestampString2 ?: '-'}">
 		<j:choose>
-			<j:when test="${lsBuild!=null}">
-				<a href="${jobBaseUrl}${lsBuild.url}console">
+			<j:when test="${lBuild!=null}">
+				<a href="${jobBaseUrl}${lBuild.url}console">
 					<img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}" alt="${%Console output}" border="0" />
 				</a>		
 			</j:when>
