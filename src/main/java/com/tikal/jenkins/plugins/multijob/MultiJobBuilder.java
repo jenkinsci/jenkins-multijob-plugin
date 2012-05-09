@@ -84,7 +84,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			Future future = project.scheduleBuild2(project.getQuietPeriod(),
 					new UpstreamCause((Run) build),
 					actions.toArray(new Action[0]));
-			if (future != null) {
+			if (future != null) 
+			{
+				try {
+					AbstractBuild jobBuild = (AbstractBuild) future.get();
+					addSubBuild(thisBuild, thisProject, jobBuild);
+				} catch (ExecutionException e) {}
+				
 				futuresList.add(future);
 			}
 		}
@@ -118,7 +124,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				if (!continuationCondition.isContinue(jobBuild)) {
 					failed = true;
 				}
-				addSubBuild(thisBuild, thisProject, jobBuild);
+				
 			} catch (ExecutionException e) {
 				failed = true;
 			}
