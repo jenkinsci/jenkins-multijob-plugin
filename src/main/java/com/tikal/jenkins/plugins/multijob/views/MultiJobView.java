@@ -42,9 +42,6 @@ import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 
 public class MultiJobView extends ListView {
 
-	private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(this,
-			MultiJobListViewColumn.createDefaultInitialColumnList());
-
 	@DataBoundConstructor
 	public MultiJobView(String name) {
 		super(name);
@@ -52,11 +49,6 @@ public class MultiJobView extends ListView {
 
 	public MultiJobView(String name, ViewGroup owner) {
 		super(name, owner);
-	}
-
-	@Override
-	public Iterable<ListViewColumn> getColumns() {
-		return columns;
 	}
 
 	@Extension
@@ -82,8 +74,11 @@ public class MultiJobView extends ListView {
 	}
 
 	@Override
-	public List<TopLevelItem> getItems() {
-		Collection<TopLevelItem> items = Hudson.getInstance().getItems();
+	public List<TopLevelItem> getItems() 
+	{
+        List<TopLevelItem> items = super.getItems ();
+        
+		//Expand MultiProjects
 		List<TopLevelItem> out = new ArrayList<TopLevelItem>();
 		for (TopLevelItem item : items) {
 			if (item instanceof MultiJobProject) {
@@ -92,7 +87,12 @@ public class MultiJobView extends ListView {
 					addTopLevelProject(project, out);
 				}
 			}
+			else
+			{
+				out.add (item);
+			}
 		}
+	
 		return out;
 	}
 
@@ -206,7 +206,9 @@ public class MultiJobView extends ListView {
 	}
 
 	@Override
-	protected void submit(StaplerRequest req) throws ServletException, FormException, IOException {
+	protected void submit(StaplerRequest req) throws ServletException, FormException, IOException 
+	{
+			super.submit (req);
 	}
 
 	protected void initColumns() {
