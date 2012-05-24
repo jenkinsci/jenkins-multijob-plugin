@@ -95,6 +95,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
 				jobName, buildNumber, phaseName);
 
+		for (SubBuild subbuild : getSubBuilds ())
+		{
+			if (subbuild.getJobName().equals(jobName))
+			{
+				getSubBuilds ().remove (subbuild);
+				break;
+			}
+		}
+		
 		getSubBuilds().add(subBuild);
 
 	}
