@@ -1,0 +1,18 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+	<j:set var="lBuild" value="${job.getLastBuild()}"/>
+	<td data="${lBuild.timestampString2 ?: '-'}">
+		<j:choose>
+			<j:when test="${lBuild!=null}">
+				<a href="${jobBaseUrl}${lBuild.url}">${lBuild.timestampString}(${lBuild.displayName})</a>			
+			</j:when>
+			<j:otherwise>
+				<j:choose>
+					<j:when test="${job.phase}"/>
+					<j:otherwise>
+						${%N/A}
+					</j:otherwise>
+				</j:choose>
+			</j:otherwise>
+		</j:choose>
+	</td>
+</j:jelly>
