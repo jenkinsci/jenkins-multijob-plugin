@@ -35,7 +35,8 @@ public class ProjectWrapper extends AbstractWrapper {
 
 	final int nestLevel;
 
-	public ProjectWrapper(MultiJobProject multijob, AbstractProject project, BuildState buildState, int nestLevel) {
+	public ProjectWrapper(MultiJobProject multijob, AbstractProject project,
+			BuildState buildState, int nestLevel) {
 		this.project = project;
 		this.multijob = multijob;
 		this.nestLevel = nestLevel;
@@ -77,7 +78,8 @@ public class ProjectWrapper extends AbstractWrapper {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+	public void onLoad(ItemGroup<? extends Item> parent, String name)
+			throws IOException {
 		project.onLoad(parent, name);
 	}
 
@@ -121,7 +123,8 @@ public class ProjectWrapper extends AbstractWrapper {
 		return project.getACL();
 	}
 
-	public void checkPermission(Permission permission) throws AccessDeniedException {
+	public void checkPermission(Permission permission)
+			throws AccessDeniedException {
 		project.checkPermission(permission);
 	}
 
@@ -138,7 +141,8 @@ public class ProjectWrapper extends AbstractWrapper {
 	}
 
 	public TopLevelItemDescriptor getDescriptor() {
-		return (TopLevelItemDescriptor) project.getDescriptorByName(project.getClass().getName());
+		return (TopLevelItemDescriptor) project.getDescriptorByName(project
+				.getClass().getName());
 	}
 
 	Run findLastBuildForResult(Result result) {
@@ -146,10 +150,12 @@ public class ProjectWrapper extends AbstractWrapper {
 			return null;
 		}
 		if (Result.SUCCESS.equals(result)) {
-			return project.getBuildByNumber(buildState.getLastSuccessBuildNumber());
+			return project.getBuildByNumber(buildState
+					.getLastSuccessBuildNumber());
 		}
 		if (Result.FAILURE.equals(result)) {
-			return project.getBuildByNumber(buildState.getLastFailureBuildNumber());
+			return project.getBuildByNumber(buildState
+					.getLastFailureBuildNumber());
 		}
 		return project.getBuildByNumber(buildState.getLastBuildNumber());
 	}
@@ -205,6 +211,18 @@ public class ProjectWrapper extends AbstractWrapper {
 
 	public boolean isBuildable() {
 		return multijob == null && getProject().isBuildable();
+	}
+
+	@Override
+	public String getRelativeNameFrom(ItemGroup g) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getRelativeNameFrom(Item item) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

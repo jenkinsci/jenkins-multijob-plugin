@@ -53,7 +53,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		this.phaseJobs = Util.fixNull(phaseJobs);
 		this.continuationCondition = continuationCondition;
 	}
-
+    
+	
+	
 	@Override
 	@SuppressWarnings("rawtypes")
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
@@ -78,6 +80,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 					"Starting build job %s.\n",
 					HyperlinkNote.encodeTo('/' + project.getUrl(),
 							project.getFullName()));
+			      
 			PhaseJobsConfig projectConfig = projects.get(project);
 			List<Action> actions = new ArrayList<Action>();
 			prepareActions(build, project, projectConfig, listener, actions);
@@ -87,6 +90,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			if (future != null) {
 				futuresList.add(future);
 			}
+			
 		}
 		boolean failed = false;
 		for (Future future : futuresList) {
@@ -95,9 +99,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 			try {
 				AbstractBuild jobBuild = (AbstractBuild) future.get();
+				
 				Result result = jobBuild.getResult();
 
 				ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
+				//jobBuild.getArtifacts()
 				if (changeLogSet != null) {
 					((MultiJobBuild) build).addChangeLogSet(changeLogSet);
 				}
@@ -175,6 +181,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		 }
 		return false;
 	}
+	
+	
 
 	@Extension
 	public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -203,6 +211,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		}
 
 	}
+	
+	
+
 
 	@SuppressWarnings("rawtypes")
 	public void buildDependencyGraph(AbstractProject owner,
@@ -285,6 +296,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			return label;
 		}
 	}
+	
+	
 
 	public ContinuationCondition getContinuationCondition() {
 		return continuationCondition;

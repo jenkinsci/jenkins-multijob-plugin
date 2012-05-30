@@ -1,6 +1,8 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.model.BallColor;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -57,8 +59,10 @@ public class PhaseWrapper extends AbstractWrapper {
 		Result result = null;
 		AbstractBuild worseBuild = null;
 		for (BuildState buildState : childrenBuildState) {
-			AbstractProject project = (AbstractProject) Hudson.getInstance().getItem(buildState.getJobName());
-			AbstractBuild build = (AbstractBuild) project.getBuildByNumber(buildState.getLastBuildNumber());
+			AbstractProject project = (AbstractProject) Hudson.getInstance()
+					.getItem(buildState.getJobName());
+			AbstractBuild build = (AbstractBuild) project
+					.getBuildByNumber(buildState.getLastBuildNumber());
 			if (build != null) {
 				if (result == null) {
 					result = build.getResult();
@@ -97,5 +101,17 @@ public class PhaseWrapper extends AbstractWrapper {
 
 	public void addChildBuildState(BuildState jobBuildState) {
 		childrenBuildState.add(jobBuildState);
+	}
+
+	@Override
+	public String getRelativeNameFrom(ItemGroup g) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getRelativeNameFrom(Item item) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

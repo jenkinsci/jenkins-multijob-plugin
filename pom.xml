@@ -1,54 +1,51 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.403</version>
+		<version>1.465</version>
 	</parent>
-	<!-- parent>
-		<groupId>org.jvnet.hudson.plugins</groupId>
-		<artifactId>hudson-plugin-parent</artifactId>
-		<version>2.1.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent-->
- 
+	<!-- parent> <groupId>org.jvnet.hudson.plugins</groupId> <artifactId>hudson-plugin-parent</artifactId> 
+		<version>2.1.0</version> <relativePath>../pom.xml</relativePath> </parent -->
+
 	<artifactId>jenkins-multijob-plugin</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 	<name>Jenkins Multijob plugin</name>
 	<description>Enabling full hierarchy of Jenkins jobs</description>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin</url>
 
 	<distributionManagement>
-    		<repository>
-      			<id>maven.jenkins-ci.org</id>
-      			<url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
-    		</repository>
-  	</distributionManagement>
+		<repository>
+			<id>maven.jenkins-ci.org</id>
+			<url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+		</repository>
+	</distributionManagement>
 
 
-  	<developers>
+	<developers>
 		<developer>
-                        <id>alex-n</id>
-                        <name>Alex Nickolaevsky</name>
-                        <email>alex@tikalk.com</email>
-                </developer>
-    		<developer>
-      			<id>ronil</id>
-      			<name>Roni Licht</name>
-      			<email>roni@tikalk.com</email>
-    		</developer>
+			<id>alex-n</id>
+			<name>Alex Nickolaevsky</name>
+			<email>alex@tikalk.com</email>
+		</developer>
 		<developer>
-                        <id>itaior</id>
-                        <name>Itai Or</name>
-                        <email>itai@tikalk.com</email>
-                </developer>
-  	</developers>
+			<id>ronil</id>
+			<name>Roni Licht</name>
+			<email>roni@tikalk.com</email>
+		</developer>
+		<developer>
+			<id>itaior</id>
+			<name>Itai Or</name>
+			<email>itai@tikalk.com</email>
+		</developer>
+	</developers>
 
 	<scm>
 		<connection>scm:git:git://github.com:jenkinsci/tikal-multijob-plugin.git</connection>
-    		<developerConnection>scm:git:git@github.com:jenkinsci/tikal-multijob-plugin.git</developerConnection>
-    		<url>https://github.com/jenkinsci/tikal-multijob-plugin.git</url>
+		<developerConnection>scm:git:git@github.com:jenkinsci/tikal-multijob-plugin.git</developerConnection>
+		<url>https://github.com/jenkinsci/tikal-multijob-plugin.git</url>
 	</scm>
 
 
@@ -62,19 +59,17 @@
 		</dependency>
 	</dependencies>
 
-    <repositories>
-        <repository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </repository>
-    </repositories>
+	<repositories>
+		<repository>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
+		</repository>
+	</repositories>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
-        </pluginRepository>
-    </pluginRepositories>
-</project>  
-  
-
+	<pluginRepositories>
+		<pluginRepository>
+			<id>repo.jenkins-ci.org</id>
+			<url>http://repo.jenkins-ci.org/public/</url>
+		</pluginRepository>
+	</pluginRepositories>
+</project>
