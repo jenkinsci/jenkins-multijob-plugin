@@ -6,7 +6,7 @@ import org.jvnet.hudson.test.HudsonTestCase;
 
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 
-public class MultiJobProjectTestCase extends HudsonTestCase {
+public abstract class MultiJobProjectTestCase extends HudsonTestCase {
 	 protected MultiJobProject createMultiJobProject(String name) throws IOException {
 	     return hudson.createProject(MultiJobProject.class,name);
 	 }
