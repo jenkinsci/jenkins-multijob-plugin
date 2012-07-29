@@ -13,6 +13,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BooleanParameterDefinition;
 import hudson.model.ChoiceParameterDefinition;
+import hudson.model.SimpleParameterDefinition;
 import hudson.model.Descriptor;
 import hudson.model.FileParameterValue;
 import hudson.model.Hudson;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Properties;
 
 import org.apache.tools.ant.filters.StringInputStream;
@@ -226,20 +228,35 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	}
 
-	public Action getAction(AbstractBuild build, TaskListener listener) throws IOException, InterruptedException {
-
-		EnvVars env = build.getEnvironment(listener);
-
-		Properties p = new Properties();
-		p.load(new StringInputStream(jobProperties));
-
-		List<ParameterValue> values = new ArrayList<ParameterValue>();
-		for (Map.Entry<Object, Object> entry : p.entrySet()) {
-			values.add(new StringParameterValue(entry.getKey().toString(), env.expand(entry.getValue().toString())));
+	public Action getAction(AbstractBuild build, TaskListener listener, AbstractProject project) throws IOException, InterruptedException {
+			EnvVars env = build.getEnvironment(listener);
+			List actions = project.getActions();
+			ParametersDefinitionProperty parameters=null;
+			for (Object object : actions) {
+				if(object instanceof hudson.model.ParametersDefinitionProperty)
+					parameters = (ParametersDefinitionProperty)object;
+					
+			}
+			Properties pProp = new Properties();
+			pProp.load(new StringInputStream(jobProperties));
+			LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
+				
+	        if (parameters !=null){
+	        	boolean overwrite=false;
+				for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
+					params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
+	        		for (Map.Entry<Object, Object> entry : pProp.entrySet()) {
+					    if (parameterdef.getName().equals(entry.getKey())){
+						    //override with multyjob value
+					    	params.put(parameterdef.getName(),((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
+						   // values.add(((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
+						    break;
+					    }
+				    }
+				}
+	         }
+			return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
 		}
-
-		return new ParametersAction(values);
-	}
 
 	public boolean hasProperties() {
 		return !this.jobProperties.isEmpty();

@@ -147,7 +147,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		ParametersAction parametersAction = null;
 		if (projectConfig.hasProperties()) {
 			parametersAction = (ParametersAction) projectConfig.getAction(
-					build, listener);
+					build, listener,project);
 			actions.add(parametersAction);
 		}
 
