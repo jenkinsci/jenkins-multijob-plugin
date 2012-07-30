@@ -65,6 +65,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		MultiJobProject thisProject = thisBuild.getProject();
 		Map<AbstractProject, PhaseJobsConfig> projects = new HashMap<AbstractProject, PhaseJobsConfig>(
 				phaseJobs.size());
+		
 		for (PhaseJobsConfig project : phaseJobs) {
 			TopLevelItem item = hudson.getItem(project.getJobName());
 			if (item instanceof AbstractProject) {
@@ -74,11 +75,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		}
 
 		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
-
+		List<AbstractProject> projectList = new ArrayList<AbstractProject>();
 		for (AbstractProject project : projects.keySet()) {
-			listener.getLogger().printf(
-					"Starting build job %s.\n",
-					HyperlinkNote.encodeTo('/' + project.getUrl(),
+			listener.getLogger().printf("Starting build job %s.\n",	HyperlinkNote.encodeTo('/' + project.getUrl(),
 							project.getFullName()));
 			      
 			PhaseJobsConfig projectConfig = projects.get(project);
@@ -89,46 +88,49 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 					actions.toArray(new Action[0]));
 			if (future != null) {
 				futuresList.add(future);
+				projectList.add (project);
 			}
 			
 		}
 		boolean failed = false;
-		for (Future future : futuresList) {
-			if (failed) {
-				future.cancel(true);
-			}
-			try {
-				AbstractBuild jobBuild = (AbstractBuild) future.get();
-				
-				Result result = jobBuild.getResult();
-
-				ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
-				//jobBuild.getArtifacts()
-				if (changeLogSet != null) {
-					((MultiJobBuild) build).addChangeLogSet(changeLogSet);
-				}
-
-				listener.getLogger().println(
-						"Finished Build : "
-								+ HyperlinkNote.encodeTo(
-										"/" + jobBuild.getUrl() + "/",
-										String.valueOf(jobBuild.getNumber()))
-								+ " of Job : "
-								+ HyperlinkNote.encodeTo('/' + jobBuild
-										.getProject().getUrl(), jobBuild
-										.getProject().getFullName())
-								+ " with status :"
-								+ HyperlinkNote.encodeTo(
-										'/' + jobBuild.getUrl() + "/console/",
-										result.toString()));
-				if (!continuationCondition.isContinue(jobBuild)) {
-					failed = true;
-				}
-				addSubBuild(thisBuild, thisProject, jobBuild);
-			} catch (ExecutionException e) {
-				failed = true;
-			}
-		}
+		while (!futuresList.isEmpty () && !failed){
+			for (Future future : futuresList){ 
+				AbstractProject project = projectList.get (futuresList.indexOf(future));
+			    if (future.isDone ()){
+			    	try {
+			    		AbstractBuild jobBuild = (AbstractBuild) future.get();
+			    		Result result = jobBuild.getResult();
+			    		ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
+			    		if (changeLogSet != null) {
+			    			((MultiJobBuild) build).addChangeLogSet(changeLogSet);
+			    		}
+			            listener.getLogger().println("Finished Build : "
+			                    + HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",String.valueOf(jobBuild.getDisplayName()))
+			                    + " of Job : "   + HyperlinkNote.encodeTo('/' + jobBuild.getProject().getUrl(), jobBuild.getProject().getFullName())
+			                    + " with status :" + HyperlinkNote.encodeTo('/' + jobBuild.getUrl() + "/console/",result.toString()));
+			            if (!continuationCondition.isContinue(jobBuild)) {
+			              failed = true;
+			            }
+			            addSubBuild (thisBuild, thisProject, (AbstractBuild)project.getLastBuild());
+			            projectList.remove(project);
+			            futuresList.remove (future);
+			            break;
+			    	} catch (ExecutionException e) {
+			 	 	    failed = true;
+			    	}
+			    }else if (project.isBuilding()){
+			    	addSubBuild (thisBuild, thisProject, (AbstractBuild)project.getLastBuild());
+			    }
+			 }    
+			 //Wait a second before next check.
+			 Thread.sleep (1000);
+	   	}
+		if (failed){
+			for (Future future : futuresList)
+			 	    future.cancel(true);
+	    }
+		
+			
 		return !failed;
 	}
 
