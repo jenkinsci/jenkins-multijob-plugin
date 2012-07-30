@@ -15,7 +15,21 @@ import hudson.triggers.TriggerDescriptor;
 
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 
-public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> implements TopLevelItem {
+public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
+		implements TopLevelItem {
+
+	/**
+	 * See {@link #setCustomWorkspace(String)}.
+	 */
+	private String customWorkspace;
+
+	public String getCustomWorkspace() {
+		return customWorkspace;
+	}
+
+	public void setCustomWorkspace(String customWorkspace) {
+		this.customWorkspace = customWorkspace;
+	}
 
 	@SuppressWarnings("rawtypes")
 	private MultiJobProject(ItemGroup parent, String name) {
@@ -25,17 +39,17 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild> imp
 	public MultiJobProject(Hudson parent, String name) {
 		super(parent, name);
 	}
-   
+
 	@Override
 	protected Class<MultiJobBuild> getBuildClass() {
 		return MultiJobBuild.class;
 	}
-    
+
 	@Override
 	public Hudson getParent() {
 		return Hudson.getInstance();
 	}
- 
+
 	public DescriptorImpl getDescriptor() {
 		return DESCRIPTOR;
 	}
