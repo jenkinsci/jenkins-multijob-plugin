@@ -1,7 +1,7 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import hudson.EnvVars;
 import hudson.Extension;
+import hudson.Util;
 import hudson.model.Action;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Describable;
@@ -13,7 +13,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BooleanParameterDefinition;
 import hudson.model.ChoiceParameterDefinition;
-import hudson.model.SimpleParameterDefinition;
 import hudson.model.Descriptor;
 import hudson.model.FileParameterValue;
 import hudson.model.Hudson;
@@ -21,21 +20,15 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
-import hudson.model.StringParameterValue;
-//import hudson.scm.SubversionSCM;
-//import hudson.scm.SubversionSCM.ModuleLocation;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.Properties;
 
-import org.apache.tools.ant.filters.StringInputStream;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -47,6 +40,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private String jobProperties;
 	private boolean currParams;
 	private boolean exposedSCM;
+	private final List<AbstractBuildParameters> configs;
 
 	public boolean isExposedSCM() {
 		return currParams;
@@ -89,10 +83,15 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	}
 
 	@DataBoundConstructor
-	public PhaseJobsConfig(String jobName, String jobProperties, boolean currParams) {
+	public PhaseJobsConfig(String jobName, String jobProperties, boolean currParams, List<AbstractBuildParameters> configs) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
+		this.configs = Util.fixNull(configs);
+	}
+	
+	public List<AbstractBuildParameters> getConfigs() {
+		return configs;
 	}
 
 	@Extension
@@ -101,6 +100,11 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		public String getDisplayName() {
 			return "Phase Jobs Config";
 		}
+		
+		public List<Descriptor<AbstractBuildParameters>> getBuilderConfigDescriptors() {
+            return Hudson.getInstance().<AbstractBuildParameters,
+              Descriptor<AbstractBuildParameters>>getDescriptorList(AbstractBuildParameters.class);
+        }
 
 		public AutoCompletionCandidates doAutoCompleteJobName(@QueryParameter String value) {
 			AutoCompletionCandidates c = new AutoCompletionCandidates();
@@ -227,35 +231,59 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return values;
 
 	}
+	
+	private static ParametersAction mergeParameters(ParametersAction base, ParametersAction overlay) {
+		LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
+		for (ParameterValue param : base.getParameters())
+			params.put(param.getName(), param);
+		for (ParameterValue param : overlay.getParameters())
+			params.put(param.getName(), param);
+		return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
+	}
 
-	public Action getAction(AbstractBuild build, TaskListener listener, AbstractProject project) throws IOException, InterruptedException {
-			EnvVars env = build.getEnvironment(listener);
-			List actions = project.getActions();
-			ParametersDefinitionProperty parameters=null;
-			for (Object object : actions) {
-				if(object instanceof hudson.model.ParametersDefinitionProperty)
-					parameters = (ParametersDefinitionProperty)object;
-					
+	public List<Action> getActions(AbstractBuild build, TaskListener listener, AbstractProject project) throws IOException, InterruptedException {
+		List<Action> actions = new ArrayList<Action>();
+		ParametersAction params = null;
+		
+		for (AbstractBuildParameters config : configs) {
+			Action a = config.getAction(build, listener, project);
+			if (a instanceof ParametersAction) {
+				params = params == null ? (ParametersAction)a
+					: mergeParameters(params, (ParametersAction)a);
+			} 
+			if (a != null) {
+				actions.add(a);
 			}
-			Properties pProp = new Properties();
-			pProp.load(new StringInputStream(jobProperties));
-			LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
-				
-	        if (parameters !=null){
-	        	boolean overwrite=false;
-				for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
-					params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
-	        		for (Map.Entry<Object, Object> entry : pProp.entrySet()) {
-					    if (parameterdef.getName().equals(entry.getKey())){
-						    //override with multyjob value
-					    	params.put(parameterdef.getName(),((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
-						   // values.add(((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
-						    break;
-					    }
-				    }
-				}
-	         }
-			return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
+		}
+		if (params != null) actions.add(params);
+		return actions;
+//			EnvVars env = build.getEnvironment(listener);
+//			List actions = project.getActions();
+//			ParametersDefinitionProperty parameters=null;
+//			for (Object object : actions) {
+//				if(object instanceof hudson.model.ParametersDefinitionProperty)
+//					parameters = (ParametersDefinitionProperty)object;
+//					
+//			}
+//			Properties pProp = new Properties();
+//			pProp.load(new StringInputStream(jobProperties));
+//			LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
+//				
+//	        if (parameters !=null){
+//	        	boolean overwrite=false;
+//				for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
+//					params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
+//	        		for (Map.Entry<Object, Object> entry : pProp.entrySet()) {
+//					    if (parameterdef.getName().equals(entry.getKey())){
+//						    //override with multyjob value
+//					    	params.put(parameterdef.getName(),((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
+//						   // values.add(((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
+//						    break;
+//					    }
+//				    }
+//				}
+//	         }
+//			return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
 		}
 
 	public boolean hasProperties() {

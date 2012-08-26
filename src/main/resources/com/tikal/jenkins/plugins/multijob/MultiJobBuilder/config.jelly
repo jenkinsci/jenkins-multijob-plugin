@@ -14,10 +14,13 @@
     		
 				<f:advanced>
 				    
-					<f:entry title="Parameters" field="jobProperties"
-                         help="/plugin/jenkins-multijob-plugin/help-jobProperties.html">
-					<f:textarea name="jobProperties" value="${instance.jobProperties}" />
-					</f:entry>
+				    <f:block>
+    					<f:hetero-list name="configs" hasHeader="true"
+                   		descriptors="${descriptor.getBuilderConfigDescriptors()}"
+                   		oneEach="true"
+                   		items="${instance.configs}"
+                   		addCaption="${%Add Parameters}"	/>
+    				</f:block>
 					<f:entry title="Current job parameters" field="currParams"
 						help="/plugin/jenkins-multijob-plugin/help-currParams.html">
   						<f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>

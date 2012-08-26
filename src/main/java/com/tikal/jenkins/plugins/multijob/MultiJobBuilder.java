@@ -10,6 +10,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.ParameterValue;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Result;
@@ -40,6 +41,8 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import com.tikal.jenkins.plugins.multijob.AbstractBuildParameters.DontTriggerException;
+
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 	private String phaseName;
@@ -53,8 +56,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		this.phaseJobs = Util.fixNull(phaseJobs);
 		this.continuationCondition = continuationCondition;
 	}
-    
-	
 	
 	@Override
 	@SuppressWarnings("rawtypes")
@@ -146,12 +147,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	private void prepareActions(AbstractBuild build, AbstractProject project,
 			PhaseJobsConfig projectConfig, BuildListener listener,
 			List<Action> actions) throws IOException, InterruptedException {
-		ParametersAction parametersAction = null;
-		if (projectConfig.hasProperties()) {
-			parametersAction = (ParametersAction) projectConfig.getAction(
+		List<Action> parametersActions = null;
+//		if (projectConfig.hasProperties()) {
+			parametersActions = (List<Action>) projectConfig.getActions(
 					build, listener,project);
-			actions.add(parametersAction);
-		}
+			actions.addAll(parametersActions);
+//		}
 
 		ParametersAction currParametersAction = null;
 		if (projectConfig.isCurrParams()) {
@@ -211,7 +212,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			save();
 			return true;
 		}
-
 	}
 	
 	
