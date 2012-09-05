@@ -6,6 +6,7 @@ import hudson.model.Action;
 import hudson.model.Describable;
 import hudson.model.ParameterValue;
 import hudson.model.SimpleParameterDefinition;
+import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -36,31 +37,33 @@ public class PredefinedBuildParameters extends AbstractBuildParameters {
 	public Action getAction(AbstractBuild<?,?> build, TaskListener listener, AbstractProject project)
 			throws IOException, InterruptedException {
 		EnvVars env = build.getEnvironment(listener);
-		List actions = project.getActions();
-		ParametersDefinitionProperty parameters=null;
-		for (Object object : actions) {
-			if(object instanceof hudson.model.ParametersDefinitionProperty)
-				parameters = (ParametersDefinitionProperty)object;
-				
-		}
+//		List actions = project.getActions();
+//		ParametersDefinitionProperty parameters=null;
+//		for (Object object : actions) {
+//			if(object instanceof hudson.model.ParametersDefinitionProperty)
+//				parameters = (ParametersDefinitionProperty)object;
+//				
+//		}
 		Properties pProp = new Properties();
 		pProp.load(new StringInputStream(jobProperties));
 		LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
 			
-        if (parameters !=null){
-        	boolean overwrite=false;
-			for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
-				params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
+//        if (parameters !=null){
+//        	boolean overwrite=false;
+//			for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
+//				params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
         		for (Map.Entry<Object, Object> entry : pProp.entrySet()) {
-				    if (parameterdef.getName().equals(entry.getKey())){
+//				    if (parameterdef.getName().equals(entry.getKey())){
 					    //override with multyjob value
-				    	params.put(parameterdef.getName(),((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
+				    	params.put(entry.getKey().toString(), new StringParameterValue(entry.getKey().toString(),
+				    			env.expand(entry.getValue().toString())));
+				    	//((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
 					   // values.add(((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
-					    break;
-				    }
-			    }
-			}
-         }
+//					    break;
+				}
+//			    }
+//			}
+//         }
         return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
 	}
 

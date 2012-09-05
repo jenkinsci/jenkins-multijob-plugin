@@ -8,6 +8,7 @@ import hudson.model.Describable;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.ParameterValue;
+import hudson.model.SimpleParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -26,6 +27,7 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -244,14 +246,28 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	public List<Action> getActions(AbstractBuild build, TaskListener listener, AbstractProject project) throws IOException, InterruptedException {
 		List<Action> actions = new ArrayList<Action>();
 		ParametersAction params = null;
+		LinkedList<ParameterValue> paramsValuesList = new LinkedList<ParameterValue>();
 		
+		List originalActions = project.getActions();
+		ParametersDefinitionProperty parameters=null;
+		for (Object object : originalActions) {
+			if(object instanceof hudson.model.ParametersDefinitionProperty)
+				parameters = (ParametersDefinitionProperty)object;
+		}
+		if (parameters !=null){
+			for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
+				paramsValuesList.add(parameterdef.getDefaultParameterValue());
+			}
+			params = new ParametersAction(paramsValuesList.toArray(new ParameterValue[paramsValuesList.size()]));
+        }
+			
 		for (AbstractBuildParameters config : configs) {
 			Action a = config.getAction(build, listener, project);
 			if (a instanceof ParametersAction) {
 				params = params == null ? (ParametersAction)a
 					: mergeParameters(params, (ParametersAction)a);
 			} 
-			if (a != null) {
+			else if (a != null) {
 				actions.add(a);
 			}
 		}
