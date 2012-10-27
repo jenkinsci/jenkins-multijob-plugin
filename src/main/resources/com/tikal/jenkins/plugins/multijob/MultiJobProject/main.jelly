@@ -2,14 +2,14 @@
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:p="/lib/hudson/project">
 
-	<j:choose>
-		<j:when test="${it.topMost}">
+	<!--j:choose>
+		<j:when test="${it.topMost}"-->
 			<br />
 			<t:projectView jobs="${it.view.getRootItem(it)}"
 				jobBaseUrl="${it.rootUrl}" showViewTabs="false" columnExtensions="${it.view.columns}">
 			</t:projectView>
-		</j:when>
-	</j:choose>
+		<!--/j:when>
+	</j:choose-->
 
 
 	<p:projectActionFloatingBox />

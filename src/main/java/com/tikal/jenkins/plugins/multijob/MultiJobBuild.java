@@ -90,18 +90,17 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	}
 
 	public void addSubBuild(String parentJobName, int parentBuildNumber,
-			String jobName, int buildNumber, String phaseName, AbstractBuild refBuild) {
+			String jobName, int buildNumber, String phaseName,
+			AbstractBuild refBuild) {
 
 		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
 				jobName, buildNumber, phaseName);
-		for (SubBuild subbuild : getSubBuilds ())
-		    {
-		       if (subbuild.getJobName().equals(jobName))
-		      {
-		       getSubBuilds ().remove (subbuild);
-		 	      break;
-		 	    }
-		 	   }
+		for (SubBuild subbuild : getSubBuilds()) {
+			if (subbuild.getJobName().equals(jobName)) {
+				getSubBuilds().remove(subbuild);
+				break;
+			}
+		}
 		getSubBuilds().add(subBuild);
 
 	}

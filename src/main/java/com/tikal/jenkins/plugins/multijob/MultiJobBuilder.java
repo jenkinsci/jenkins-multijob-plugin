@@ -56,7 +56,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		this.phaseJobs = Util.fixNull(phaseJobs);
 		this.continuationCondition = continuationCondition;
 	}
-	
+
 	@Override
 	@SuppressWarnings("rawtypes")
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
@@ -64,24 +64,27 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		Hudson hudson = Hudson.getInstance();
 		MultiJobBuild thisBuild = (MultiJobBuild) build;
 		MultiJobProject thisProject = thisBuild.getProject();
-		Map<AbstractProject, PhaseJobsConfig> projects = new HashMap<AbstractProject, PhaseJobsConfig>(
+		Map<AbstractProjectKey, PhaseJobsConfig> projects = new HashMap<AbstractProjectKey, PhaseJobsConfig>(
 				phaseJobs.size());
-		
+
 		for (PhaseJobsConfig project : phaseJobs) {
 			TopLevelItem item = hudson.getItem(project.getJobName());
 			if (item instanceof AbstractProject) {
 				AbstractProject job = (AbstractProject) item;
-				projects.put(job, project);
+				projects.put(new AbstractProjectKey(job), project);
 			}
 		}
 
 		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
 		List<AbstractProject> projectList = new ArrayList<AbstractProject>();
-		for (AbstractProject project : projects.keySet()) {
-			listener.getLogger().printf("Starting build job %s.\n",	HyperlinkNote.encodeTo('/' + project.getUrl(),
+		for (AbstractProjectKey projectKey : projects.keySet()) {
+			AbstractProject project = projectKey.getProject();
+			listener.getLogger().printf(
+					"Starting build job %s.\n",
+					HyperlinkNote.encodeTo('/' + project.getUrl(),
 							project.getFullName()));
-			      
-			PhaseJobsConfig projectConfig = projects.get(project);
+
+			PhaseJobsConfig projectConfig = projects.get(projectKey);
 			List<Action> actions = new ArrayList<Action>();
 			prepareActions(build, project, projectConfig, listener, actions);
 			Future future = project.scheduleBuild2(project.getQuietPeriod(),
@@ -89,49 +92,67 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 					actions.toArray(new Action[0]));
 			if (future != null) {
 				futuresList.add(future);
-				projectList.add (project);
+				projectList.add(project);
 			}
-			
+			// Wait a second before next build start.
+			Thread.sleep(1000);
 		}
+
 		boolean failed = false;
-		while (!futuresList.isEmpty () && !failed){
-			for (Future future : futuresList){ 
-				AbstractProject project = projectList.get (futuresList.indexOf(future));
-			    if (future.isDone ()){
-			    	try {
-			    		AbstractBuild jobBuild = (AbstractBuild) future.get();
-			    		Result result = jobBuild.getResult();
-			    		ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
-			    		if (changeLogSet != null) {
-			    			((MultiJobBuild) build).addChangeLogSet(changeLogSet);
-			    		}
-			            listener.getLogger().println("Finished Build : "
-			                    + HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",String.valueOf(jobBuild.getDisplayName()))
-			                    + " of Job : "   + HyperlinkNote.encodeTo('/' + jobBuild.getProject().getUrl(), jobBuild.getProject().getFullName())
-			                    + " with status :" + HyperlinkNote.encodeTo('/' + jobBuild.getUrl() + "/console/",result.toString()));
-			            if (!continuationCondition.isContinue(jobBuild)) {
-			              failed = true;
-			            }
-			            addSubBuild (thisBuild, thisProject, (AbstractBuild)project.getLastBuild());
-			            projectList.remove(project);
-			            futuresList.remove (future);
-			            break;
-			    	} catch (ExecutionException e) {
-			 	 	    failed = true;
-			    	}
-			    }else if (project.isBuilding()){
-			    	addSubBuild (thisBuild, thisProject, (AbstractBuild)project.getLastBuild());
-			    }
-			 }    
-			 //Wait a second before next check.
-			 Thread.sleep (1000);
-	   	}
-		if (failed){
+		while (!futuresList.isEmpty() && !failed) {
+			for (Future future : futuresList) {
+				AbstractProject project = projectList.get(futuresList
+						.indexOf(future));
+				if (future.isDone()) {
+					try {
+						AbstractBuild jobBuild = (AbstractBuild) future.get();
+						Result result = jobBuild.getResult();
+						ChangeLogSet<Entry> changeLogSet = jobBuild
+								.getChangeSet();
+						if (changeLogSet != null) {
+							((MultiJobBuild) build)
+									.addChangeLogSet(changeLogSet);
+						}
+						listener.getLogger().println(
+								"Finished Build : "
+										+ HyperlinkNote.encodeTo(
+												"/" + jobBuild.getUrl() + "/",
+												String.valueOf(jobBuild
+														.getDisplayName()))
+										+ " of Job : "
+										+ HyperlinkNote.encodeTo('/' + jobBuild
+												.getProject().getUrl(),
+												jobBuild.getProject()
+														.getFullName())
+										+ " with status :"
+										+ HyperlinkNote.encodeTo(
+												'/' + jobBuild.getUrl()
+														+ "/console/",
+												result.toString()));
+						if (!continuationCondition.isContinue(jobBuild)) {
+							failed = true;
+						}
+						addSubBuild(thisBuild, thisProject,
+								(AbstractBuild) project.getLastBuild());
+						projectList.remove(project);
+						futuresList.remove(future);
+						break;
+					} catch (ExecutionException e) {
+						failed = true;
+					}
+				} else if (project.isBuilding()) {
+					addSubBuild(thisBuild, thisProject,
+							(AbstractBuild) project.getLastBuild());
+				}
+			}
+			// Wait a second before next check.
+			Thread.sleep(1000);
+		}
+		if (failed) {
 			for (Future future : futuresList)
-			 	    future.cancel(true);
-	    }
-		
-			
+				future.cancel(true);
+		}
+
 		return !failed;
 	}
 
@@ -148,11 +169,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			PhaseJobsConfig projectConfig, BuildListener listener,
 			List<Action> actions) throws IOException, InterruptedException {
 		List<Action> parametersActions = null;
-//		if (projectConfig.hasProperties()) {
-			parametersActions = (List<Action>) projectConfig.getActions(
-					build, listener,project);
-			actions.addAll(parametersActions);
-//		}
+		// if (projectConfig.hasProperties()) {
+		parametersActions = (List<Action>) projectConfig.getActions(build,
+				listener, project);
+		actions.addAll(parametersActions);
+		// }
 
 		ParametersAction currParametersAction = null;
 		if (projectConfig.isCurrParams()) {
@@ -176,16 +197,28 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	public void setPhaseJobs(List<PhaseJobsConfig> phaseJobs) {
 		this.phaseJobs = phaseJobs;
 	}
-	public boolean phaseNameExist(String phaseName){
-		 for (PhaseJobsConfig phaseJob : phaseJobs) {
-             if (phaseJob.getDisplayName().equals(phaseName)){ 
-            	  return true;	 
-             }
-		 }
+
+	public boolean phaseNameExist(String phaseName) {
+		for (PhaseJobsConfig phaseJob : phaseJobs) {
+			if (phaseJob.getDisplayName().equals(phaseName)) {
+				return true;
+			}
+		}
 		return false;
 	}
-	
-	
+
+	private final static class AbstractProjectKey {
+
+		private AbstractProject project;
+
+		AbstractProjectKey(AbstractProject project) {
+			this.project = project;
+		}
+
+		public AbstractProject getProject() {
+			return project;
+		}
+	}
 
 	@Extension
 	public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -213,9 +246,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			return true;
 		}
 	}
-	
-	
-
 
 	@SuppressWarnings("rawtypes")
 	public void buildDependencyGraph(AbstractProject owner,
@@ -298,8 +328,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			return label;
 		}
 	}
-	
-	
 
 	public ContinuationCondition getContinuationCondition() {
 		return continuationCondition;
