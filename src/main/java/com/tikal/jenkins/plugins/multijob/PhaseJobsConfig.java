@@ -237,7 +237,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private static ParametersAction mergeParameters(ParametersAction base, ParametersAction overlay) {
 		LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
 		for (ParameterValue param : base.getParameters())
-			params.put(param.getName(), param);
+			if(param!=null)
+				params.put(param.getName(), param);
 		for (ParameterValue param : overlay.getParameters())
 			params.put(param.getName(), param);
 		return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
