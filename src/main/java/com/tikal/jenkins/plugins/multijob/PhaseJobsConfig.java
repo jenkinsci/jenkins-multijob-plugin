@@ -261,15 +261,19 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			}
 			params = new ParametersAction(paramsValuesList.toArray(new ParameterValue[paramsValuesList.size()]));
         }
-			
-		for (AbstractBuildParameters config : configs) {
-			Action a = config.getAction(build, listener, project);
-			if (a instanceof ParametersAction) {
-				params = params == null ? (ParametersAction)a
-					: mergeParameters(params, (ParametersAction)a);
-			} 
-			else if (a != null) {
-				actions.add(a);
+		
+		//Backward compatibility
+		if (configs != null)
+		{
+			for (AbstractBuildParameters config : configs) {
+				Action a = config.getAction(build, listener, project);
+				if (a instanceof ParametersAction) {
+					params = params == null ? (ParametersAction)a
+						: mergeParameters(params, (ParametersAction)a);
+				} 
+				else if (a != null) {
+					actions.add(a);
+				}
 			}
 		}
 		if (params != null) actions.add(params);
