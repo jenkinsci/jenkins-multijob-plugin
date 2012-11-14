@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -42,10 +43,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		run(new RunnerImpl());
+		run(new MultiJobRunnerImpl());
 	}
 
-	protected class RunnerImpl extends
+	protected class MultiJobRunnerImpl extends
 			Build<MultiJobProject, MultiJobBuild>.RunnerImpl {
 
 	}
@@ -62,7 +63,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 				subBuild.setDuration(build.getDurationString());
 				subBuild.setUrl(build.getUrl());
 			} else {
-				subBuild.setIcon("grey.png");
+				subBuild.setIcon(BallColor.GREY.getImage());
 				subBuild.setDuration("not built yet");
 				subBuild.setUrl(null);
 			}
