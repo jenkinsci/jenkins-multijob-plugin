@@ -237,7 +237,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private static ParametersAction mergeParameters(ParametersAction base, ParametersAction overlay) {
 		LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
 		for (ParameterValue param : base.getParameters())
-			params.put(param.getName(), param);
+			if(param!=null)
+				params.put(param.getName(), param);
 		for (ParameterValue param : overlay.getParameters())
 			params.put(param.getName(), param);
 		return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
@@ -260,15 +261,19 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			}
 			params = new ParametersAction(paramsValuesList.toArray(new ParameterValue[paramsValuesList.size()]));
         }
-			
-		for (AbstractBuildParameters config : configs) {
-			Action a = config.getAction(build, listener, project);
-			if (a instanceof ParametersAction) {
-				params = params == null ? (ParametersAction)a
-					: mergeParameters(params, (ParametersAction)a);
-			} 
-			else if (a != null) {
-				actions.add(a);
+		
+		//Backward compatibility
+		if (configs != null)
+		{
+			for (AbstractBuildParameters config : configs) {
+				Action a = config.getAction(build, listener, project);
+				if (a instanceof ParametersAction) {
+					params = params == null ? (ParametersAction)a
+						: mergeParameters(params, (ParametersAction)a);
+				} 
+				else if (a != null) {
+					actions.add(a);
+				}
 			}
 		}
 		if (params != null) actions.add(params);
