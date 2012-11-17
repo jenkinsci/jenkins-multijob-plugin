@@ -172,15 +172,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		List<Action> parametersActions = null;
 		// if (projectConfig.hasProperties()) {
 		parametersActions = (List<Action>) projectConfig.getActions(build,
-				listener, project);
+				listener, project, projectConfig.isCurrParams());
 		actions.addAll(parametersActions);
 		// }
 
 		ParametersAction currParametersAction = null;
-		if (projectConfig.isCurrParams()) {
-			currParametersAction = build.getAction(ParametersAction.class);
-			actions.add(currParametersAction);
-		}
 	}
 
 	public String getPhaseName() {
