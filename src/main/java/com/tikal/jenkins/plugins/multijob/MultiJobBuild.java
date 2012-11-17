@@ -1,9 +1,11 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Project;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -11,11 +13,7 @@ import hudson.scm.ChangeLogSet.Entry;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
@@ -42,37 +40,60 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		run(new RunnerImpl());
+		run(new MultiJobRunnerImpl());
 	}
 
-	protected class RunnerImpl extends
+	protected class MultiJobRunnerImpl extends
 			Build<MultiJobProject, MultiJobBuild>.RunnerImpl {
+		@Override
+		public Result run(BuildListener listener) throws Exception {
+			Result result = super.run(listener);
+			if (isFailure())
+				return Result.FAILURE;
+			if (isUnstable())
+				return Result.UNSTABLE;
+			return result;
+		}
 
+		private boolean isFailure() {
+			return evaluateResult(Result.UNSTABLE);
+		}
+
+		private boolean isUnstable() {
+			return evaluateResult(Result.SUCCESS);
+		}
+
+		private boolean evaluateResult(Result result) {
+			List<SubBuild> builders = getBuilders();
+			for (SubBuild subBuild : builders) {
+				if (subBuild.getResult().isWorseThan(result)) {
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 
 	public List<SubBuild> getBuilders() {
-
 		MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
 		List<SubBuild> subBuilds = multiJobBuild.getSubBuilds();
-
 		for (SubBuild subBuild : subBuilds) {
 			Run build = getBuild(subBuild);
 			if (build != null) {
+				subBuild.setResult(build.getResult());
 				subBuild.setIcon(build.getIconColor().getImage());
 				subBuild.setDuration(build.getDurationString());
 				subBuild.setUrl(build.getUrl());
 			} else {
-				subBuild.setIcon("grey.png");
+				subBuild.setIcon(BallColor.NOTBUILT.getImage());
 				subBuild.setDuration("not built yet");
 				subBuild.setUrl(null);
 			}
 		}
-
 		return subBuilds;
 	}
 
 	private Run getBuild(SubBuild subBuild) {
-
 		Run build = null;
 		List<AbstractProject> downstreamProjects = getProject()
 				.getDownstreamProjects();
@@ -92,7 +113,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	public void addSubBuild(String parentJobName, int parentBuildNumber,
 			String jobName, int buildNumber, String phaseName,
 			AbstractBuild refBuild) {
-
 		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
 				jobName, buildNumber, phaseName);
 		for (SubBuild subbuild : getSubBuilds()) {
@@ -102,27 +122,25 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 			}
 		}
 		getSubBuilds().add(subBuild);
-
 	}
 
 	private List<SubBuild> subBuilds;
 
 	public List<SubBuild> getSubBuilds() {
-
 		if (subBuilds == null)
 			subBuilds = new ArrayList<SubBuild>();
-
 		return subBuilds;
 	}
 
 	public static class SubBuild {
 
-		final String parentJobName;
-		final int parentBuildNumber;
-		final String jobName;
-		final int buildNumber;
-		final String phaseName;
+		private final String parentJobName;
+		private final int parentBuildNumber;
+		private final String jobName;
+		private final int buildNumber;
+		private final String phaseName;
 
+		private Result result;
 		private String icon;
 		private String duration;
 		private String url;
@@ -178,6 +196,14 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 		public int getBuildNumber() {
 			return buildNumber;
+		}
+
+		public void setResult(Result result) {
+			this.result = result;
+		}
+
+		public Result getResult() {
+			return result;
 		}
 
 		@Override

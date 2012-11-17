@@ -58,7 +58,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
 		Hudson hudson = Hudson.getInstance();
@@ -99,6 +99,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		}
 
 		boolean failed = false;
+		boolean canContinue = true;
 		while (!futuresList.isEmpty() && !failed) {
 			for (Future future : futuresList) {
 				AbstractProject project = projectList.get(futuresList
@@ -152,8 +153,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			for (Future future : futuresList)
 				future.cancel(true);
 		}
-
-		return !failed;
+		canContinue = !failed;
+		return canContinue;
 	}
 
 	@SuppressWarnings("rawtypes")
