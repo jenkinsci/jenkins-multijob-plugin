@@ -285,7 +285,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		if (parameters != null) {
 			for (ParameterDefinition parameterdef : parameters
 					.getParameterDefinitions()) {
-				paramsValuesList.add(parameterdef.getDefaultParameterValue());
+				if(parameterdef.getDefaultParameterValue() != null)
+					paramsValuesList.add(parameterdef.getDefaultParameterValue());
 			}
 			params = new ParametersAction(
 					paramsValuesList
