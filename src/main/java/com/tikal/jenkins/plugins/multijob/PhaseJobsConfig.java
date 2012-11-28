@@ -43,7 +43,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private String jobProperties;
 	private boolean currParams;
 	private boolean exposedSCM;
-	private final List<AbstractBuildParameters> configs;
+	private List<AbstractBuildParameters> configs;
 
 	public boolean isExposedSCM() {
 		return currParams;
@@ -285,8 +285,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		if (parameters != null) {
 			for (ParameterDefinition parameterdef : parameters
 					.getParameterDefinitions()) {
-				if(parameterdef.getDefaultParameterValue() != null)
-					paramsValuesList.add(parameterdef.getDefaultParameterValue());
+				if (parameterdef.getDefaultParameterValue() != null)
+					paramsValuesList.add(parameterdef
+							.getDefaultParameterValue());
 			}
 			params = new ParametersAction(
 					paramsValuesList
@@ -319,7 +320,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 		if (params != null)
 			actions.add(params);
-		
+
 		return actions;
 		// EnvVars env = build.getEnvironment(listener);
 		// List actions = project.getActions();
@@ -355,6 +356,17 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	}
 
 	public boolean hasProperties() {
-		return !this.jobProperties.isEmpty();
+		return this.jobProperties!=null && !this.jobProperties.isEmpty();
+	}
+
+	// compatibility with earlier plugins
+	public Object readResolve() {
+		if (hasProperties()) {
+			AbstractBuildParameters buildParameters = new PredefinedBuildParameters(jobProperties);
+			if(configs == null)
+				configs = new ArrayList<AbstractBuildParameters>();
+			configs.add(buildParameters);
+		}
+		return this;
 	}
 }
