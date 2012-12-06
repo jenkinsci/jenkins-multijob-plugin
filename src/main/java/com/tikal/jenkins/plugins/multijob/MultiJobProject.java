@@ -18,18 +18,6 @@ import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
 
-	/**
-	 * See {@link #setCustomWorkspace(String)}.
-	 */
-	private String customWorkspace;
-
-	public String getCustomWorkspace() {
-		return customWorkspace;
-	}
-
-	public void setCustomWorkspace(String customWorkspace) {
-		this.customWorkspace = customWorkspace;
-	}
 
 	@SuppressWarnings("rawtypes")
 	private MultiJobProject(ItemGroup parent, String name) {
