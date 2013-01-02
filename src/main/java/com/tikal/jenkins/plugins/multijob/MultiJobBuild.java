@@ -66,7 +66,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		private boolean evaluateResult(Result result) {
 			List<SubBuild> builders = getBuilders();
 			for (SubBuild subBuild : builders) {
-				if (subBuild.getResult().isWorseThan(result)) {
+				Result buildResult = subBuild.getResult();
+				if (buildResult != null && buildResult.isWorseThan(result)) {
 					return true;
 				}
 			}
