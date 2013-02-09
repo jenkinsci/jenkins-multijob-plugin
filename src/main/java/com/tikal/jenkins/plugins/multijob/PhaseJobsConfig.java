@@ -268,7 +268,22 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return new ParametersAction(params.values().toArray(
 				new ParameterValue[params.size()]));
 	}
-
+	/**
+	 * Create a list of actions to pass to the triggered build of project.
+	 * 
+	 * This will create a single ParametersAction which will use the defaults 
+	 * from the project being triggered and override these, 
+	 * With the current parameters defined in this build. if configured.
+	 * With any matching items defined in the different configs, e.g. predefined parameters.
+	 * 
+	 * @param build		build that is triggering project
+	 * @param listener
+	 * @param project	Project that is being triggered
+	 * @param isCurrentInclude	Include parameters from the current build.
+	 * @return
+	 * @throws IOException
+	 * @throws InterruptedException 
+	 */
 	public List<Action> getActions(AbstractBuild build, TaskListener listener,
 			AbstractProject project, boolean isCurrentInclude)
 			throws IOException, InterruptedException {
@@ -277,11 +292,16 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		LinkedList<ParameterValue> paramsValuesList = new LinkedList<ParameterValue>();
 
 		List originalActions = project.getActions();
+
+		// Check to see if the triggered project has Parameters defined.
 		ParametersDefinitionProperty parameters = null;
 		for (Object object : originalActions) {
 			if (object instanceof hudson.model.ParametersDefinitionProperty)
 				parameters = (ParametersDefinitionProperty) object;
 		}
+		// Get and add ParametersAction for default parameters values 
+		// if triggered project is Parameterized.
+		// Values will get overridden later as required
 		if (parameters != null) {
 			for (ParameterDefinition parameterdef : parameters
 					.getParameterDefinitions()) {
@@ -292,21 +312,23 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			params = new ParametersAction(
 					paramsValuesList
 							.toArray(new ParameterValue[paramsValuesList.size()]));
+
 		}
+
+		// Merge current parameters with the defaults from the triggered job.
+		// Current parameters override the defaluts.
 		if (isCurrentInclude) {
-			Action a = null;
 			ParametersAction defaultParameters = build
 					.getAction(ParametersAction.class);
-			for (ListIterator<Action> it = actions.listIterator(); it.hasNext();)
-				if ((a = it.next()) instanceof ParametersAction) {
-					it.set(mergeParameters(defaultParameters,
-							(ParametersAction) a));
-					break;
-				}
-			if (!(a instanceof ParametersAction))
-				actions.add(defaultParameters);
+
+			if(params != null && defaultParameters != null) {
+				params = mergeParameters(params, defaultParameters);
+			} else if(params == null) {
+				params = defaultParameters;
+			}
 		}
 		// Backward compatibility
+		// get actions from configs merge ParametersActions if needed.
 		if (configs != null) {
 			for (AbstractBuildParameters config : configs) {
 				Action a = config.getAction(build, listener, project);
@@ -318,6 +340,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 				}
 			}
 		}
+
 		if (params != null)
 			actions.add(params);
 
