@@ -23,32 +23,34 @@
  */
 package com.tikal.jenkins.plugins.multijob.test;
 
-import com.tikal.jenkins.plugins.multijob.AbstractBuildParameters;
-import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
-import com.tikal.jenkins.plugins.multijob.MultiJobProject;
-import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import hudson.model.Action;
+import hudson.model.ParameterValue;
+import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Action;
 import hudson.model.Cause.UserIdCause;
 import hudson.model.CauseAction;
 import hudson.model.FreeStyleProject;
-
 import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
-import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
-import hudson.model.TaskListener;
+import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+
+import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 /**
  *
  * @author Chris Johnson
@@ -310,7 +312,7 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 	class TestCauseConfig extends AbstractBuildParameters {
 
 		@Override
-		public Action getAction(AbstractBuild<?, ?> build, TaskListener listener, AbstractProject project) throws IOException, InterruptedException {
+		public Action getAction(AbstractBuild<?, ?> build, TaskListener listener) throws IOException, InterruptedException {
 			return new CauseAction(new UserIdCause());
 		}
 	}
@@ -327,7 +329,7 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 			this.items = items;
 		}
 		@Override
-		public Action getAction(AbstractBuild<?, ?> build, TaskListener listener, AbstractProject project) throws IOException, InterruptedException {
+		public Action getAction(AbstractBuild<?, ?> build, TaskListener listener) throws IOException, InterruptedException {
 			return createParametersAction(items);
 		}
 	}

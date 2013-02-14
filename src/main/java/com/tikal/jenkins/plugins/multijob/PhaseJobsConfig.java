@@ -8,7 +8,6 @@ import hudson.model.Describable;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.ParameterValue;
-import hudson.model.SimpleParameterDefinition;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -21,15 +20,19 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
+import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
+import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
+import hudson.plugins.parameterizedtrigger.FileBuildParameters;
+import hudson.plugins.parameterizedtrigger.PredefinedBuildParameters;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -331,12 +334,18 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		// get actions from configs merge ParametersActions if needed.
 		if (configs != null) {
 			for (AbstractBuildParameters config : configs) {
-				Action a = config.getAction(build, listener, project);
-				if (a instanceof ParametersAction) {
-					params = params == null ? (ParametersAction) a
-							: mergeParameters(params, (ParametersAction) a);
-				} else if (a != null) {
-					actions.add(a);
+				Action a;
+				try {
+					a = config.getAction(build, listener);
+					if (a instanceof ParametersAction) {
+						params = params == null ? (ParametersAction) a
+								: mergeParameters(params, (ParametersAction) a);
+					} else if (a != null) {
+						actions.add(a);
+					}
+				} catch (DontTriggerException e) {
+					// don't trigger on this configuration
+					listener.getLogger().println("[multiJob] DontTriggerException: " + e);
 				}
 			}
 		}
@@ -389,6 +398,25 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			if(configs == null)
 				configs = new ArrayList<AbstractBuildParameters>();
 			configs.add(buildParameters);
+		}
+		
+		List<AbstractBuildParameters> oldParams = new ArrayList<AbstractBuildParameters>();
+		if(configs != null && configs.size() > 0) {
+			Iterator parametersIterator = configs.iterator();
+			while(parametersIterator.hasNext()) {
+				Object param = parametersIterator.next();
+				if(param instanceof com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) {
+					com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters previosStringParam = (com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) param;
+					parametersIterator.remove();
+					oldParams.add(new PredefinedBuildParameters(previosStringParam.getJobProperties()));
+				}
+				else if(param instanceof com.tikal.jenkins.plugins.multijob.FileBuildParameters) {
+					com.tikal.jenkins.plugins.multijob.FileBuildParameters previosFileParam = (com.tikal.jenkins.plugins.multijob.FileBuildParameters) param;
+					parametersIterator.remove();
+					oldParams.add(new FileBuildParameters(previosFileParam.getPropertiesFile()));
+				}
+			}
+			configs.addAll(oldParams);
 		}
 		return this;
 	}

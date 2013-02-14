@@ -6,12 +6,9 @@ import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.Build;
-import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
-import hudson.model.Descriptor;
-import hudson.model.ParameterValue;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -40,8 +37,6 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-
-import com.tikal.jenkins.plugins.multijob.AbstractBuildParameters.DontTriggerException;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 

@@ -138,6 +138,7 @@
   <classpathentry kind="var" path="M2_REPO/org/jvnet/hudson/netx/0.5-hudson-2/netx-0.5-hudson-2.jar"/>
   <classpathentry kind="var" path="M2_REPO/oro/oro/2.0.8/oro-2.0.8.jar" sourcepath="M2_REPO/oro/oro/2.0.8/oro-2.0.8-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/kohsuke/owasp-html-sanitizer/r88/owasp-html-sanitizer-r88.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/jenkins-ci/plugins/parameterized-trigger/2.12/parameterized-trigger-2.12.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/sonatype/plexus/plexus-cipher/1.7/plexus-cipher-1.7.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/codehaus/plexus/plexus-classworlds/2.3/plexus-classworlds-2.3.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar"/>
