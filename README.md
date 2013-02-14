@@ -9,6 +9,6 @@
 ### More info on wiki page @: https://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin
 
 ### Found a bug ? require a new feature ?
-#### Feel free to open an issue: https://github.com/jenkinsci/tikal-multijob-plugin/issues/new
+#### Feel free to open an issue: https://issues.jenkins-ci.org/secure/CreateIssue!default.jspa
 ****
 ### Plugin CI job @: https://buildhive.cloudbees.com/job/jenkinsci/job/tikal-multijob-plugin/ [![Build Status](https://buildhive.cloudbees.com/job/jenkinsci/job/tikal-multijob-plugin/badge/icon)](https://buildhive.cloudbees.com/job/jenkinsci/job/tikal-multijob-plugin/)  
