@@ -133,8 +133,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 						if (!continuationCondition.isContinue(jobBuild)) {
 							failed = true;
 						}
-						addSubBuild(thisBuild, thisProject,
-								(AbstractBuild) project.getLastBuild());
+						addSubBuild(thisBuild, thisProject, jobBuild);
 						projectList.remove(project);
 						futuresList.remove(future);
 						break;
