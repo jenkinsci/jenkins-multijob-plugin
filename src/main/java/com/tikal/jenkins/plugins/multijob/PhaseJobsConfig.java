@@ -101,7 +101,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return configs;
 	}
 
-	@Extension
+	@Extension(optional = true)
 	public static class DescriptorImpl extends Descriptor<PhaseJobsConfig> {
 		@Override
 		public String getDisplayName() {
