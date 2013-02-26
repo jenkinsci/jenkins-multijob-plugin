@@ -88,9 +88,9 @@ public class MultiJobView extends ListView {
 		for (TopLevelItem item : items) {
 			if (item instanceof MultiJobProject) {
 				MultiJobProject project = (MultiJobProject) item;
-				if (project.isTopMost()) {
+		//		if (project.isTopMost()) {
 					addTopLevelProject(project, out);
-				}
+		//		}
 			}
 		}
 		return out;
