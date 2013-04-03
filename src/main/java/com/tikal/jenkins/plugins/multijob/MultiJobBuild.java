@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.AbstractBuild;
@@ -14,6 +15,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
@@ -35,6 +41,17 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	public MultiJobBuild(MultiJobProject project, File buildDir)
 			throws IOException {
 		super(project, buildDir);
+	}
+	
+	@Override
+	public synchronized void doStop(StaplerRequest req, StaplerResponse rsp)
+			throws IOException, ServletException {
+		super.doStop(req, rsp);
+	}
+
+	@Override
+	public void addAction(Action a) {
+		super.addAction(a);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -135,6 +135,8 @@ public class MultiJobView extends ListView {
 								phaseNestLevel + 1, currentPhaseName, out);
 					} else {
 						AbstractProject subProject = (AbstractProject) tli;
+						if(subProject == null)
+							continue;
 						BuildState jobBuildState = createBuildState(buildState,
 								project, subProject);
 						phaseWrapper.addChildBuildState(jobBuildState);
