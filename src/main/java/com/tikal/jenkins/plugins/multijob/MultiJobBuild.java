@@ -65,6 +65,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		@Override
 		public Result run(BuildListener listener) throws Exception {
 			Result result = super.run(listener);
+			if (isAborted())
+				return Result.ABORTED;
 			if (isFailure())
 				return Result.FAILURE;
 			if (isUnstable())
@@ -72,6 +74,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 			return result;
 		}
 
+		private boolean isAborted() {
+			return evaluateResult(Result.FAILURE);
+		}
+		
 		private boolean isFailure() {
 			return evaluateResult(Result.UNSTABLE);
 		}

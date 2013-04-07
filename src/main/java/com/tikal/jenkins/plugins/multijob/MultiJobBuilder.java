@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -90,7 +92,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				projectList.add(project);
 			}
 			// Wait a second before next build start.
-			Thread.sleep(1000);
+				Thread.sleep(1000);
 		}
 
 		boolean failed = false;
@@ -141,7 +143,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				}
 			}
 			// Wait a second before next check.
-			Thread.sleep(1000);
+			try{
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				for(Future<Build> future : futuresList)
+					future.cancel(true);
+				throw new InterruptedException();
+			}
 		}
 		if (failed) {
 			for (Future future : futuresList)
@@ -303,7 +311,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		COMPLETED("Complete (always continue)") {
 			@Override
 			public boolean isContinue(AbstractBuild build) {
-				return build.getResult().isBetterOrEqualTo(Result.FAILURE);
+				return build.getResult().equals(Result.ABORTED) ? true : 
+					build.getResult().isBetterOrEqualTo(Result.FAILURE);
 			}
 		};
 
