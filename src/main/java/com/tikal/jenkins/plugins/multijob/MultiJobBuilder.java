@@ -36,7 +36,7 @@ import java.util.concurrent.Future;
 import javax.servlet.ServletException;
 
 import net.sf.json.JSONObject;
-
+import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -131,6 +131,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 							failed = true;
 						}
 						addSubBuild(thisBuild, thisProject, jobBuild);
+						addBuildEnvironmentVariables(thisBuild, jobBuild);
 						projectList.remove(project);
 						futuresList.remove(future);
 						break;
@@ -165,6 +166,50 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		thisBuild.addSubBuild(thisProject.getName(), thisBuild.getNumber(),
 				jobBuild.getProject().getName(), jobBuild.getNumber(),
 				phaseName, jobBuild);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private void addBuildEnvironmentVariables(MultiJobBuild thisBuild, AbstractBuild jobBuild) {
+		// Env variables map
+		Map<String, String> variables = new HashMap<String, String>();
+		
+		String jobName = jobBuild.getProject().getName();
+		String jobNameSafe = jobName.replaceAll("[^A-Za-z0-9]", "_").toUpperCase();
+		String buildNumber = Integer.toString(jobBuild.getNumber());
+		String buildResult = jobBuild.getResult().toString();
+		
+		// These will always reference the last build
+		variables.put("LAST_TRIGGERED_JOB_NAME", jobName);
+		variables.put("TRIGGERED_BUILD_NUMBER_" + jobNameSafe, buildNumber);
+		variables.put("TRIGGERED_BUILD_RESULT_" + jobNameSafe, buildResult);
+
+		// Per-Build Variables
+		variables.put("TRIGGERED_BUILD_RESULT_" + jobNameSafe + "RUN" + buildNumber, buildResult);
+
+		if (variables.get("TRIGGERED_JOB_NAMES") == null) {
+			variables.put("TRIGGERED_JOB_NAMES", jobName);
+		} else {
+			String triggeredJobNames = variables.get("TRIGGERED_JOB_NAMES") + "," + jobName;
+			variables.put("TRIGGERED_JOB_NAMES", triggeredJobNames);
+		}
+
+		if (variables.get("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe) == null) {
+			variables.put("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe, buildNumber);
+		} else {
+			String triggeredBuildNumbers = variables.get("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe) + "," + buildNumber;
+			variables.put("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe, triggeredBuildNumbers);
+		}
+
+		if (variables.get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe) == null) {
+			variables.put("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe, "1");
+		} else {
+			String runCount = Integer.toString(Integer.parseInt(variables.get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe)) + 1);
+			variables.put("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe, runCount);
+		}
+
+
+		//Set the new build variables map
+		thisBuild.addAction(new EnvInjectBuilderContributionAction(variables));
 	}
 
 	@SuppressWarnings("rawtypes")
