@@ -17,7 +17,7 @@
 	 			<td class="no-wrap">
 	 				<j:choose>
 		 				<j:when test="${builder.url.length() > 0}">
-			 				<a href="/${builder.url}">
+			 				<a href="${rootURL}/${builder.url}">
 		                		build #${builder.buildNumber}
 		              		</a>
 	              		</j:when>
