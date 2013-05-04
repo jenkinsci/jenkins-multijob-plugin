@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.AbstractBuild;
@@ -14,6 +15,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.ServletException;
+
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
@@ -36,6 +42,17 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 			throws IOException {
 		super(project, buildDir);
 	}
+	
+	@Override
+	public synchronized void doStop(StaplerRequest req, StaplerResponse rsp)
+			throws IOException, ServletException {
+		super.doStop(req, rsp);
+	}
+
+	@Override
+	public void addAction(Action a) {
+		super.addAction(a);
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -48,6 +65,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		@Override
 		public Result run(BuildListener listener) throws Exception {
 			Result result = super.run(listener);
+			if (isAborted())
+				return Result.ABORTED;
 			if (isFailure())
 				return Result.FAILURE;
 			if (isUnstable())
@@ -55,6 +74,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 			return result;
 		}
 
+		private boolean isAborted() {
+			return evaluateResult(Result.FAILURE);
+		}
+		
 		private boolean isFailure() {
 			return evaluateResult(Result.UNSTABLE);
 		}
