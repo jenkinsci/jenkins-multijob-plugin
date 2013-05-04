@@ -99,7 +99,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			for (Future future : futuresList) {
 				AbstractProject project = projectList.get(futuresList
 						.indexOf(future));
-				if (future.isDone()) {
+				if (future.isDone() && !future.isCancelled()) {
 					try {
 						AbstractBuild jobBuild = (AbstractBuild) future.get();
 						Result result = jobBuild.getResult();
