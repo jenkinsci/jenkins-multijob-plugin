@@ -12,6 +12,7 @@ import hudson.model.Project;
 import hudson.scm.SCM;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
+import hudson.util.AlternativeUiTextProvider;
 
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 
@@ -37,6 +38,11 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 	public Hudson getParent() {
 		return Hudson.getInstance();
 	}
+	
+        @Override
+        public String getPronoun() {
+            return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getDisplayName());
+        }
 
 	public DescriptorImpl getDescriptor() {
 		return DESCRIPTOR;
