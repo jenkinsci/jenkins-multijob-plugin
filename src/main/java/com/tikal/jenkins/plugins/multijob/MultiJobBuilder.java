@@ -125,7 +125,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 										+ " with status :"
 										+ HyperlinkNote.encodeTo(
 												'/' + jobBuild.getUrl()
-														+ "/console/",
+														+ "/console",
 												result.toString()));
 						if (!continuationCondition.isContinue(jobBuild)) {
 							failed = true;
