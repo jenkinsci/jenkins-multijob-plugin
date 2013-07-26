@@ -22,7 +22,6 @@ import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.SCM;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -205,10 +204,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 
 		//Set the new build variables map
-		addEnvVars(thisBuild, listener, variables);
+		injectEnvVars(thisBuild, listener, variables);
 	}
 	
-	private void addEnvVars(AbstractBuild<?,?> build, BuildListener listener, Map<String,String> incomingVars) {
+	/**
+	 * Method for properly injecting environment variables via EnvInject plugin.  Method based off logic in {@link EnvInjectBuilder#perform} 
+	 */
+	private void injectEnvVars(AbstractBuild<?,?> build, BuildListener listener, Map<String,String> incomingVars) {
 		
 		EnvInjectLogger logger = new EnvInjectLogger(listener);
         FilePath ws = build.getWorkspace();
