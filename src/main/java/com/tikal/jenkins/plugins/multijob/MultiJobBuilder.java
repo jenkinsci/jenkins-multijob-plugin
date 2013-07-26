@@ -1,6 +1,8 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.EnvVars;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
@@ -20,6 +22,7 @@ import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
+import hudson.scm.SCM;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
@@ -33,12 +36,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javax.servlet.ServletException;
-
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
+import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
@@ -53,7 +59,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		this.phaseJobs = Util.fixNull(phaseJobs);
 		this.continuationCondition = continuationCondition;
 	}
-
+	
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
@@ -131,7 +137,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 							failed = true;
 						}
 						addSubBuild(thisBuild, thisProject, jobBuild);
-						addBuildEnvironmentVariables(thisBuild, jobBuild);
+						addBuildEnvironmentVariables(thisBuild, jobBuild, listener);
 						projectList.remove(project);
 						futuresList.remove(future);
 						break;
@@ -169,7 +175,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void addBuildEnvironmentVariables(MultiJobBuild thisBuild, AbstractBuild jobBuild) {
+	private void addBuildEnvironmentVariables(MultiJobBuild thisBuild, AbstractBuild jobBuild, BuildListener listener) {
 		// Env variables map
 		Map<String, String> variables = new HashMap<String, String>();
 		
@@ -180,24 +186,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		
 		// These will always reference the last build
 		variables.put("LAST_TRIGGERED_JOB_NAME", jobName);
-		variables.put("TRIGGERED_BUILD_NUMBER_" + jobNameSafe, buildNumber);
-		variables.put("TRIGGERED_BUILD_RESULT_" + jobNameSafe, buildResult);
-
-		// Per-Build Variables
-		variables.put("TRIGGERED_BUILD_RESULT_" + jobNameSafe + "RUN" + buildNumber, buildResult);
+		variables.put(jobNameSafe + "_BUILD_NUMBER", buildNumber);
+		variables.put(jobNameSafe + "_BUILD_RESULT", buildResult);
 
 		if (variables.get("TRIGGERED_JOB_NAMES") == null) {
 			variables.put("TRIGGERED_JOB_NAMES", jobName);
 		} else {
 			String triggeredJobNames = variables.get("TRIGGERED_JOB_NAMES") + "," + jobName;
 			variables.put("TRIGGERED_JOB_NAMES", triggeredJobNames);
-		}
-
-		if (variables.get("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe) == null) {
-			variables.put("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe, buildNumber);
-		} else {
-			String triggeredBuildNumbers = variables.get("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe) + "," + buildNumber;
-			variables.put("TRIGGERED_BUILD_NUMBERS_" + jobNameSafe, triggeredBuildNumbers);
 		}
 
 		if (variables.get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe) == null) {
@@ -209,8 +205,37 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 
 		//Set the new build variables map
-		thisBuild.addAction(new EnvInjectBuilderContributionAction(variables));
+		addEnvVars(thisBuild, listener, variables);
 	}
+	
+	private void addEnvVars(AbstractBuild<?,?> build, BuildListener listener, Map<String,String> incomingVars) {
+		
+		EnvInjectLogger logger = new EnvInjectLogger(listener);
+        FilePath ws = build.getWorkspace();
+        EnvInjectActionSetter envInjectActionSetter = new EnvInjectActionSetter(ws);
+        EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars(logger);
+
+        try {
+
+            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+            Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(build, logger);
+
+            //Get current envVars
+            Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
+
+            //Resolve variables
+            final Map<String, String> resultVariables = envInjectEnvVarsService.getMergedVariables(variables, incomingVars);
+
+            //Set the new build variables map
+            build.addAction(new EnvInjectBuilderContributionAction(resultVariables));
+
+            //Add or get the existing action to add new env vars
+            envInjectActionSetter.addEnvVarsToEnvInjectBuildAction(build, resultVariables);
+        } catch (Throwable throwable) {
+            listener.getLogger().println("[MultiJob] - [ERROR] - Problems occurs on injecting env vars as a build step: " + throwable.getMessage());
+        }
+	}
+
 
 	@SuppressWarnings("rawtypes")
 	private void prepareActions(AbstractBuild build, AbstractProject project,

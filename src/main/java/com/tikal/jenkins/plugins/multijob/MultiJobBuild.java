@@ -5,6 +5,7 @@ import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Api;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -20,20 +21,23 @@ import javax.servlet.ServletException;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
+@ExportedBean(defaultVisibility=999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 	public MultiJobBuild(MultiJobProject project) throws IOException {
 		super(project);
 	}
-
+	
 	MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
-
+	
 	@Override
 	public ChangeLogSet<? extends Entry> getChangeSet() {
 		return super.getChangeSet();
 	}
-
+	
 	public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
 		this.changeSets.addChangeLogSet(changeLogSet);
 	}
@@ -150,12 +154,14 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 	private List<SubBuild> subBuilds;
 
+	@Exported
 	public List<SubBuild> getSubBuilds() {
 		if (subBuilds == null)
 			subBuilds = new ArrayList<SubBuild>();
 		return subBuilds;
 	}
 
+	@ExportedBean(defaultVisibility=999)
 	public static class SubBuild {
 
 		private final String parentJobName;
@@ -214,10 +220,12 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 			return parentBuildNumber;
 		}
 
+		@Exported
 		public String getJobName() {
 			return jobName;
 		}
 
+		@Exported
 		public int getBuildNumber() {
 			return buildNumber;
 		}
@@ -226,6 +234,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 			this.result = result;
 		}
 
+		@Exported
 		public Result getResult() {
 			return result;
 		}
