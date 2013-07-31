@@ -11,6 +11,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
+import hudson.model.ExternalJob;
+import hudson.model.FreeStyleProject;
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.ListView;
@@ -134,7 +136,7 @@ public class MultiJobView extends ListView {
 						addMultiProject(project, subProject, jobBuildState,
 								phaseNestLevel + 1, currentPhaseName, out);
 					} else {
-						AbstractProject subProject = (AbstractProject) tli;
+						Job subProject = (Job) tli;
 						if(subProject == null)
 							continue;
 						BuildState jobBuildState = createBuildState(buildState,
@@ -150,14 +152,14 @@ public class MultiJobView extends ListView {
 
 	@SuppressWarnings("rawtypes")
 	private void addSimpleProject(MultiJobProject parent,
-			AbstractProject project, BuildState buildState, int nestLevel,
+			Job project, BuildState buildState, int nestLevel,
 			List<TopLevelItem> out) {
 		out.add(new ProjectWrapper(parent, project, buildState, nestLevel));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
 	private BuildState createBuildState(BuildState parentBuildState,
-			MultiJobProject multiJobProject, AbstractProject project) {
+			MultiJobProject multiJobProject, Job project) {
 		int previousBuildNumber = 0;
 		int lastBuildNumber = 0;
 		int lastSuccessBuildNumber = 0;

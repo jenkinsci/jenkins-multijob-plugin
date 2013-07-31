@@ -31,11 +31,11 @@ public class ProjectWrapper extends AbstractWrapper {
 
 	final BuildState buildState;
 
-	final AbstractProject project;
+	final Job project;
 
 	final int nestLevel;
 
-	public ProjectWrapper(MultiJobProject multijob, AbstractProject project,
+	public ProjectWrapper(MultiJobProject multijob, Job project,
 			BuildState buildState, int nestLevel) {
 		this.project = project;
 		this.multijob = multijob;
@@ -172,12 +172,12 @@ public class ProjectWrapper extends AbstractWrapper {
 		return findLastBuildForResult(null);
 	}
 
-	public AbstractProject getProject() {
+	public Job getProject() {
 		return project;
 	}
 
 	public BallColor getIconColor() {
-		if (project.isDisabled())
+		if (project instanceof AbstractProject &&  ((AbstractProject) project).isDisabled())
 			return BallColor.DISABLED;
 		Run lastBuild = getLastBuild();
 		while (lastBuild != null && lastBuild.hasntStartedYet())
