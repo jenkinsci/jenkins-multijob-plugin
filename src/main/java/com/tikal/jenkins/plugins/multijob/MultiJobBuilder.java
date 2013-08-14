@@ -97,6 +97,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			Future future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
 					new UpstreamCause((Run) multiJobBuild),
 					actions.toArray(new Action[0]));
+
+			if (future == null) {
+				listener.getLogger()
+						.printf(String
+								.format("Warning: can't execute one of %s builds, due to jenkins limitations.",
+										subJob.getName()));
+			}
+
 			futuresList.add(future);
 			projectList.add(subJob);
 			// Wait a second before next build start.

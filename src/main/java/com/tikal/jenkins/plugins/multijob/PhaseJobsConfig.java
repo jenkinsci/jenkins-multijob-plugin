@@ -19,6 +19,7 @@ import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Project;
 import hudson.model.StringParameterDefinition;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
@@ -34,6 +35,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import jenkins.model.Jenkins;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -131,15 +134,40 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			if (value.isEmpty()) {
 				result = FormValidation
 						.errorWithMarkup("Job name must not be empty");
-			} else {
-				for (String localJobName : Hudson.getInstance().getJobNames()) {
-					if (localJobName.toLowerCase().equals(value.toLowerCase())) {
-						// savePhaseJobConfigParameters(localJobName);
-						result = FormValidation.ok();
-					}
+				return result;
+			}
+
+			if (findOtherUpstreamProjects(value)) {
+				result = FormValidation
+						.warning("There are other upstream projects for this job. "
+								+ "It's possible, although very low probability, "
+								+ "that multijob will be unable to execute concurrently the same job, "
+								+ "due to Jenkins limitation. "
+								+ "In such cases, recommended to clone the job.");
+				return result;
+			}
+
+			for (String localJobName : Hudson.getInstance().getJobNames()) {
+				if (localJobName.toLowerCase().equals(value.toLowerCase())) {
+					// savePhaseJobConfigParameters(localJobName);
+					result = FormValidation.ok();
 				}
+
 			}
 			return result;
+		}
+
+		private boolean findOtherUpstreamProjects(String value) {
+			List<Project> projects = Jenkins.getInstance().getProjects();
+			for (Project project : projects) {
+				if (value.equalsIgnoreCase(project.getName())) {
+					List upstreamProjects = project.getUpstreamProjects();
+					if (upstreamProjects != null && upstreamProjects.size() > 0)
+						return true;
+					return false;
+				}
+			}
+			return false;
 		}
 
 		private void savePhaseJobConfigParameters(String localJobName) {
@@ -271,21 +299,25 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return new ParametersAction(params.values().toArray(
 				new ParameterValue[params.size()]));
 	}
+
 	/**
 	 * Create a list of actions to pass to the triggered build of project.
 	 * 
-	 * This will create a single ParametersAction which will use the defaults 
-	 * from the project being triggered and override these, 
-	 * With the current parameters defined in this build. if configured.
-	 * With any matching items defined in the different configs, e.g. predefined parameters.
+	 * This will create a single ParametersAction which will use the defaults
+	 * from the project being triggered and override these, With the current
+	 * parameters defined in this build. if configured. With any matching items
+	 * defined in the different configs, e.g. predefined parameters.
 	 * 
-	 * @param build		build that is triggering project
+	 * @param build
+	 *            build that is triggering project
 	 * @param listener
-	 * @param project	Project that is being triggered
-	 * @param isCurrentInclude	Include parameters from the current build.
+	 * @param project
+	 *            Project that is being triggered
+	 * @param isCurrentInclude
+	 *            Include parameters from the current build.
 	 * @return
 	 * @throws IOException
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	public List<Action> getActions(AbstractBuild build, TaskListener listener,
 			AbstractProject project, boolean isCurrentInclude)
@@ -302,7 +334,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			if (object instanceof hudson.model.ParametersDefinitionProperty)
 				parameters = (ParametersDefinitionProperty) object;
 		}
-		// Get and add ParametersAction for default parameters values 
+		// Get and add ParametersAction for default parameters values
 		// if triggered project is Parameterized.
 		// Values will get overridden later as required
 		if (parameters != null) {
@@ -324,9 +356,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			ParametersAction defaultParameters = build
 					.getAction(ParametersAction.class);
 
-			if(params != null && defaultParameters != null) {
+			if (params != null && defaultParameters != null) {
 				params = mergeParameters(params, defaultParameters);
-			} else if(params == null) {
+			} else if (params == null) {
 				params = defaultParameters;
 			}
 		}
@@ -345,7 +377,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 					}
 				} catch (DontTriggerException e) {
 					// don't trigger on this configuration
-					listener.getLogger().println("[multiJob] DontTriggerException: " + e);
+					listener.getLogger().println(
+							"[multiJob] DontTriggerException: " + e);
 				}
 			}
 		}
@@ -388,32 +421,34 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	}
 
 	public boolean hasProperties() {
-		return this.jobProperties!=null && !this.jobProperties.isEmpty();
+		return this.jobProperties != null && !this.jobProperties.isEmpty();
 	}
 
 	// compatibility with earlier plugins
 	public Object readResolve() {
 		if (hasProperties()) {
-			AbstractBuildParameters buildParameters = new PredefinedBuildParameters(jobProperties);
-			if(configs == null)
+			AbstractBuildParameters buildParameters = new PredefinedBuildParameters(
+					jobProperties);
+			if (configs == null)
 				configs = new ArrayList<AbstractBuildParameters>();
 			configs.add(buildParameters);
 		}
-		
+
 		List<AbstractBuildParameters> oldParams = new ArrayList<AbstractBuildParameters>();
-		if(configs != null && configs.size() > 0) {
+		if (configs != null && configs.size() > 0) {
 			Iterator parametersIterator = configs.iterator();
-			while(parametersIterator.hasNext()) {
+			while (parametersIterator.hasNext()) {
 				Object param = parametersIterator.next();
-				if(param instanceof com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) {
+				if (param instanceof com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) {
 					com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters previosStringParam = (com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) param;
 					parametersIterator.remove();
-					oldParams.add(new PredefinedBuildParameters(previosStringParam.getJobProperties()));
-				}
-				else if(param instanceof com.tikal.jenkins.plugins.multijob.FileBuildParameters) {
+					oldParams.add(new PredefinedBuildParameters(
+							previosStringParam.getJobProperties()));
+				} else if (param instanceof com.tikal.jenkins.plugins.multijob.FileBuildParameters) {
 					com.tikal.jenkins.plugins.multijob.FileBuildParameters previosFileParam = (com.tikal.jenkins.plugins.multijob.FileBuildParameters) param;
 					parametersIterator.remove();
-					oldParams.add(new FileBuildParameters(previosFileParam.getPropertiesFile()));
+					oldParams.add(new FileBuildParameters(previosFileParam
+							.getPropertiesFile()));
 				}
 			}
 			configs.addAll(oldParams);
