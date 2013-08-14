@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -138,6 +139,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 						futuresList.remove(future);
 						break;
 					} catch (ExecutionException e) {
+						failed = true;
+					} catch (CancellationException e) {
 						failed = true;
 					}
 				} else if (project.isBuilding()) {
