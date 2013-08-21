@@ -5,7 +5,6 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.model.Job;
 
@@ -20,10 +19,13 @@ public class PhaseWrapper extends AbstractWrapper {
 	final int nestLevel;
 
 	final String phaseName;
+	
+	final boolean isConditional;
 
-	public PhaseWrapper(int nestLevel, String phaseName) {
+	public PhaseWrapper(int nestLevel, String phaseName, boolean isConditional) {
 		this.nestLevel = nestLevel;
 		this.phaseName = phaseName;
+		this.isConditional = isConditional;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -51,6 +53,10 @@ public class PhaseWrapper extends AbstractWrapper {
 		return nestLevel;
 	}
 
+	public boolean isConditional() {
+        return isConditional;
+    }
+	
 	// public AbstractProject getProject() {
 	// return project;
 	// }

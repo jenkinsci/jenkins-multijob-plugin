@@ -8,14 +8,13 @@ import hudson.model.TopLevelItem;
 import hudson.model.ViewDescriptor;
 import hudson.model.ViewGroup;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-import hudson.model.ExternalJob;
-import hudson.model.FreeStyleProject;
+
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.ListView;
+import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -31,6 +30,8 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.ServletException;
 
+import org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder;
+import org.jenkinsci.plugins.conditionalbuildstep.singlestep.SingleConditionalBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -109,7 +110,6 @@ public class MultiJobView extends ListView {
 		addMultiProject(null, project, createBuildState(project), 0, null, out);
 	}
 
-	@SuppressWarnings("rawtypes")
 	private void addMultiProject(MultiJobProject parent,
 			MultiJobProject project, BuildState buildState, int nestLevel,
 			String phaseName, List<TopLevelItem> out) {
@@ -118,37 +118,58 @@ public class MultiJobView extends ListView {
 		for (Builder builder : builders) {
 			int phaseNestLevel = nestLevel + 1;
 			if (builder instanceof MultiJobBuilder) {
-				MultiJobBuilder reactorBuilder = (MultiJobBuilder) builder;
-				List<PhaseJobsConfig> subProjects = reactorBuilder
-						.getPhaseJobs();
-				String currentPhaseName = reactorBuilder.getPhaseName();
-				PhaseWrapper phaseWrapper = new PhaseWrapper(phaseNestLevel,
-						currentPhaseName);
-				out.add(phaseWrapper);
-				for (PhaseJobsConfig projectConfig : subProjects) {
-					TopLevelItem tli = Hudson.getInstance().getItem(
-							projectConfig.getJobName());
-					if (tli instanceof MultiJobProject) {
-						MultiJobProject subProject = (MultiJobProject) tli;
-						BuildState jobBuildState = createBuildState(buildState,
-								project, subProject);
-						phaseWrapper.addChildBuildState(jobBuildState);
-						addMultiProject(project, subProject, jobBuildState,
-								phaseNestLevel + 1, currentPhaseName, out);
-					} else {
-						Job subProject = (Job) tli;
-						if(subProject == null)
-							continue;
-						BuildState jobBuildState = createBuildState(buildState,
-								project, subProject);
-						phaseWrapper.addChildBuildState(jobBuildState);
-						addSimpleProject(project, subProject, jobBuildState,
-								phaseNestLevel + 1, out);
-					}
-				}
-			}
+				addProjectFromBuilder(project, buildState, out, builder, phaseNestLevel, false);
+			} 
+			
+			else if (builder instanceof ConditionalBuilder) {
+                final List<BuildStep> conditionalbuilders = ((ConditionalBuilder)builder).getConditionalbuilders();
+                for (BuildStep buildStep : conditionalbuilders) {
+                    if(buildStep instanceof MultiJobBuilder) {
+                        addProjectFromBuilder(project, buildState, out, buildStep, phaseNestLevel, true);
+                    }
+                }                
+            }
+			
+            else if (builder instanceof SingleConditionalBuilder) {
+                final BuildStep buildStep = ((SingleConditionalBuilder)builder).getBuildStep();
+                if(buildStep instanceof MultiJobBuilder) {
+                    addProjectFromBuilder(project, buildState, out, buildStep, phaseNestLevel, true);
+                }
+            }			
 		}
 	}
+
+	@SuppressWarnings("rawtypes")
+    private void addProjectFromBuilder(MultiJobProject project, BuildState buildState, List<TopLevelItem> out, BuildStep builder, int phaseNestLevel, boolean isConditional) {
+        MultiJobBuilder reactorBuilder = (MultiJobBuilder) builder;
+        List<PhaseJobsConfig> subProjects = reactorBuilder
+        		.getPhaseJobs();
+        String currentPhaseName = reactorBuilder.getPhaseName();
+        PhaseWrapper phaseWrapper = new PhaseWrapper(phaseNestLevel,
+        		currentPhaseName, isConditional);
+        out.add(phaseWrapper);
+        for (PhaseJobsConfig projectConfig : subProjects) {
+        	TopLevelItem tli = Hudson.getInstance().getItem(
+        			projectConfig.getJobName());
+        	if (tli instanceof MultiJobProject) {
+        		MultiJobProject subProject = (MultiJobProject) tli;
+        		BuildState jobBuildState = createBuildState(buildState,
+        				project, subProject);
+        		phaseWrapper.addChildBuildState(jobBuildState);
+        		addMultiProject(project, subProject, jobBuildState,
+        				phaseNestLevel + 1, currentPhaseName, out);
+        	} else {
+        		Job subProject = (Job) tli;
+        		if(subProject == null)
+        			continue;
+        		BuildState jobBuildState = createBuildState(buildState,
+        				project, subProject);
+        		phaseWrapper.addChildBuildState(jobBuildState);
+        		addSimpleProject(project, subProject, jobBuildState,
+        				phaseNestLevel + 1, out);
+        	}
+        }
+    }
 
 	@SuppressWarnings("rawtypes")
 	private void addSimpleProject(MultiJobProject parent,
