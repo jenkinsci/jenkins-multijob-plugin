@@ -4,10 +4,10 @@
 	<td style="${job.getCss()}">
 		<j:choose>
 			<j:when test="${job.phase}">
-				${job.displayName}
+				${job.isConditional() ? "[?]" : ""} ${job.displayName}
 			</j:when>
 			<j:when test="${!job.phase}">
-				<a href="${jobBaseUrl}${job.shortUrl}"> ${job.displayName}</a>
+				<a href="${jobBaseUrl}${job.shortUrl}">${job.displayName}</a>
 			</j:when>
 		</j:choose>
 	</td>
