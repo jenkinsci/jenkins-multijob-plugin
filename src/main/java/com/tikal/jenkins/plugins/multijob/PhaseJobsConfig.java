@@ -93,11 +93,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	@DataBoundConstructor
 	public PhaseJobsConfig(String jobName, String jobProperties,
-			boolean currParams, List<AbstractBuildParameters> configs) {
+			boolean currParams, List<AbstractBuildParameters> configs, boolean exposedSCM) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
 		this.configs = Util.fixNull(configs);
+        this.exposedSCM = exposedSCM;
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {
