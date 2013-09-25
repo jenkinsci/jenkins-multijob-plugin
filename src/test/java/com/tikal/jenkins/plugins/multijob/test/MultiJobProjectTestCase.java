@@ -20,10 +20,10 @@ import java.util.List;
 public class MultiJobProjectTestCase extends BaseJenkinsTestCase {
 
 
-    //@Test
-    //@LocalData
+    @Test
+    @LocalData
     public void testAddSimpleScmPage() throws Exception {
-        AbstractProject simpleScmProject = (AbstractProject) j.jenkins.getItem("simple_git_project");
+        AbstractProject simpleScmProject = (AbstractProject) j.jenkins.getItem("simple_scm_project");
 
         addPhaseProject(simpleScmProject);
         MultiJobProject multijobProject = (MultiJobProject) j.jenkins.getItem("multijob_project");
