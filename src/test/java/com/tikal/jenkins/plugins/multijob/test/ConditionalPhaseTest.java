@@ -28,9 +28,7 @@ import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 /**
  * @author Bartholdi Dominik (imod)
  */
-public class ConditionalPhaseTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+public class ConditionalPhaseTest extends BaseJenkinsTestCase{
 
     @Test
     public void testConditionalPhase() throws Exception {
