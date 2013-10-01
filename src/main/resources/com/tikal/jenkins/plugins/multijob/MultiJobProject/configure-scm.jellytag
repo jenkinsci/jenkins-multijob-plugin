@@ -2,7 +2,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:multiscm="/com/tikal/jenkins/plugins/multijob/scm/MultiSCM">
       <!--<multiscm:config/>-->
-  <f:section title="SCM">
+  <f:section title="${%Source Code Management}">
         <j:set var="scms" value="${it.scm.descriptor.getApplicableSCMs(it)}" />
         <j:forEach var="idx" begin="0" end="${size(scms)-1}">
           <j:set var="descriptor" value="${scms[idx]}" />
