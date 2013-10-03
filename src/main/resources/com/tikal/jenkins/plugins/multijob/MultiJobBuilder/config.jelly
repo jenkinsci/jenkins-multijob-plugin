@@ -27,7 +27,7 @@
   					</f:entry>
   					<f:entry title="Exposed SCM" field="exposedSCM"
 						help="/plugin/jenkins-multijob-plugin/help-repository.html">
-  						<f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="true"/>
+  						<f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="false"/>
   					</f:entry>
 				</f:advanced>
 		        <f:entry>
