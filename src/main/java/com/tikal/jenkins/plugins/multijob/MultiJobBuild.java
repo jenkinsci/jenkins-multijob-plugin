@@ -13,8 +13,8 @@ import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.servlet.ServletException;
 
@@ -156,7 +156,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	@Exported
 	public List<SubBuild> getSubBuilds() {
 		if (subBuilds == null)
-			subBuilds = new ArrayList<SubBuild>();
+			subBuilds = new CopyOnWriteArrayList<SubBuild>();
 		return subBuilds;
 	}
 
