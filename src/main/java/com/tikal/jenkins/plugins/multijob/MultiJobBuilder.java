@@ -104,10 +104,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 						.printf(String
 								.format("Warning: can't execute one of %s builds, due to jenkins limitations.",
 										subJob.getName()));
-			}
-
-			futuresList.add(future);
-			projectList.add(subJob);
+			} else {
+                            futuresList.add(future);
+                            projectList.add(subJob);
+                        }
+                        
 			// Wait a second before next build start.
 			TimeUnit.SECONDS.sleep(1);
 		}
