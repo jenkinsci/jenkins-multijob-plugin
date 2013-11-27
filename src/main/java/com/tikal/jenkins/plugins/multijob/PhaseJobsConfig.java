@@ -162,7 +162,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			for (Project project : projects) {
 				if (value.equalsIgnoreCase(project.getName())) {
 					List upstreamProjects = project.getUpstreamProjects();
-					if (upstreamProjects != null && upstreamProjects.size() > 0)
+					if (upstreamProjects != null && upstreamProjects.size() > 1)
 						return true;
 					return false;
 				}
