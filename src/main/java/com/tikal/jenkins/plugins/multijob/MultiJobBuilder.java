@@ -85,6 +85,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		List<AbstractProject> projectList = new ArrayList<AbstractProject>();
 		for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
 			AbstractProject subJob = phaseSubJob.job;
+                       
+                        if (subJob.isDisabled()) {
+                            listener.getLogger().println(String
+                                    .format("Skipping %s. This Job has been disabled.",
+                                    subJob.getName()));
+                            continue;
+                        }
+                        
 			reportStart(listener, subJob);
 			PhaseJobsConfig projectConfig = phaseSubJobs.get(phaseSubJob);
 			List<Action> actions = new ArrayList<Action>();
@@ -100,14 +108,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 					actions.toArray(new Action[0]));
 
 			if (future == null) {
-				listener.getLogger()
-						.printf(String
-								.format("Warning: can't execute one of %s builds, due to jenkins limitations.",
-										subJob.getName()));
-			}
-
-			futuresList.add(future);
-			projectList.add(subJob);
+				listener.getLogger().println(
+                                        String.format("Warning: can't execute %s build.",
+                                        subJob.getName()));
+			} else {
+                            futuresList.add(future);
+                            projectList.add(subJob);
+                        }
+                        
 			// Wait a second before next build start.
 			TimeUnit.SECONDS.sleep(1);
 		}
