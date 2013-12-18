@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import com.tikal.jenkins.plugins.multijob.scm.MultiSCM;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Build;

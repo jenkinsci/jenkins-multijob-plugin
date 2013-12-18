@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.tikal.jenkins.plugins.multijob.MultiJobProject>
+    <actions/>
+    <description></description>
+    <keepDependencies>false</keepDependencies>
+    <properties/>
+    <scm class="com.tikal.jenkins.plugins.multijob.scm.MultiSCM">
+        <scms/>
+    </scm>
+    <canRoam>true</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers class="vector"/>
+    <concurrentBuild>false</concurrentBuild>
+    <builders>
+        <com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
+            <phaseName>free_style_project</phaseName>
+            <phaseJobs>
+                <com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
+                    <jobName>free_style_project</jobName>
+                    <currParams>true</currParams>
+                    <exposedSCM>false</exposedSCM>
+                    <configs class="java.util.Collections$EmptyList"/>
+                </com.tikal.jenkins.plugins.multijob.PhaseJobsConfig>
+            </phaseJobs>
+            <continuationCondition>SUCCESSFUL</continuationCondition>
+        </com.tikal.jenkins.plugins.multijob.MultiJobBuilder>
+    </builders>
+    <publishers/>
+    <buildWrappers/>
+</com.tikal.jenkins.plugins.multijob.MultiJobProject>

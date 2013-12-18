@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 
-public class AggregateChangesTest extends MultiJobProjectTestCase {
+public class AggregateChangesTest extends BaseJenkinsTestCase{
 	
 	
 	public void test() throws Exception {

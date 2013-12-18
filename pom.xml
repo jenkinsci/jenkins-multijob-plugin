@@ -73,6 +73,11 @@
 		    <artifactId>conditional-buildstep</artifactId>
 		    <version>1.3.1</version>
 		</dependency>
+		<dependency>
+            <groupId>com.kenai.nbpwr</groupId>
+            <artifactId>edu-umd-cs-findbugs-annotations</artifactId>
+            <version>1.3.2-201002241900</version>
+        </dependency>
 	</dependencies>
 
 	<build>

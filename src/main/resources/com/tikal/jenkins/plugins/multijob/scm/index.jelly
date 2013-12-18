@@ -1,0 +1,5 @@
+<div>
+  This plugin enables the selection of multiple source code management systems for a build.
+  For example, it enables checking out the source code from one SCM while checking out
+  legacy or third-party code from another.
+</div>
