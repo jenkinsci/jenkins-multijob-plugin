@@ -2,28 +2,44 @@
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:p="/lib/hudson/project">
 
+	<style>
+	td.phase {
+  		border-bottom:1pt solid black;
+		font-family: "Rockwell Extra Bold", "Rockwell Bold", monospace;
+	</style>
 
 	<table border="0" style="margin-top: 1em; margin-left:1em;">
-
+     <j:set var="lastPhase" value=""/>
 	 <j:forEach var="builder" items="${it.getBuilders()}">
-	 		<tr>
+	 <tr>
+				<j:choose>
+				   <j:when test="${!lastPhase.equals(builder.value.phaseName)}">
+						<j:set var="lastPhase" value="${builder.value.phaseName}"/>
+					  	<td class="phase">${builder.value.phaseName}</td>
+				   </j:when>
+				   <j:otherwise>
+					   <td class="no-wrap"></td>
+				   </j:otherwise>
+				</j:choose>
+
 	 			<td class="no-wrap">
 	 				<a href="${m.key.shortUrl}">
-                		<img src="${imagesURL}/16x16/${builder.icon}" alt=""/>
+                		<img src="${imagesURL}/16x16/${builder.value.icon}" alt=""/>
               		</a>
 	 			</td>
-	 			<td class="no-wrap">${builder.phaseName}</td>
-	 			<td class="no-wrap">${builder.jobName}</td>
+	
+	 			<td class="no-wrap">${builder.value.jobName}</td>
 	 			<td class="no-wrap">
 	 				<j:choose>
-		 				<j:when test="${builder.url.length() > 0}">
-			 				<a href="${rootURL}/${builder.url}">
-		                		build #${builder.buildNumber}
+		 				<j:when test="${builder.value.url.length() > 0}">
+			 				<a href="${rootURL}/${builder.value.url}">
+		                		build #${builder.value.buildNumber}
 		              		</a>
 	              		</j:when>
 	              	</j:choose>
 	 			</td>
-	 			<td class="no-wrap">( ${builder.duration} )</td>
+	 			<td class="no-wrap">( ${builder.value.duration} )</td>
+	 			
 	 		</tr>
      </j:forEach>
 

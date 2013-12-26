@@ -13,8 +13,10 @@ import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 
@@ -23,20 +25,21 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-@ExportedBean(defaultVisibility=999)
+@ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
+
+	private Map<String, SubBuild> subBuilds = null;
+	private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
 
 	public MultiJobBuild(MultiJobProject project) throws IOException {
 		super(project);
 	}
-	
-	MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
-	
+
 	@Override
 	public ChangeLogSet<? extends Entry> getChangeSet() {
 		return super.getChangeSet();
 	}
-	
+
 	public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
 		this.changeSets.addChangeLogSet(changeLogSet);
 	}
@@ -45,7 +48,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 			throws IOException {
 		super(project, buildDir);
 	}
-	
+
 	@Override
 	public synchronized void doStop(StaplerRequest req, StaplerResponse rsp)
 			throws IOException, ServletException {
@@ -63,48 +66,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		run(new MultiJobRunnerImpl());
 	}
 
-	protected class MultiJobRunnerImpl extends
-			Build<MultiJobProject, MultiJobBuild>.RunnerImpl {
-		@Override
-		public Result run(BuildListener listener) throws Exception {
-			Result result = super.run(listener);
-			if (isAborted())
-				return Result.ABORTED;
-			if (isFailure())
-				return Result.FAILURE;
-			if (isUnstable())
-				return Result.UNSTABLE;
-			return result;
-		}
-
-		private boolean isAborted() {
-			return evaluateResult(Result.FAILURE);
-		}
-		
-		private boolean isFailure() {
-			return evaluateResult(Result.UNSTABLE);
-		}
-
-		private boolean isUnstable() {
-			return evaluateResult(Result.SUCCESS);
-		}
-
-		private boolean evaluateResult(Result result) {
-			List<SubBuild> builders = getBuilders();
-			for (SubBuild subBuild : builders) {
-				Result buildResult = subBuild.getResult();
-				if (buildResult != null && buildResult.isWorseThan(result)) {
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-
-	public List<SubBuild> getBuilders() {
-		MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
-		List<SubBuild> subBuilds = multiJobBuild.getSubBuilds();
-		for (SubBuild subBuild : subBuilds) {
+	public Map<String, SubBuild> getBuilders() {
+		Map<String, SubBuild> subBuilds = getSubBuilds();
+		Collection<SubBuild> values = subBuilds.values();
+		for (SubBuild subBuild : values) {
 			Run build = getBuild(subBuild);
 			if (build != null) {
 				subBuild.setResult(build.getResult());
@@ -137,30 +102,63 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		return build;
 	}
 
-	public void addSubBuild(String parentJobName, int parentBuildNumber,
-			String jobName, int buildNumber, String phaseName,
-			AbstractBuild refBuild) {
+	public void addSubBuild(MultiJobBuilder multiJobBuilder,
+			String parentJobName, int parentBuildNumber, String jobName,
+			int buildNumber, String phaseName, AbstractBuild refBuild) {
 		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
 				jobName, buildNumber, phaseName);
-		for (SubBuild subbuild : getSubBuilds()) {
-			if (subbuild.getJobName().equals(jobName)) {
-				getSubBuilds().remove(subbuild);
-				break;
-			}
-		}
-		getSubBuilds().add(subBuild);
+		getSubBuilds().put(
+				phaseName.concat(jobName).concat(String.valueOf(buildNumber)),
+				subBuild);
 	}
 
-	private List<SubBuild> subBuilds;
-
 	@Exported
-	public List<SubBuild> getSubBuilds() {
-		if (subBuilds == null)
-			subBuilds = new CopyOnWriteArrayList<SubBuild>();
+	public Map<String, SubBuild> getSubBuilds() {
+		if (subBuilds == null) {
+			subBuilds = new LinkedHashMap<String, MultiJobBuild.SubBuild>();
+		}
 		return subBuilds;
 	}
 
-	@ExportedBean(defaultVisibility=999)
+	protected class MultiJobRunnerImpl extends
+			Build<MultiJobProject, MultiJobBuild>.RunnerImpl {
+		@Override
+		public Result run(BuildListener listener) throws Exception {
+			Result result = super.run(listener);
+			if (isAborted())
+				return Result.ABORTED;
+			if (isFailure())
+				return Result.FAILURE;
+			if (isUnstable())
+				return Result.UNSTABLE;
+			return result;
+		}
+
+		private boolean isAborted() {
+			return evaluateResult(Result.FAILURE);
+		}
+
+		private boolean isFailure() {
+			return evaluateResult(Result.UNSTABLE);
+		}
+
+		private boolean isUnstable() {
+			return evaluateResult(Result.SUCCESS);
+		}
+
+		private boolean evaluateResult(Result result) {
+			Map<String, SubBuild> builders = getBuilders();
+			for (SubBuild subBuild : builders.values()) {
+				Result buildResult = subBuild.getResult();
+				if (buildResult != null && buildResult.isWorseThan(result)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	@ExportedBean(defaultVisibility = 999)
 	public static class SubBuild {
 
 		private final String parentJobName;

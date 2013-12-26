@@ -10,7 +10,6 @@ import hudson.model.ViewGroup;
 import hudson.model.AbstractBuild;
 import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
-
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.ListView;
@@ -25,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -194,24 +194,24 @@ public class MultiJobView extends ListView {
 		MultiJobBuild lastParentFailureBuild = multiJobProject
 				.getBuildByNumber(parentBuildState.getLastFailureBuildNumber());
 		if (previousParentBuild != null) {
-			List<SubBuild> subBuilds = previousParentBuild.getSubBuilds();
-			for (SubBuild subBuild : subBuilds) {
+			Map<String, SubBuild> subBuilds = previousParentBuild.getSubBuilds();
+			for (SubBuild subBuild : subBuilds.values()) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					previousBuildNumber = subBuild.getBuildNumber();
 				}
 			}
 		}
 		if (lastParentBuild != null) {
-			List<SubBuild> subBuilds = lastParentBuild.getSubBuilds();
-			for (SubBuild subBuild : subBuilds) {
+			Map<String, SubBuild> subBuilds = lastParentBuild.getSubBuilds();
+			for (SubBuild subBuild : subBuilds.values()) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					lastBuildNumber = subBuild.getBuildNumber();
 				}
 			}
 		}
 		if (lastParentSuccessBuild != null) {
-			List<SubBuild> subBuilds = lastParentSuccessBuild.getSubBuilds();
-			for (SubBuild subBuild : subBuilds) {
+			Map<String, SubBuild> subBuilds = lastParentSuccessBuild.getSubBuilds();
+			for (SubBuild subBuild : subBuilds.values()) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					AbstractBuild build = (AbstractBuild) project
 							.getBuildByNumber(subBuild.getBuildNumber());
@@ -228,8 +228,8 @@ public class MultiJobView extends ListView {
 			}
 		}
 		if (lastParentFailureBuild != null) {
-			List<SubBuild> subBuilds = lastParentFailureBuild.getSubBuilds();
-			for (SubBuild subBuild : subBuilds) {
+			Map<String, SubBuild> subBuilds = lastParentFailureBuild.getSubBuilds();
+			for (SubBuild subBuild : subBuilds.values()) {
 				if (subBuild.getJobName().equals(project.getName())) {
 					AbstractBuild build = (AbstractBuild) project
 							.getBuildByNumber(subBuild.getBuildNumber());

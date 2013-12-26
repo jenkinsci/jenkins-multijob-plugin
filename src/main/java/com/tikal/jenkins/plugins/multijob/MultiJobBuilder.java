@@ -20,6 +20,7 @@ import hudson.model.Cause.UpstreamCause;
 import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Run;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
@@ -35,8 +36,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import jenkins.model.Jenkins;
 
 import net.sf.json.JSONObject;
 
@@ -67,9 +66,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
+
 		Hudson hudson = Hudson.getInstance();
 		MultiJobBuild multiJobBuild = (MultiJobBuild) build;
 		MultiJobProject thisProject = multiJobBuild.getProject();
+
 		Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
 				phaseJobs.size());
 
@@ -82,17 +83,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		}
 
 		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
-		List<AbstractProject> projectList = new ArrayList<AbstractProject>();
 		for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
 			AbstractProject subJob = phaseSubJob.job;
-                       
-                        if (subJob.isDisabled()) {
-                            listener.getLogger().println(String
-                                    .format("Skipping %s. This Job has been disabled.",
-                                    subJob.getName()));
-                            continue;
-                        }
-                        
+			if (subJob.isDisabled()) {
+				listener.getLogger().println(
+						String.format(
+								"Skipping %s. This Job has been disabled.",
+								subJob.getName()));
+				continue;
+			}
+
 			reportStart(listener, subJob);
 			PhaseJobsConfig projectConfig = phaseSubJobs.get(phaseSubJob);
 			List<Action> actions = new ArrayList<Action>();
@@ -109,51 +109,42 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 			if (future == null) {
 				listener.getLogger().println(
-                                        String.format("Warning: can't execute %s build.",
-                                        subJob.getName()));
+						String.format("Warning: can't execute %s build.",
+								subJob.getName()));
 			} else {
-                            futuresList.add(future);
-                            projectList.add(subJob);
-                        }
-                        
+				futuresList.add(future);
+			}
+
 			// Wait a second before next build start.
 			TimeUnit.SECONDS.sleep(1);
 		}
 
 		boolean failed = false;
 		boolean canContinue = true;
-		while (!futuresList.isEmpty() && !failed) {
+		while (!futuresList.isEmpty() /* && !failed */) {
 			for (Future future : futuresList) {
-				AbstractProject project = projectList.get(futuresList
-						.indexOf(future));
-				if (future.isDone() && !future.isCancelled()) {
-					try {
-						AbstractBuild jobBuild = (AbstractBuild) future.get();
-						Result result = jobBuild.getResult();
+				try {
+					QueueTaskFuture taskFuture = (QueueTaskFuture) future;
+					AbstractBuild jobBuild = (AbstractBuild) taskFuture
+							.getStartCondition().get();
+					addSubBuild(multiJobBuild, thisProject, jobBuild);
+					if (future.isDone() && !future.isCancelled()) {
 						ChangeLogSet<Entry> changeLogSet = jobBuild
 								.getChangeSet();
-						if (changeLogSet != null) {
-							((MultiJobBuild) build)
-									.addChangeLogSet(changeLogSet);
-						}
-						reportFinish(listener, jobBuild, result);
-						if (!continuationCondition.isContinue(jobBuild)) {
+						if (changeLogSet != null)
+							multiJobBuild.addChangeLogSet(changeLogSet);
+						if (!continuationCondition.isContinue(jobBuild))
 							failed = true;
-						}
-						addSubBuild(multiJobBuild, thisProject, jobBuild);
+						Result result = jobBuild.getResult();
+						reportFinish(listener, jobBuild, result);
 						addBuildEnvironmentVariables(multiJobBuild, jobBuild,
 								listener);
-						projectList.remove(project);
+						// addSubBuild(multiJobBuild, thisProject, jobBuild);
 						futuresList.remove(future);
 						break;
-					} catch (ExecutionException e) {
-						failed = true;
-					} catch (CancellationException e) {
-						failed = true;
 					}
-				} else if (project.isBuilding()) {
-					addSubBuild(multiJobBuild, thisProject,
-							(AbstractBuild) project.getLastBuild());
+				} catch (Exception e) {
+					failed = true;
 				}
 			}
 			// Wait a second before next check.
@@ -165,10 +156,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				throw new InterruptedException();
 			}
 		}
-		if (failed) {
-			for (Future future : futuresList)
-				future.cancel(true);
-		}
+		// if (failed) {
+		// for (Future future : futuresList)
+		// future.cancel(true);
+		// }
 		canContinue = !failed;
 		return canContinue;
 	}
@@ -197,7 +188,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	@SuppressWarnings("rawtypes")
 	private void addSubBuild(MultiJobBuild multiJobBuild,
 			MultiJobProject thisProject, AbstractBuild jobBuild) {
-		multiJobBuild.addSubBuild(thisProject.getName(),
+		multiJobBuild.addSubBuild(this, thisProject.getName(),
 				multiJobBuild.getNumber(), jobBuild.getProject().getName(),
 				jobBuild.getNumber(), phaseName, jobBuild);
 	}
