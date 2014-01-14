@@ -13,10 +13,10 @@ import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.servlet.ServletException;
 
@@ -28,7 +28,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
-	private Map<String, SubBuild> subBuilds = null;
+	// private Map<String, SubBuild> currentSubBuilds = new
+	// LinkedHashMap<String, MultiJobBuild.SubBuild>();
 	private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
 
 	public MultiJobBuild(MultiJobProject project) throws IOException {
@@ -41,7 +42,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	}
 
 	public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
-		this.changeSets.addChangeLogSet(changeLogSet);
+		if (changeLogSet != null) {
+			this.changeSets.addChangeLogSet(changeLogSet);
+		}
 	}
 
 	public MultiJobBuild(MultiJobProject project, File buildDir)
@@ -66,10 +69,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		run(new MultiJobRunnerImpl());
 	}
 
-	public Map<String, SubBuild> getBuilders() {
-		Map<String, SubBuild> subBuilds = getSubBuilds();
-		Collection<SubBuild> values = subBuilds.values();
-		for (SubBuild subBuild : values) {
+	public List<SubBuild> getBuilders() {
+		MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
+		List<SubBuild> subBuilds = multiJobBuild.getSubBuilds();
+		for (SubBuild subBuild : subBuilds) {
 			Run build = getBuild(subBuild);
 			if (build != null) {
 				subBuild.setResult(build.getResult());
@@ -104,19 +107,24 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 	public void addSubBuild(MultiJobBuilder multiJobBuilder,
 			String parentJobName, int parentBuildNumber, String jobName,
-			int buildNumber, String phaseName, AbstractBuild refBuild) {
-		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
-				jobName, buildNumber, phaseName);
-		getSubBuilds().put(
-				phaseName.concat(jobName).concat(String.valueOf(buildNumber)),
-				subBuild);
+			int buildNumber, String phaseName) {
+		String key = phaseName.concat(jobName).concat(
+				String.valueOf(buildNumber));
+		if (!filterSubBuilds.contains(key)) {
+			filterSubBuilds.add(key);
+			SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
+					jobName, buildNumber, phaseName);
+			getSubBuilds().add(subBuild);
+		}
 	}
 
+	private List<SubBuild> subBuilds;
+	private Set<String> filterSubBuilds = new HashSet<String>();
+
 	@Exported
-	public Map<String, SubBuild> getSubBuilds() {
-		if (subBuilds == null) {
-			subBuilds = new LinkedHashMap<String, MultiJobBuild.SubBuild>();
-		}
+	public List<SubBuild> getSubBuilds() {
+		if (subBuilds == null)
+			subBuilds = new CopyOnWriteArrayList<SubBuild>();
 		return subBuilds;
 	}
 
@@ -147,8 +155,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		}
 
 		private boolean evaluateResult(Result result) {
-			Map<String, SubBuild> builders = getBuilders();
-			for (SubBuild subBuild : builders.values()) {
+			List<SubBuild> builders = getBuilders();
+			for (SubBuild subBuild : builders) {
 				Result buildResult = subBuild.getResult();
 				if (buildResult != null && buildResult.isWorseThan(result)) {
 					return true;
