@@ -125,6 +125,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 		}
 
+		if (subTasks.size() < 1)
+			return true;
+
 		ExecutorService executor = Executors
 				.newFixedThreadPool(subTasks.size());
 		Set<Result> jobResults = new HashSet<Result>();
