@@ -140,13 +140,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		}
 
 		executor.shutdown();
-
+		int resultCounter = 0;
 		while (!executor.isTerminated()) {
 			SubTask subTask = queue.take();
+			resultCounter++;
 			if (subTask.result != null) {
 				jobResults.add(subTask.result);
 				checkPhaseTermination(subTask, subTasks);
 			}
+			if (subTasks.size() == resultCounter)
+				break;
 		}
 
 		executor.shutdownNow();
@@ -184,34 +187,33 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			try {
 				QueueTaskFuture<Build> future = (QueueTaskFuture<Build>) subTask.future;
 				Build jobBuild = null;
-				while (true && !isInterrupted()) {
+				while (true) {
 					if (future.isCancelled()) {
+						addSubBuild(multiJobBuild, multiJobProject,
+								subTask.phaseConfig);
 						break;
 					}
-					if (jobBuild == null) {
-						try {
-							jobBuild = (Build) future.getStartCondition().get(
-									1, TimeUnit.SECONDS);
-							addSubBuild(multiJobBuild, multiJobProject,
-									jobBuild);
-						} catch (Exception e) {
-							continue;
-						}
+					try {
+						jobBuild = (Build) future.getStartCondition().get(5,
+								TimeUnit.SECONDS);
+						addSubBuild(multiJobBuild, multiJobProject, jobBuild);
+					} catch (Exception e) {
+						continue;
 					}
-					if (subTask.future.isDone()) {
-						ChangeLogSet<Entry> changeLogSet = jobBuild
-								.getChangeSet();
-						multiJobBuild.addChangeLogSet(changeLogSet);
-						result = jobBuild.getResult();
-						reportFinish(listener, jobBuild, result);
-						addBuildEnvironmentVariables(multiJobBuild, jobBuild,
-								listener);
-						subTask.result = result;
+					if (future.isDone())
 						break;
-					}
+				}
+				if (jobBuild != null) {
+					ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
+					multiJobBuild.addChangeLogSet(changeLogSet);
+					result = jobBuild.getResult();
+					reportFinish(listener, jobBuild, result);
+					addBuildEnvironmentVariables(multiJobBuild, jobBuild,
+							listener);
+					subTask.result = result;
 				}
 			} catch (Exception e) {
-				listener.getLogger().println(e);
+				e.printStackTrace();
 			}
 			queue.add(subTask);
 		}
@@ -219,20 +221,19 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	boolean checkPhaseTermination(SubTask subTask, List<SubTask> subTasks) {
-		KillPhaseOnJobResultCondition killCondition = subTask.phaseConfig
-				.getKillPhaseOnJobResultCondition();
-		if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER))
-			return false;
-		if (killCondition.isKillPhase(subTask.result)) {
-			for (SubTask _subTask : subTasks) {
-				try {
+		try {
+			KillPhaseOnJobResultCondition killCondition = subTask.phaseConfig
+					.getKillPhaseOnJobResultCondition();
+			if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER))
+				return false;
+			if (killCondition.isKillPhase(subTask.result)) {
+				for (SubTask _subTask : subTasks)
 					_subTask.future.cancel(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 			}
+			return true;
+		} catch (Exception e) {
+			return false;
 		}
-		return true;
 	}
 
 	private static final class SubTask {
@@ -265,6 +266,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 						+ " with status :"
 						+ HyperlinkNote.encodeTo('/' + jobBuild.getUrl()
 								+ "/console", result.toString()));
+	}
+
+	private void addSubBuild(MultiJobBuild multiJobBuild,
+			MultiJobProject multiJobProject, PhaseJobsConfig phaseConfig) {
+		multiJobBuild.addSubBuild(this, multiJobProject.getName(),
+				multiJobBuild.getNumber(), phaseConfig.getJobName(), 0,
+				phaseName);
 	}
 
 	@SuppressWarnings("rawtypes")

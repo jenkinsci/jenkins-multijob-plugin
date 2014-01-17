@@ -81,7 +81,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 				subBuild.setUrl(build.getUrl());
 			} else {
 				subBuild.setIcon(BallColor.NOTBUILT.getImage());
-				subBuild.setDuration("not built yet");
+				subBuild.setDuration("build canceled");
 				subBuild.setUrl(null);
 			}
 		}
