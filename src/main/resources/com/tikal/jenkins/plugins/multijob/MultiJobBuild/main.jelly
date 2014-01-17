@@ -6,7 +6,7 @@
 		td.phase {
 			font-size:14px;
 			padding:5px;
-			text-align:center;
+			text-align:left;
 			border-bottom:1px dashed #D3DDE2;
 		}
 		span.job{
@@ -24,14 +24,16 @@
 				<j:when test="${!lastPhase.equals(builder.phaseName)}">
 				<j:set var="lastPhase" value="${builder.phaseName}"/>
 				<tr>
-					<td colspan="4" align="center" class="phase">${builder.phaseName}</td>
+					<td colspan="4" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
 				</tr>
 				</j:when>
 				<tr>
 		 			<td class="no-wrap" width="5%" >
 	           			<span class="job"><img src="${imagesURL}/16x16/${builder.icon}" alt=""/></span>
 	 				</td>
-	 				<td class="no-wrap" width="55%">${builder.jobName}</td>
+	 				<td class="no-wrap" width="55%">
+	 					<a href="/job/${builder.jobName}">${builder.jobName}</a>
+	 				</td>
 					<td class="no-wrap" width="15%">
 						<j:choose>
 							<j:when test="${builder.url.length() > 0}">

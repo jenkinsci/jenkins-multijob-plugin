@@ -188,7 +188,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				QueueTaskFuture<Build> future = (QueueTaskFuture<Build>) subTask.future;
 				Build jobBuild = null;
 				while (true) {
-					if (future.isCancelled()) {
+					if (future.isCancelled() && jobBuild == null) {
 						addSubBuild(multiJobBuild, multiJobProject,
 								subTask.phaseConfig);
 						break;
