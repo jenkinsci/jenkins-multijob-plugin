@@ -11,13 +11,12 @@ import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
+import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.TaskListener;
-import hudson.model.TopLevelItem;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UpstreamCause;
-import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
@@ -67,14 +66,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
-		Hudson hudson = Hudson.getInstance();
+        Jenkins jenkins = Jenkins.getInstance();
 		MultiJobBuild multiJobBuild = (MultiJobBuild) build;
 		MultiJobProject thisProject = multiJobBuild.getProject();
 		Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
 				phaseJobs.size());
 
 		for (PhaseJobsConfig phaseJobConfig : phaseJobs) {
-			TopLevelItem item = hudson.getItem(phaseJobConfig.getJobName());
+			Item item = jenkins.getItemByFullName(phaseJobConfig.getJobName());
 			if (item instanceof AbstractProject) {
 				AbstractProject job = (AbstractProject) item;
 				phaseSubJobs.put(new PhaseSubJob(job), phaseJobConfig);
@@ -358,13 +357,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	@SuppressWarnings("rawtypes")
 	public void buildDependencyGraph(AbstractProject owner,
 			DependencyGraph graph) {
-		Hudson hudson = Hudson.getInstance();
+		Jenkins jenkins = Jenkins.getInstance();
 		List<PhaseJobsConfig> phaseJobsConfigs = getPhaseJobs();
 
 		if (phaseJobsConfigs == null)
 			return;
 		for (PhaseJobsConfig project : phaseJobsConfigs) {
-			TopLevelItem topLevelItem = hudson.getItem(project.getJobName());
+			Item topLevelItem = jenkins.getItemByFullName(project.getJobName());
 			if (topLevelItem instanceof AbstractProject) {
 				Dependency dependency = new Dependency(owner,
 						(AbstractProject) topLevelItem) {
@@ -420,8 +419,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		COMPLETED("Complete (always continue)") {
 			@Override
 			public boolean isContinue(AbstractBuild build) {
-				return build.getResult().equals(Result.ABORTED) ? true : build
-						.getResult().isBetterOrEqualTo(Result.FAILURE);
+				return build.getResult().equals(Result.ABORTED) || build
+                        .getResult().isBetterOrEqualTo(Result.FAILURE);
 			}
 		};
 
