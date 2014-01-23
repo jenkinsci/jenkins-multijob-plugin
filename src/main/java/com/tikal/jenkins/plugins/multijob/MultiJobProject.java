@@ -1,7 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import java.io.IOException;
-import java.util.Map;
+import jenkins.model.Jenkins;
 
 import hudson.Extension;
 import hudson.model.DependencyGraph;
@@ -9,9 +8,6 @@ import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.Hudson;
 import hudson.model.Project;
-import hudson.scm.SCM;
-import hudson.triggers.Trigger;
-import hudson.triggers.TriggerDescriptor;
 import hudson.util.AlternativeUiTextProvider;
 
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
@@ -29,20 +25,15 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		super(parent, name);
 	}
 
-	@Override
+    @Override
 	protected Class<MultiJobBuild> getBuildClass() {
 		return MultiJobBuild.class;
 	}
 
-	@Override
-	public Hudson getParent() {
-		return Hudson.getInstance();
-	}
-	
-        @Override
-        public String getPronoun() {
-            return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getDisplayName());
-        }
+    @Override
+    public String getPronoun() {
+        return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getDisplayName());
+    }
 
 	public DescriptorImpl getDescriptor() {
 		return DESCRIPTOR;
@@ -72,11 +63,10 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 	}
 
 	public MultiJobView getView() {
-		MultiJobView view = new MultiJobView("");
-		return view;
+        return new MultiJobView("");
 	}
 
 	public String getRootUrl() {
-		return Hudson.getInstance().getRootUrl();
+		return Jenkins.getInstance().getRootUrl();
 	}
 }
