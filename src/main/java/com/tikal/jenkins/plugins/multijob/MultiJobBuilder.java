@@ -6,11 +6,13 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
+import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
+import hudson.model.ParameterValue;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
@@ -52,6 +54,7 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
+import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
@@ -120,7 +123,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				subTasks.add(new SubTask(future, phaseConfig));
 			} else {
 				listener.getLogger().println(
-						String.format("Warning: %s sub job is disabled ",
+						String.format("Warning: %s sub job is disabled.",
 								subJob.getName()));
 			}
 		}
@@ -189,14 +192,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				Build jobBuild = null;
 				while (true) {
 					if (future.isCancelled() && jobBuild == null) {
-						addSubBuild(multiJobBuild, multiJobProject,
+						updateSubBuild(multiJobBuild, multiJobProject,
 								subTask.phaseConfig);
 						break;
 					}
 					try {
 						jobBuild = (Build) future.getStartCondition().get(5,
 								TimeUnit.SECONDS);
-						addSubBuild(multiJobBuild, multiJobProject, jobBuild);
+						updateSubBuild(multiJobBuild, multiJobProject, jobBuild);
 					} catch (Exception e) {
 						continue;
 					}
@@ -204,9 +207,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 						break;
 				}
 				if (jobBuild != null) {
+					result = jobBuild.getResult();
+					updateSubBuild(multiJobBuild, multiJobProject, jobBuild,
+							result);
 					ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
 					multiJobBuild.addChangeLogSet(changeLogSet);
-					result = jobBuild.getResult();
 					reportFinish(listener, jobBuild, result);
 					addBuildEnvironmentVariables(multiJobBuild, jobBuild,
 							listener);
@@ -268,19 +273,33 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 								+ "/console", result.toString()));
 	}
 
-	private void addSubBuild(MultiJobBuild multiJobBuild,
+	private void updateSubBuild(MultiJobBuild multiJobBuild,
 			MultiJobProject multiJobProject, PhaseJobsConfig phaseConfig) {
-		multiJobBuild.addSubBuild(this, multiJobProject.getName(),
+		SubBuild subBuild = new SubBuild(multiJobProject.getName(),
 				multiJobBuild.getNumber(), phaseConfig.getJobName(), 0,
-				phaseName);
+				phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "");
+		multiJobBuild.addSubBuild(subBuild);
 	}
 
-	@SuppressWarnings("rawtypes")
-	private void addSubBuild(MultiJobBuild multiJobBuild,
-			MultiJobProject thisProject, AbstractBuild jobBuild) {
-		multiJobBuild.addSubBuild(this, thisProject.getName(),
+	private void updateSubBuild(MultiJobBuild multiJobBuild,
+			MultiJobProject multiJobProject, AbstractBuild jobBuild) {
+		SubBuild subBuild = new SubBuild(multiJobProject.getName(),
 				multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-				jobBuild.getNumber(), phaseName);
+				jobBuild.getNumber(), phaseName, null, jobBuild.getIconColor()
+						.getImage(), jobBuild.getDurationString(),
+				jobBuild.getUrl());
+		multiJobBuild.addSubBuild(subBuild);
+	}
+
+	private void updateSubBuild(MultiJobBuild multiJobBuild,
+			MultiJobProject multiJobProject, AbstractBuild jobBuild,
+			Result result) {
+		SubBuild subBuild = new SubBuild(multiJobProject.getName(),
+				multiJobBuild.getNumber(), jobBuild.getProject().getName(),
+				jobBuild.getNumber(), phaseName, result, jobBuild
+						.getIconColor().getImage(),
+				jobBuild.getDurationString(), jobBuild.getUrl());
+		multiJobBuild.addSubBuild(subBuild);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -373,7 +392,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		actions.addAll(parametersActions);
 		// }
 
-		ParametersAction currParametersAction = null;
 	}
 
 	public String getPhaseName() {

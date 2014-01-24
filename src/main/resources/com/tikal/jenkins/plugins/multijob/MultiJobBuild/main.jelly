@@ -12,11 +12,35 @@
 		span.job{
 			border-left:1px dashed #D3DDE2;
 		}
+		.collapse{
+		  text-decoration: underline;
+		  cursor:pointer;
+		  display:block;
+		  color: blue;
+		}
+		.collapse + input{
+		  display:none;
+		}
+		.collapse + input + *{
+		  display:none;
+		}
+		.collapse+ input:checked + *{
+			position:absolute;
+			width:400px;
+			background-color:#ffffff;
+			height:300px;
+			border:1px solid #000;
+		  	display:block;
+		  	padding: 10px;
+		  	font-size: 1.2em;
+		}
 	</style>
-
+	
 	<table border="0" style="margin-top: 1em; margin-left:1em;" width="40%">
     <j:set var="lastPhase" value=""/>
+    <j:set var="index" value="0"/>
 	<j:forEach var="builder" items="${it.getBuilders()}">
+	<j:set var="index" value="${index+1}"/>
 	<tr>
 		<td>
 			<table border="0" width="100%">
@@ -24,14 +48,14 @@
 				<j:when test="${!lastPhase.equals(builder.phaseName)}">
 				<j:set var="lastPhase" value="${builder.phaseName}"/>
 				<tr>
-					<td colspan="4" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
+					<td colspan="5" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
 				</tr>
 				</j:when>
 				<tr>
 		 			<td class="no-wrap" width="5%" >
 	           			<span class="job"><img src="${imagesURL}/16x16/${builder.icon}" alt=""/></span>
 	 				</td>
-	 				<td class="no-wrap" width="55%">
+	 				<td class="no-wrap" width="50%">
 	 					<a href="/job/${builder.jobName}">${builder.jobName}</a>
 	 				</td>
 					<td class="no-wrap" width="15%">
@@ -43,7 +67,12 @@
 							</j:when>
 						</j:choose>
 					</td>
-	 				<td class="no-wrap" width="25%">( ${builder.duration} )</td>				   
+	 				<td class="no-wrap" width="20%">( ${builder.duration} )</td>	
+	 				<td class="no-wrap" width="10%">
+						<label class="collapse" for="_${index}">parameters</label>
+						<input id="_${index}" type="checkbox"/>
+						<div>${it.getBuildParams(builder)}</div>
+	 				</td>			   
 				</tr>
 				</j:choose>
 			</table>
