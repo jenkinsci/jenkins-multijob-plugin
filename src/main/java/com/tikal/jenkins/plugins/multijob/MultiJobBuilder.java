@@ -12,7 +12,6 @@ import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
-import hudson.model.ParameterValue;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
@@ -20,7 +19,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Hudson;
-import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
@@ -42,6 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import net.sf.json.JSONObject;
 
@@ -201,7 +200,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 								TimeUnit.SECONDS);
 						updateSubBuild(multiJobBuild, multiJobProject, jobBuild);
 					} catch (Exception e) {
-						continue;
+						if (e instanceof TimeoutException)
+							continue;
+						else {
+							throw e;
+						}
 					}
 					if (future.isDone())
 						break;

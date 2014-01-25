@@ -110,9 +110,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 				.concat(String.valueOf(subBuild.getBuildNumber()));
 		if (subBuildsMap.containsKey(key)) {
 			SubBuild e = subBuildsMap.get(key);
-			Collections.replaceAll(subBuilds, e, subBuild);
+			Collections.replaceAll(getSubBuilds(), e, subBuild);
 		} else {
-			subBuilds.add(subBuild);
+			getSubBuilds().add(subBuild);
 		}
 		subBuildsMap.put(key, subBuild);
 	}
