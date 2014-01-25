@@ -29,10 +29,13 @@
 			width:400px;
 			background-color:#ffffff;
 			height:300px;
-			border:1px solid #000;
+			border:1px dashed #D3DDE2;
 		  	display:block;
 		  	padding: 10px;
 		  	font-size: 1.2em;
+		  	overflow: auto;
+		  	overflow-x: hidden;
+		  	-ms-overflow-x: hidden;
 		}
 	</style>
 	
