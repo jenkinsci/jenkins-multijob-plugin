@@ -2,33 +2,86 @@
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:p="/lib/hudson/project">
 
-
-	<table border="0" style="margin-top: 1em; margin-left:1em;">
-
-	 <j:forEach var="builder" items="${it.getBuilders()}">
-	 		<tr>
-	 			<td class="no-wrap">
-	 				<a href="${m.key.shortUrl}">
-                		<img src="${imagesURL}/16x16/${builder.icon}" alt=""/>
-              		</a>
-	 			</td>
-	 			<td class="no-wrap">${builder.phaseName}</td>
-	 			<td class="no-wrap">${builder.jobName}</td>
-	 			<td class="no-wrap">
-	 				<j:choose>
-		 				<j:when test="${builder.url.length() > 0}">
-			 				<a href="${rootURL}/${builder.url}">
-		                		build #${builder.buildNumber}
-		              		</a>
-	              		</j:when>
-	              	</j:choose>
-	 			</td>
-	 			<td class="no-wrap">( ${builder.duration} )</td>
-	 		</tr>
-     </j:forEach>
-
+	<style>
+		td.phase {
+			font-size:14px;
+			padding:5px;
+			text-align:left;
+			border-bottom:1px dashed #D3DDE2;
+		}
+		span.job{
+			border-left:1px dashed #D3DDE2;
+		}
+		.collapse{
+		  text-decoration: underline;
+		  cursor:pointer;
+		  display:block;
+		  color: blue;
+		}
+		.collapse + input{
+		  display:none;
+		}
+		.collapse + input + *{
+		  display:none;
+		}
+		.collapse+ input:checked + *{
+			position:absolute;
+			width:400px;
+			background-color:#ffffff;
+			height:300px;
+			border:1px dashed #D3DDE2;
+		  	display:block;
+		  	padding: 10px;
+		  	font-size: 1.2em;
+		  	overflow: auto;
+		  	overflow-x: hidden;
+		  	-ms-overflow-x: hidden;
+		}
+	</style>
+	
+	<table border="0" style="margin-top: 1em; margin-left:1em;" width="40%">
+    <j:set var="lastPhase" value=""/>
+    <j:set var="index" value="0"/>
+	<j:forEach var="builder" items="${it.getBuilders()}">
+	<j:set var="index" value="${index+1}"/>
+	<tr>
+		<td>
+			<table border="0" width="100%">
+				<j:choose>
+				<j:when test="${!lastPhase.equals(builder.phaseName)}">
+				<j:set var="lastPhase" value="${builder.phaseName}"/>
+				<tr>
+					<td colspan="5" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
+				</tr>
+				</j:when>
+				<tr>
+		 			<td class="no-wrap" width="5%" >
+	           			<span class="job"><img src="${imagesURL}/16x16/${builder.icon}" alt=""/></span>
+	 				</td>
+	 				<td class="no-wrap" width="50%">
+	 					<a href="/job/${builder.jobName}">${builder.jobName}</a>
+	 				</td>
+					<td class="no-wrap" width="15%">
+						<j:choose>
+							<j:when test="${builder.url.length() > 0}">
+								<a href="${rootURL}/${builder.url}">
+									build #${builder.buildNumber}
+								</a>
+							</j:when>
+						</j:choose>
+					</td>
+	 				<td class="no-wrap" width="20%">( ${builder.duration} )</td>	
+	 				<td class="no-wrap" width="10%">
+						<label class="collapse" for="_${index}">parameters</label>
+						<input id="_${index}" type="checkbox"/>
+						<div>${it.getBuildParams(builder)}</div>
+	 				</td>			   
+				</tr>
+				</j:choose>
+			</table>
+		</td>
+	</tr>
+	</j:forEach>
 	</table>
-
 	<p:upstream-downstream />
-
 </j:jelly>

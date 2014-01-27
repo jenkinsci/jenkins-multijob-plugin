@@ -8,6 +8,7 @@ import hudson.model.Describable;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.model.ParameterValue;
+import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -49,7 +50,26 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private String jobProperties;
 	private boolean currParams;
 	private boolean exposedSCM;
+	private boolean disableJob;
 	private List<AbstractBuildParameters> configs;
+	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
+
+	public boolean isDisableJob() {
+		return disableJob;
+	}
+
+	public void setDisableJob(boolean disableJob) {
+		this.disableJob = disableJob;
+	}
+
+	public KillPhaseOnJobResultCondition getKillPhaseOnJobResultCondition() {
+		return killPhaseOnJobResultCondition;
+	}
+
+	public void setKillPhaseOnJobResultCondition(
+			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition) {
+		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
+	}
 
 	public boolean isExposedSCM() {
 		return currParams;
@@ -93,10 +113,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	@DataBoundConstructor
 	public PhaseJobsConfig(String jobName, String jobProperties,
-			boolean currParams, List<AbstractBuildParameters> configs) {
+			boolean currParams, List<AbstractBuildParameters> configs,
+			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
+			boolean disableJob) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
+		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
+		this.disableJob = disableJob;
 		this.configs = Util.fixNull(configs);
 	}
 
@@ -139,11 +163,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 			if (findOtherUpstreamProjects(value)) {
 				result = FormValidation
-						.warning("There are other upstream projects for this job. "
-								+ "It's possible, although very low probability, "
-								+ "that multijob will be unable to execute concurrently the same job, "
-								+ "due to Jenkins limitation. "
-								+ "In such cases, recommended to clone the job.");
+						.warning("Found other upstream projects for selected job. Due to Jenkins limitations, "
+								+ "recommended to clone the job.");
 				return result;
 			}
 
@@ -454,5 +475,38 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			configs.addAll(oldParams);
 		}
 		return this;
+	}
+
+	public static enum KillPhaseOnJobResultCondition {
+		FAILURE("Failure (stop the phase execution if the job is failed)") {
+			@Override
+			public boolean isKillPhase(Result result) {
+				return result.isWorseOrEqualTo(Result.FAILURE);
+			}
+		},
+		NEVER("Never (ignore the job result and continue the phase execution)") {
+			@Override
+			public boolean isKillPhase(Result result) {
+				return result.equals(Result.ABORTED) ? true : false;
+			}
+		},
+		UNSTABLE("Unstable (stop the phase execution if the job is unstable)") {
+			@Override
+			public boolean isKillPhase(Result result) {
+				return result.isWorseOrEqualTo(Result.UNSTABLE);
+			}
+		};
+
+		abstract public boolean isKillPhase(Result result);
+
+		private KillPhaseOnJobResultCondition(String label) {
+			this.label = label;
+		}
+
+		final private String label;
+
+		public String getLabel() {
+			return label;
+		}
 	}
 }

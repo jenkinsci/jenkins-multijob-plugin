@@ -6,6 +6,7 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
+import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
@@ -18,8 +19,8 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Hudson;
-import hudson.model.ParametersAction;
 import hudson.model.Run;
+import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
@@ -28,15 +29,18 @@ import hudson.tasks.Builder;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import jenkins.model.Jenkins;
+import java.util.concurrent.TimeoutException;
 
 import net.sf.json.JSONObject;
 
@@ -48,6 +52,9 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+
+import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
+import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
@@ -67,9 +74,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
 			BuildListener listener) throws InterruptedException, IOException {
+
 		Hudson hudson = Hudson.getInstance();
 		MultiJobBuild multiJobBuild = (MultiJobBuild) build;
 		MultiJobProject thisProject = multiJobBuild.getProject();
+
 		Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
 				phaseJobs.size());
 
@@ -81,96 +90,169 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 		}
 
-		List<Future<Build>> futuresList = new ArrayList<Future<Build>>();
-		List<AbstractProject> projectList = new ArrayList<AbstractProject>();
+		List<SubTask> subTasks = new ArrayList<SubTask>();
 		for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
 			AbstractProject subJob = phaseSubJob.job;
-                       
-                        if (subJob.isDisabled()) {
-                            listener.getLogger().println(String
-                                    .format("Skipping %s. This Job has been disabled.",
-                                    subJob.getName()));
-                            continue;
-                        }
-                        
+			if (subJob.isDisabled()) {
+				listener.getLogger().println(
+						String.format(
+								"Skipping %s. This Job has been disabled.",
+								subJob.getName()));
+				continue;
+			}
+
 			reportStart(listener, subJob);
-			PhaseJobsConfig projectConfig = phaseSubJobs.get(phaseSubJob);
+			PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
 			List<Action> actions = new ArrayList<Action>();
-			prepareActions(multiJobBuild, subJob, projectConfig, listener,
+			prepareActions(multiJobBuild, subJob, phaseConfig, listener,
 					actions);
 
 			while (subJob.isInQueue()) {
 				TimeUnit.SECONDS.sleep(subJob.getQuietPeriod());
 			}
 
-			Future future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
-					new UpstreamCause((Run) multiJobBuild),
-					actions.toArray(new Action[0]));
+			Future<Build> future = null;
+			if (!phaseConfig.isDisableJob()) {
+				future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
+						new UpstreamCause((Run) multiJobBuild),
+						actions.toArray(new Action[0]));
+			}
 
-			if (future == null) {
-				listener.getLogger().println(
-                                        String.format("Warning: can't execute %s build.",
-                                        subJob.getName()));
+			if (future != null) {
+				subTasks.add(new SubTask(future, phaseConfig));
 			} else {
-                            futuresList.add(future);
-                            projectList.add(subJob);
-                        }
-                        
-			// Wait a second before next build start.
-			TimeUnit.SECONDS.sleep(1);
+				listener.getLogger().println(
+						String.format("Warning: %s sub job is disabled.",
+								subJob.getName()));
+			}
 		}
 
-		boolean failed = false;
-		boolean canContinue = true;
-		while (!futuresList.isEmpty() && !failed) {
-			for (Future future : futuresList) {
-				AbstractProject project = projectList.get(futuresList
-						.indexOf(future));
-				if (future.isDone() && !future.isCancelled()) {
-					try {
-						AbstractBuild jobBuild = (AbstractBuild) future.get();
-						Result result = jobBuild.getResult();
-						ChangeLogSet<Entry> changeLogSet = jobBuild
-								.getChangeSet();
-						if (changeLogSet != null) {
-							((MultiJobBuild) build)
-									.addChangeLogSet(changeLogSet);
-						}
-						reportFinish(listener, jobBuild, result);
-						if (!continuationCondition.isContinue(jobBuild)) {
-							failed = true;
-						}
-						addSubBuild(multiJobBuild, thisProject, jobBuild);
-						addBuildEnvironmentVariables(multiJobBuild, jobBuild,
-								listener);
-						projectList.remove(project);
-						futuresList.remove(future);
-						break;
-					} catch (ExecutionException e) {
-						failed = true;
-					} catch (CancellationException e) {
-						failed = true;
-					}
-				} else if (project.isBuilding()) {
-					addSubBuild(multiJobBuild, thisProject,
-							(AbstractBuild) project.getLastBuild());
-				}
+		if (subTasks.size() < 1)
+			return true;
+
+		ExecutorService executor = Executors
+				.newFixedThreadPool(subTasks.size());
+		Set<Result> jobResults = new HashSet<Result>();
+		BlockingQueue<SubTask> queue = new ArrayBlockingQueue<SubTask>(
+				subTasks.size());
+		for (SubTask subTask : subTasks) {
+			Runnable worker = new SubJobWorker(thisProject, multiJobBuild,
+					listener, subTask, queue);
+			executor.execute(worker);
+		}
+
+		executor.shutdown();
+		int resultCounter = 0;
+		while (!executor.isTerminated()) {
+			SubTask subTask = queue.take();
+			resultCounter++;
+			if (subTask.result != null) {
+				jobResults.add(subTask.result);
+				checkPhaseTermination(subTask, subTasks);
 			}
-			// Wait a second before next check.
+			if (subTasks.size() == resultCounter)
+				break;
+		}
+
+		executor.shutdownNow();
+
+		for (Result result : jobResults) {
+			if (!continuationCondition.isContinue(result)) {
+				return false;
+			}
+		}
+
+		return true;
+
+	}
+
+	private final class SubJobWorker extends Thread {
+
+		MultiJobProject multiJobProject;
+		MultiJobBuild multiJobBuild;
+		BuildListener listener;
+		SubTask subTask;
+		BlockingQueue<SubTask> queue;
+
+		SubJobWorker(MultiJobProject multiJobProject,
+				MultiJobBuild multiJobBuild, BuildListener listener,
+				SubTask subTask, BlockingQueue<SubTask> queue) {
+			this.multiJobBuild = multiJobBuild;
+			this.multiJobProject = multiJobProject;
+			this.listener = listener;
+			this.subTask = subTask;
+			this.queue = queue;
+		}
+
+		public void run() {
+			Result result = null;
 			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				for (Future<Build> future : futuresList)
-					future.cancel(true);
-				throw new InterruptedException();
+				QueueTaskFuture<Build> future = (QueueTaskFuture<Build>) subTask.future;
+				Build jobBuild = null;
+				while (true) {
+					if (future.isCancelled() && jobBuild == null) {
+						updateSubBuild(multiJobBuild, multiJobProject,
+								subTask.phaseConfig);
+						break;
+					}
+					try {
+						jobBuild = (Build) future.getStartCondition().get(5,
+								TimeUnit.SECONDS);
+						updateSubBuild(multiJobBuild, multiJobProject, jobBuild);
+					} catch (Exception e) {
+						if (e instanceof TimeoutException)
+							continue;
+						else {
+							throw e;
+						}
+					}
+					if (future.isDone())
+						break;
+				}
+				if (jobBuild != null) {
+					result = jobBuild.getResult();
+					updateSubBuild(multiJobBuild, multiJobProject, jobBuild,
+							result);
+					ChangeLogSet<Entry> changeLogSet = jobBuild.getChangeSet();
+					multiJobBuild.addChangeLogSet(changeLogSet);
+					reportFinish(listener, jobBuild, result);
+					addBuildEnvironmentVariables(multiJobBuild, jobBuild,
+							listener);
+					subTask.result = result;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+			queue.add(subTask);
 		}
-		if (failed) {
-			for (Future future : futuresList)
-				future.cancel(true);
+
+	}
+
+	boolean checkPhaseTermination(SubTask subTask, List<SubTask> subTasks) {
+		try {
+			KillPhaseOnJobResultCondition killCondition = subTask.phaseConfig
+					.getKillPhaseOnJobResultCondition();
+			if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER))
+				return false;
+			if (killCondition.isKillPhase(subTask.result)) {
+				for (SubTask _subTask : subTasks)
+					_subTask.future.cancel(true);
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
 		}
-		canContinue = !failed;
-		return canContinue;
+	}
+
+	private static final class SubTask {
+		Future<Build> future;
+		PhaseJobsConfig phaseConfig;
+		Result result;
+
+		SubTask(Future<Build> future, PhaseJobsConfig phaseConfig) {
+			this.future = future;
+			this.phaseConfig = phaseConfig;
+		}
 	}
 
 	private void reportStart(BuildListener listener, AbstractProject subJob) {
@@ -194,12 +276,33 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 								+ "/console", result.toString()));
 	}
 
-	@SuppressWarnings("rawtypes")
-	private void addSubBuild(MultiJobBuild multiJobBuild,
-			MultiJobProject thisProject, AbstractBuild jobBuild) {
-		multiJobBuild.addSubBuild(thisProject.getName(),
+	private void updateSubBuild(MultiJobBuild multiJobBuild,
+			MultiJobProject multiJobProject, PhaseJobsConfig phaseConfig) {
+		SubBuild subBuild = new SubBuild(multiJobProject.getName(),
+				multiJobBuild.getNumber(), phaseConfig.getJobName(), 0,
+				phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "");
+		multiJobBuild.addSubBuild(subBuild);
+	}
+
+	private void updateSubBuild(MultiJobBuild multiJobBuild,
+			MultiJobProject multiJobProject, AbstractBuild jobBuild) {
+		SubBuild subBuild = new SubBuild(multiJobProject.getName(),
 				multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-				jobBuild.getNumber(), phaseName, jobBuild);
+				jobBuild.getNumber(), phaseName, null, jobBuild.getIconColor()
+						.getImage(), jobBuild.getDurationString(),
+				jobBuild.getUrl());
+		multiJobBuild.addSubBuild(subBuild);
+	}
+
+	private void updateSubBuild(MultiJobBuild multiJobBuild,
+			MultiJobProject multiJobProject, AbstractBuild jobBuild,
+			Result result) {
+		SubBuild subBuild = new SubBuild(multiJobProject.getName(),
+				multiJobBuild.getNumber(), jobBuild.getProject().getName(),
+				jobBuild.getNumber(), phaseName, result, jobBuild
+						.getIconColor().getImage(),
+				jobBuild.getDurationString(), jobBuild.getUrl());
+		multiJobBuild.addSubBuild(subBuild);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -292,7 +395,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		actions.addAll(parametersActions);
 		// }
 
-		ParametersAction currParametersAction = null;
 	}
 
 	public String getPhaseName() {
@@ -407,25 +509,32 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 		SUCCESSFUL("Successful") {
 			@Override
-			public boolean isContinue(AbstractBuild build) {
-				return build.getResult().equals(Result.SUCCESS);
+			public boolean isContinue(Result result) {
+				return result.equals(Result.SUCCESS);
 			}
 		},
 		UNSTABLE("Stable or Unstable but not Failed") {
 			@Override
-			public boolean isContinue(AbstractBuild build) {
-				return build.getResult().isBetterOrEqualTo(Result.UNSTABLE);
+			public boolean isContinue(Result result) {
+				return result.isBetterOrEqualTo(Result.UNSTABLE);
 			}
 		},
 		COMPLETED("Complete (always continue)") {
 			@Override
-			public boolean isContinue(AbstractBuild build) {
-				return build.getResult().equals(Result.ABORTED) ? true : build
-						.getResult().isBetterOrEqualTo(Result.FAILURE);
+			public boolean isContinue(Result result) {
+				return result.equals(Result.ABORTED) ? true : result
+						.isBetterOrEqualTo(Result.FAILURE);
+			}
+		},
+		FAILURE("Failed") {
+			@Override
+			public boolean isContinue(Result result) {
+				return result.equals(Result.ABORTED) ? false : result
+						.isWorseOrEqualTo(Result.FAILURE);
 			}
 		};
 
-		abstract public boolean isContinue(AbstractBuild build);
+		abstract public boolean isContinue(Result result);
 
 		private ContinuationCondition(String label) {
 			this.label = label;

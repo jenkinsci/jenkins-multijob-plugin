@@ -62,26 +62,30 @@ public class PhaseWrapper extends AbstractWrapper {
 	// }
 
 	public BallColor getIconColor() {
-		Result result = null;
-		AbstractBuild worseBuild = null;
-		for (BuildState buildState : childrenBuildState) {
-			Job project = (Job) Hudson.getInstance()
-					.getItem(buildState.getJobName());
-			AbstractBuild build = (AbstractBuild) project
-					.getBuildByNumber(buildState.getLastBuildNumber());
-			if (build != null) {
-				if (result == null) {
-					result = build.getResult();
-					worseBuild = build;
-				} else {
-					if (build.getResult().isWorseThan(worseBuild.getResult())) {
+		try {
+			Result result = null;
+			AbstractBuild worseBuild = null;
+			for (BuildState buildState : childrenBuildState) {
+				Job project = (Job) Hudson.getInstance()
+						.getItem(buildState.getJobName());
+				AbstractBuild build = (AbstractBuild) project
+						.getBuildByNumber(buildState.getLastBuildNumber());
+				if (build != null) {
+					if (result == null) {
+						result = build.getResult();
 						worseBuild = build;
+					} else {
+						if (build.getResult().isWorseThan(worseBuild.getResult())) {
+							worseBuild = build;
+						}
 					}
 				}
 			}
-		}
-		if (worseBuild != null) {
-			return worseBuild.getIconColor();
+			if (worseBuild != null) {
+				return worseBuild.getIconColor();
+			}
+		} catch (Exception e) {
+			return null;
 		}
 		return null;
 	}

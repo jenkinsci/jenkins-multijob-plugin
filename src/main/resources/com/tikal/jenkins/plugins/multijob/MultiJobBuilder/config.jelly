@@ -13,7 +13,14 @@
     			</f:entry>
     		
 				<f:advanced>
-				    
+				  	<f:entry title="Disable" field="disableJob">
+  						<f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
+  					</f:entry>
+				    <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
+  						<f:enum field="killPhaseOnJobResultCondition">
+							${it.getLabel()}
+						</f:enum>
+  					</f:entry>
 				    <f:block>
     					<f:hetero-list name="configs" hasHeader="true"
                    		descriptors="${descriptor.getBuilderConfigDescriptors()}"
@@ -39,7 +46,7 @@
 		        </table>
     		</f:repeatable>
   		</f:entry>
-  		<f:entry title="Mark phase as successful&lt;br&gt; when phase jobs' statuses are:"
+  		<f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
 			field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">
 			<f:enum field="continuationCondition">
 				${it.getLabel()}

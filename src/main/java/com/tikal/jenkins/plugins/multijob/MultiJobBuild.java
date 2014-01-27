@@ -1,51 +1,62 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.Action;
-import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.model.ParameterValue;
 import hudson.model.Result;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.ParametersAction;
 import hudson.model.Run;
+import hudson.model.StringParameterValue;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.servlet.ServletException;
+
+import jenkins.model.Jenkins;
 
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-@ExportedBean(defaultVisibility=999)
+@ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
+
+	private List<SubBuild> subBuilds;
+	private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
+	private Map<String, SubBuild> subBuildsMap = new HashMap<String, SubBuild>();
 
 	public MultiJobBuild(MultiJobProject project) throws IOException {
 		super(project);
 	}
-	
-	MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
-	
+
 	@Override
 	public ChangeLogSet<? extends Entry> getChangeSet() {
 		return super.getChangeSet();
 	}
-	
+
 	public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
-		this.changeSets.addChangeLogSet(changeLogSet);
+		if (changeLogSet != null) {
+			this.changeSets.addChangeLogSet(changeLogSet);
+		}
 	}
 
 	public MultiJobBuild(MultiJobProject project, File buildDir)
 			throws IOException {
 		super(project, buildDir);
 	}
-	
+
 	@Override
 	public synchronized void doStop(StaplerRequest req, StaplerResponse rsp)
 			throws IOException, ServletException {
@@ -60,11 +71,61 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
-		run(new MultiJobRunnerImpl());
+		execute(new MultiJobRunnerImpl());
+	}
+
+	public List<SubBuild> getBuilders() {
+		MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
+		return multiJobBuild.getSubBuilds();
+	}
+
+	public String getBuildParams(SubBuild subBuild) {
+		AbstractProject project = (AbstractProject) Jenkins.getInstance()
+				.getItem(subBuild.getJobName());
+		Run build = project.getBuildByNumber(subBuild.getBuildNumber());
+		ParametersAction action = build.getAction(ParametersAction.class);
+		List<ParameterValue> parameters = action.getParameters();
+		StringBuffer buffer = new StringBuffer();
+		for (ParameterValue parameterValue : parameters) {
+			StringParameterValue stringParameter;
+			try {
+				stringParameter = ((StringParameterValue) parameterValue);
+			} catch (Exception e) {
+				continue;
+			}
+			String value = stringParameter.value;
+			String name = stringParameter.getName();
+			buffer.append(
+					"<input type='text' size='15' value='" + name
+							+ "' readonly/>")
+					.append("&nbsp;")
+					.append("<input type='text' size='35' value='" + value
+							+ "'/ readonly>").append("</br>");
+		}
+		return buffer.toString();
+	}
+
+	public void addSubBuild(SubBuild subBuild) {
+		String key = subBuild.getPhaseName().concat(subBuild.getJobName())
+				.concat(String.valueOf(subBuild.getBuildNumber()));
+		if (subBuildsMap.containsKey(key)) {
+			SubBuild e = subBuildsMap.get(key);
+			Collections.replaceAll(getSubBuilds(), e, subBuild);
+		} else {
+			getSubBuilds().add(subBuild);
+		}
+		subBuildsMap.put(key, subBuild);
+	}
+
+	@Exported
+	public List<SubBuild> getSubBuilds() {
+		if (subBuilds == null)
+			subBuilds = new CopyOnWriteArrayList<SubBuild>();
+		return subBuilds;
 	}
 
 	protected class MultiJobRunnerImpl extends
-			Build<MultiJobProject, MultiJobBuild>.RunnerImpl {
+			Build<MultiJobProject, MultiJobBuild>.BuildExecution {
 		@Override
 		public Result run(BuildListener listener) throws Exception {
 			Result result = super.run(listener);
@@ -80,7 +141,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		private boolean isAborted() {
 			return evaluateResult(Result.FAILURE);
 		}
-		
+
 		private boolean isFailure() {
 			return evaluateResult(Result.UNSTABLE);
 		}
@@ -101,66 +162,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		}
 	}
 
-	public List<SubBuild> getBuilders() {
-		MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
-		List<SubBuild> subBuilds = multiJobBuild.getSubBuilds();
-		for (SubBuild subBuild : subBuilds) {
-			Run build = getBuild(subBuild);
-			if (build != null) {
-				subBuild.setResult(build.getResult());
-				subBuild.setIcon(build.getIconColor().getImage());
-				subBuild.setDuration(build.getDurationString());
-				subBuild.setUrl(build.getUrl());
-			} else {
-				subBuild.setIcon(BallColor.NOTBUILT.getImage());
-				subBuild.setDuration("not built yet");
-				subBuild.setUrl(null);
-			}
-		}
-		return subBuilds;
-	}
-
-	private Run getBuild(SubBuild subBuild) {
-		Run build = null;
-		List<AbstractProject> downstreamProjects = getProject()
-				.getDownstreamProjects();
-		for (AbstractProject downstreamProject : downstreamProjects) {
-			List upstreamProjects = downstreamProject.getUpstreamProjects();
-			if (upstreamProjects.contains(getProject())) {
-				if (subBuild.getJobName().equalsIgnoreCase(
-						downstreamProject.getName())) {
-					build = downstreamProject.getBuildByNumber(subBuild
-							.getBuildNumber());
-				}
-			}
-		}
-		return build;
-	}
-
-	public void addSubBuild(String parentJobName, int parentBuildNumber,
-			String jobName, int buildNumber, String phaseName,
-			AbstractBuild refBuild) {
-		SubBuild subBuild = new SubBuild(parentJobName, parentBuildNumber,
-				jobName, buildNumber, phaseName);
-		for (SubBuild subbuild : getSubBuilds()) {
-			if (subbuild.getJobName().equals(jobName)) {
-				getSubBuilds().remove(subbuild);
-				break;
-			}
-		}
-		getSubBuilds().add(subBuild);
-	}
-
-	private List<SubBuild> subBuilds;
-
-	@Exported
-	public List<SubBuild> getSubBuilds() {
-		if (subBuilds == null)
-			subBuilds = new CopyOnWriteArrayList<SubBuild>();
-		return subBuilds;
-	}
-
-	@ExportedBean(defaultVisibility=999)
+	@ExportedBean(defaultVisibility = 999)
 	public static class SubBuild {
 
 		private final String parentJobName;
@@ -168,53 +170,51 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		private final String jobName;
 		private final int buildNumber;
 		private final String phaseName;
-
-		private Result result;
-		private String icon;
-		private String duration;
-		private String url;
+		private final Result result;
+		private final String icon;
+		private final String duration;
+		private final String url;
 
 		public SubBuild(String parentJobName, int parentBuildNumber,
-				String jobName, int buildNumber, String phaseName) {
+				String jobName, int buildNumber, String phaseName,
+				Result result, String icon, String duration, String url) {
 			this.parentJobName = parentJobName;
 			this.parentBuildNumber = parentBuildNumber;
 			this.jobName = jobName;
 			this.buildNumber = buildNumber;
 			this.phaseName = phaseName;
-		}
-
-		public void setUrl(String url) {
+			this.result = result;
+			this.icon = icon;
+			this.duration = duration;
 			this.url = url;
 		}
 
-		public void setDuration(String duration) {
-			this.duration = duration;
-		}
-
-		public void setIcon(String icon) {
-			this.icon = icon;
-		}
-
+		@Exported
 		public String getDuration() {
 			return duration;
 		}
 
+		@Exported
 		public String getIcon() {
 			return icon;
 		}
 
+		@Exported
 		public String getUrl() {
 			return url;
 		}
 
+		@Exported
 		public String getPhaseName() {
 			return phaseName;
 		}
 
+		@Exported
 		public String getParentJobName() {
 			return parentJobName;
 		}
 
+		@Exported
 		public int getParentBuildNumber() {
 			return parentBuildNumber;
 		}
@@ -227,10 +227,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		@Exported
 		public int getBuildNumber() {
 			return buildNumber;
-		}
-
-		public void setResult(Result result) {
-			this.result = result;
 		}
 
 		@Exported

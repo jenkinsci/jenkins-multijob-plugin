@@ -1,17 +1,11 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import java.io.IOException;
-import java.util.Map;
-
 import hudson.Extension;
 import hudson.model.DependencyGraph;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
 import hudson.model.Hudson;
 import hudson.model.Project;
-import hudson.scm.SCM;
-import hudson.triggers.Trigger;
-import hudson.triggers.TriggerDescriptor;
 import hudson.util.AlternativeUiTextProvider;
 
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
