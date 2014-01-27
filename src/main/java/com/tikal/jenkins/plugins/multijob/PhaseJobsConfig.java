@@ -478,17 +478,16 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	}
 
 	public static enum KillPhaseOnJobResultCondition {
-
-		NEVER("Never (ignore the job result and continue the phase execution)") {
-			@Override
-			public boolean isKillPhase(Result result) {
-				return result.equals(Result.ABORTED) ? true : false;
-			}
-		},
 		FAILURE("Failure (stop the phase execution if the job is failed)") {
 			@Override
 			public boolean isKillPhase(Result result) {
 				return result.isWorseOrEqualTo(Result.FAILURE);
+			}
+		},
+		NEVER("Never (ignore the job result and continue the phase execution)") {
+			@Override
+			public boolean isKillPhase(Result result) {
+				return result.equals(Result.ABORTED) ? true : false;
 			}
 		},
 		UNSTABLE("Unstable (stop the phase execution if the job is unstable)") {
