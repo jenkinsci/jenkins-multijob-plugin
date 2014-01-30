@@ -43,6 +43,8 @@ import java.util.concurrent.TimeoutException;
 
 import net.sf.json.JSONObject;
 
+import jenkins.model.Jenkins;
+
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
