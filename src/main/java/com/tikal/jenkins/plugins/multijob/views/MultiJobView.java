@@ -3,6 +3,7 @@ package com.tikal.jenkins.plugins.multijob.views;
 import hudson.Extension;
 import hudson.Indenter;
 import hudson.Util;
+import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.TopLevelItem;
 import hudson.model.ViewGroup;
@@ -28,7 +29,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.ServletException;
-
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder;
 import org.jenkinsci.plugins.conditionalbuildstep.singlestep.SingleConditionalBuilder;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -154,8 +155,8 @@ public class MultiJobView extends ListView {
 				currentPhaseName, isConditional);
 		out.add(phaseWrapper);
 		for (PhaseJobsConfig projectConfig : subProjects) {
-			TopLevelItem tli = Hudson.getInstance().getItem(
-					projectConfig.getJobName());
+			Item tli = Jenkins.getInstance().getItemByFullName(
+				projectConfig.getJobName());
 			if (tli instanceof MultiJobProject) {
 				MultiJobProject subProject = (MultiJobProject) tli;
 				BuildState jobBuildState = createBuildState(buildState,
