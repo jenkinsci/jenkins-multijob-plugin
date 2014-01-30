@@ -529,7 +529,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			@Override
 			public boolean isContinue(Result result) {
 				return result.equals(Result.ABORTED) ||
- +                        	result.isBetterOrEqualTo(Result.FAILURE);
+                         	result.isBetterOrEqualTo(Result.FAILURE);
 			}
 		};
 
