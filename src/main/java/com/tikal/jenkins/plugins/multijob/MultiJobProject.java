@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.DependencyGraph;
 import hudson.model.ItemGroup;
@@ -29,14 +30,9 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 	}
 
 	@Override
-	public Hudson getParent() {
-		return Hudson.getInstance();
+	public String getPronoun() {
+		return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getDisplayName());
 	}
-	
-        @Override
-        public String getPronoun() {
-            return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getDisplayName());
-        }
 
 	public DescriptorImpl getDescriptor() {
 		return DESCRIPTOR;
@@ -66,11 +62,10 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 	}
 
 	public MultiJobView getView() {
-		MultiJobView view = new MultiJobView("");
-		return view;
+		return new MultiJobView("");
 	}
 
 	public String getRootUrl() {
-		return Hudson.getInstance().getRootUrl();
+		return Jenkins.getInstance().getRootUrl();
 	}
 }
