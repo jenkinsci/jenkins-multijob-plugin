@@ -7,7 +7,6 @@ import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.BallColor;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
@@ -111,7 +110,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				TimeUnit.SECONDS.sleep(subJob.getQuietPeriod());
 			}
 
-			Future<Build> future = null;
+			Future<AbstractBuild> future = null;
 			if (!phaseConfig.isDisableJob()) {
 				future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
 						new UpstreamCause((Run) multiJobBuild),
@@ -245,11 +244,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	private static final class SubTask {
-		Future<Build> future;
+		Future<AbstractBuild> future;
 		PhaseJobsConfig phaseConfig;
 		Result result;
 
-		SubTask(Future<Build> future, PhaseJobsConfig phaseConfig) {
+		SubTask(Future<AbstractBuild> future, PhaseJobsConfig phaseConfig) {
 			this.future = future;
 			this.phaseConfig = phaseConfig;
 		}
