@@ -111,7 +111,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				TimeUnit.SECONDS.sleep(subJob.getQuietPeriod());
 			}
 
-			Future<Build> future = null;
+			Future<AbstractBuild> future = null;
 			if (!phaseConfig.isDisableJob()) {
 				future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
 						new UpstreamCause((Run) multiJobBuild),
@@ -187,8 +187,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		public void run() {
 			Result result = null;
 			try {
-				QueueTaskFuture<Build> future = (QueueTaskFuture<Build>) subTask.future;
-				Build jobBuild = null;
+				QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
+				AbstractBuild jobBuild = null;
 				while (true) {
 					if (future.isCancelled() && jobBuild == null) {
 						updateSubBuild(multiJobBuild, multiJobProject,
@@ -196,7 +196,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 						break;
 					}
 					try {
-						jobBuild = (Build) future.getStartCondition().get(5,
+						jobBuild = (AbstractBuild) future.getStartCondition().get(5,
 								TimeUnit.SECONDS);
 						updateSubBuild(multiJobBuild, multiJobProject, jobBuild);
 					} catch (Exception e) {
@@ -245,11 +245,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	}
 
 	private static final class SubTask {
-		Future<Build> future;
+		Future<AbstractBuild> future;
 		PhaseJobsConfig phaseConfig;
 		Result result;
 
-		SubTask(Future<Build> future, PhaseJobsConfig phaseConfig) {
+		SubTask(Future<AbstractBuild> future, PhaseJobsConfig phaseConfig) {
 			this.future = future;
 			this.phaseConfig = phaseConfig;
 		}
