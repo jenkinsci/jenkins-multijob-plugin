@@ -59,7 +59,7 @@
 	           			<span class="job"><img src="${imagesURL}/16x16/${builder.icon}" alt=""/></span>
 	 				</td>
 	 				<td class="no-wrap" width="50%">
-	 					<a href="/job/${builder.jobName}">${builder.jobName}</a>
+	 					<a href="${rootURL}/job/${builder.jobName}">${builder.jobName}</a>
 	 				</td>
 					<td class="no-wrap" width="15%">
 						<j:choose>
