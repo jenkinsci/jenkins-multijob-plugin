@@ -186,17 +186,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 		public void run() {
 			Result result = null;
+			AbstractBuild jobBuild = null;
 			try {
 				QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
-				AbstractBuild jobBuild = null;
 				while (true) {
 					if (future.isCancelled() && jobBuild == null) {
-						updateSubBuild(multiJobBuild, multiJobProject,
-								subTask.phaseConfig);
 						break;
 					}
 					try {
-						jobBuild = (AbstractBuild) future.getStartCondition().get(5,
+						jobBuild = future.getStartCondition().get(5,
 								TimeUnit.SECONDS);
 						updateSubBuild(multiJobBuild, multiJobProject, jobBuild);
 					} catch (Exception e) {
@@ -222,6 +220,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+			}
+			if (jobBuild == null) {
+				updateSubBuild(multiJobBuild, multiJobProject,
+						subTask.phaseConfig);
 			}
 			queue.add(subTask);
 		}
