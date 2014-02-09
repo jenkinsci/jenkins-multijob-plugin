@@ -6,6 +6,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
 import hudson.tasks.Builder;
+import jenkins.model.Jenkins;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -22,7 +23,7 @@ public class Plugin extends hudson.Plugin {
 	public static final class RenameListener extends ItemListener {
 		@Override
 		public void onRenamed(Item renamedItem, String oldName, String newName) {
-			Collection<TopLevelItem> items = Hudson.getInstance().getItems();
+			Collection<TopLevelItem> items = Jenkins.getInstance().getItems();
 			for (TopLevelItem item : items) {
 				if (item instanceof MultiJobProject) {
 					boolean changed = false;
@@ -57,7 +58,7 @@ public class Plugin extends hudson.Plugin {
 		@Override
 		public void onDeleted(Item deletedItem) {
 			String oldName = deletedItem.getName();
-			Collection<TopLevelItem> items = Hudson.getInstance().getItems();
+			Collection<TopLevelItem> items = Jenkins.getInstance().getItems();
 			for (TopLevelItem item : items) {
 				if (item instanceof MultiJobProject) {
 					boolean changed = false;

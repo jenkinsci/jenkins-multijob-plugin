@@ -5,8 +5,8 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
 import hudson.model.Job;
+import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -66,8 +66,8 @@ public class PhaseWrapper extends AbstractWrapper {
 			Result result = null;
 			AbstractBuild worseBuild = null;
 			for (BuildState buildState : childrenBuildState) {
-				Job project = (Job) Hudson.getInstance()
-						.getItem(buildState.getJobName());
+				Job project = (Job) Jenkins.getInstance()
+           				.getItemByFullName(buildState.getJobName());
 				AbstractBuild build = (AbstractBuild) project
 						.getBuildByNumber(buildState.getLastBuildNumber());
 				if (build != null) {

@@ -192,8 +192,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 
 		private void savePhaseJobConfigParameters(String localJobName) {
-			AbstractProject project = ((AbstractProject) Hudson.getInstance()
-					.getItem(localJobName));
+			AbstractProject project = ((AbstractProject) Jenkins.getInstance()
+           			.getItemByFullName(localJobName));
 			List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
 			StringBuilder sb = new StringBuilder();
 			// ArrayList<ModuleLocation> scmLocation = null;
@@ -260,7 +260,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		private AbstractProject getCurrentJob() {
 			String nameUrl = Descriptor.getCurrentDescriptorByNameUrl();
 			String jobName = nameUrl.substring(nameUrl.lastIndexOf("/") + 1);
-			return (AbstractProject) Hudson.getInstance().getItem(jobName);
+			return (AbstractProject) Jenkins.getInstance().getItemByFullName(jobName);
 		}
 
 		public List<ParameterDefinition> getParameterDefinition(
