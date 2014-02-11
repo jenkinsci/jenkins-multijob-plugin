@@ -2,6 +2,10 @@
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:p="/lib/hudson/project">
 
+	<j:if test="${it.supportsMakeDisabled()}">
+		<st:include page="makeDisabled.jelly" />
+	</j:if>
+
 	<!--j:choose>
 		<j:when test="${it.topMost}"-->
 			<br />
