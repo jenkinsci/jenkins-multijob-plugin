@@ -180,8 +180,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 
 		private void savePhaseJobConfigParameters(String localJobName) {
-			AbstractProject project = ((AbstractProject) Jenkins.getInstance()
-           			.getItemByFullName(localJobName));
+			AbstractProject project = Jenkins.getInstance().getItem(localJobName, getCurrentJob().getParent(), AbstractProject.class);
 			List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
 			StringBuilder sb = new StringBuilder();
 			// ArrayList<ModuleLocation> scmLocation = null;

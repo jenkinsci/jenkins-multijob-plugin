@@ -41,6 +41,7 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import hudson.model.AbstractProject;
 
 public class MultiJobView extends ListView {
 
@@ -155,8 +156,7 @@ public class MultiJobView extends ListView {
 				currentPhaseName, isConditional);
 		out.add(phaseWrapper);
 		for (PhaseJobsConfig projectConfig : subProjects) {
-			Item tli = Jenkins.getInstance().getItemByFullName(
-				projectConfig.getJobName());
+                        Item tli = Jenkins.getInstance().getItem(projectConfig.getJobName(), project.getParent(), AbstractProject.class);
 			if (tli instanceof MultiJobProject) {
 				MultiJobProject subProject = (MultiJobProject) tli;
 				BuildState jobBuildState = createBuildState(buildState,
