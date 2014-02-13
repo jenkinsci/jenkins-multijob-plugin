@@ -153,38 +153,30 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 
 		public FormValidation doCheckJobName(@QueryParameter String value) {
-			FormValidation result = FormValidation
-					.errorWithMarkup("Invalid job name");
 			if (value.isEmpty()) {
-				result = FormValidation
-						.errorWithMarkup("Job name must not be empty");
-				return result;
-			}
+                            return FormValidation.errorWithMarkup("Job name must not be empty");
+                        }
 
 			if (findOtherUpstreamProjects(value)) {
-				result = FormValidation
-						.warning("Found other upstream projects for selected job. Due to Jenkins limitations, "
-								+ "recommended to clone the job.");
-				return result;
+                            return FormValidation.warning(
+                                    "Found other upstream projects for selected job. Due to Jenkins limitations, "
+                                            + "recommended to clone the job.");
 			}
                         
                         if (Jenkins.getInstance().getItem(value, getCurrentJob().getParent(), AbstractProject.class) != null) {
-                            result = FormValidation.ok();
+                            return FormValidation.ok();
                         }
-			return result;
+                        
+			return FormValidation.errorWithMarkup("Invalid job name");
 		}
 
 		private boolean findOtherUpstreamProjects(String value) {
-			List<Project> projects = Jenkins.getInstance().getProjects();
-			for (Project project : projects) {
-				if (value.equalsIgnoreCase(project.getName())) {
-					List upstreamProjects = project.getUpstreamProjects();
-					if (upstreamProjects != null && upstreamProjects.size() > 1)
-						return true;
-					return false;
-				}
-			}
-			return false;
+                        AbstractProject selectedJob = Jenkins.getInstance().getItem(value, getCurrentJob().getParent(), AbstractProject.class);
+                        if (selectedJob == null)
+                            return false;
+                        
+                        List upstreamProjects = selectedJob.getUpstreamProjects();
+                        return upstreamProjects != null && upstreamProjects.size() > 1;
 		}
 
 		private void savePhaseJobConfigParameters(String localJobName) {
@@ -253,7 +245,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 		}
                 
-                private static String getCurrentJobNameFromDescriptor() {
+                private static String getCurrentJobName() {
                     String path = Descriptor.getCurrentDescriptorByNameUrl();
                     String[] parts = path.split("/");
                     StringBuilder builder = new StringBuilder();
@@ -265,7 +257,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
                 }
 
 		private static AbstractProject getCurrentJob() {
-			String jobName = getCurrentJobNameFromDescriptor();
+			String jobName = getCurrentJobName();
 			return (AbstractProject) Jenkins.getInstance().getItemByFullName(jobName);
 		}
 
