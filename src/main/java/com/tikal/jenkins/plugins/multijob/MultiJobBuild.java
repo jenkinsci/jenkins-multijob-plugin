@@ -14,7 +14,6 @@ import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -80,28 +79,32 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 	}
 
 	public String getBuildParams(SubBuild subBuild) {
-		AbstractProject project = Jenkins.getInstance().getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
-		Run build = project.getBuildByNumber(subBuild.getBuildNumber());
-		ParametersAction action = build.getAction(ParametersAction.class);
-		List<ParameterValue> parameters = action.getParameters();
-		StringBuffer buffer = new StringBuffer();
-		for (ParameterValue parameterValue : parameters) {
-			StringParameterValue stringParameter;
-			try {
-				stringParameter = ((StringParameterValue) parameterValue);
-			} catch (Exception e) {
-				continue;
+		try {
+			AbstractProject project = Jenkins.getInstance().getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
+			Run build = project.getBuildByNumber(subBuild.getBuildNumber());
+			ParametersAction action = build.getAction(ParametersAction.class);
+			List<ParameterValue> parameters = action.getParameters();
+			StringBuffer buffer = new StringBuffer();
+			for (ParameterValue parameterValue : parameters) {
+				StringParameterValue stringParameter;
+				try {
+					stringParameter = ((StringParameterValue) parameterValue);
+				} catch (Exception e) {
+					continue;
+				}
+				String value = stringParameter.value;
+				String name = stringParameter.getName();
+				buffer.append(
+						"<input type='text' size='15' value='" + name
+								+ "' readonly/>")
+						.append("&nbsp;")
+						.append("<input type='text' size='35' value='" + value
+								+ "'/ readonly>").append("</br>");
 			}
-			String value = stringParameter.value;
-			String name = stringParameter.getName();
-			buffer.append(
-					"<input type='text' size='15' value='" + name
-							+ "' readonly/>")
-					.append("&nbsp;")
-					.append("<input type='text' size='35' value='" + value
-							+ "'/ readonly>").append("</br>");
+			return buffer.toString();
+		} catch (Exception e) {
+			return "Failed to retrieve build parameters.";
 		}
-		return buffer.toString();
 	}
 
 	public void addSubBuild(SubBuild subBuild) {
