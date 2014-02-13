@@ -167,14 +167,10 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 								+ "recommended to clone the job.");
 				return result;
 			}
-
-			for (String localJobName : Hudson.getInstance().getJobNames()) {
-				if (localJobName.toLowerCase().equals(value.toLowerCase())) {
-					// savePhaseJobConfigParameters(localJobName);
-					result = FormValidation.ok();
-				}
-
-			}
+                        
+                        if (Jenkins.getInstance().getItem(value, getCurrentJob().getParent(), AbstractProject.class) != null) {
+                            result = FormValidation.ok();
+                        }
 			return result;
 		}
 
@@ -256,10 +252,20 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			}
 
 		}
+                
+                private static String getCurrentJobNameFromDescriptor() {
+                    String path = Descriptor.getCurrentDescriptorByNameUrl();
+                    String[] parts = path.split("/");
+                    StringBuilder builder = new StringBuilder();
+                    for (int i=2;i<parts.length;i+=2) {
+                        if (i > 2) builder.append('/');
+                        builder.append(parts[i]);
+                    }
+                    return builder.toString();
+                }
 
-		private AbstractProject getCurrentJob() {
-			String nameUrl = Descriptor.getCurrentDescriptorByNameUrl();
-			String jobName = nameUrl.substring(nameUrl.lastIndexOf("/") + 1);
+		private static AbstractProject getCurrentJob() {
+			String jobName = getCurrentJobNameFromDescriptor();
 			return (AbstractProject) Jenkins.getInstance().getItemByFullName(jobName);
 		}
 
