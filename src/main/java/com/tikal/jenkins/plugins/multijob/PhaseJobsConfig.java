@@ -39,6 +39,7 @@ import java.util.Map;
 
 import jenkins.model.Jenkins;
 
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
@@ -152,26 +153,26 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			return c;
 		}
 
-		public FormValidation doCheckJobName(@QueryParameter String value) {
+		public FormValidation doCheckJobName(@AncestorInPath Item project, @QueryParameter String value) {
 			if (value.isEmpty()) {
                             return FormValidation.errorWithMarkup("Job name must not be empty");
                         }
 
-			if (findOtherUpstreamProjects(value)) {
+			if (findOtherUpstreamProjects(project, value)) {
                             return FormValidation.warning(
                                     "Found other upstream projects for selected job. Due to Jenkins limitations, "
                                             + "recommended to clone the job.");
 			}
                         
-                        if (Jenkins.getInstance().getItem(value, getCurrentJob().getParent(), AbstractProject.class) != null) {
+                        if (Jenkins.getInstance().getItem(value, project.getParent(), AbstractProject.class) != null) {
                             return FormValidation.ok();
                         }
                         
 			return FormValidation.errorWithMarkup("Invalid job name");
 		}
 
-		private boolean findOtherUpstreamProjects(String value) {
-                        AbstractProject selectedJob = Jenkins.getInstance().getItem(value, getCurrentJob().getParent(), AbstractProject.class);
+		private boolean findOtherUpstreamProjects(Item project, String value) {
+                        AbstractProject selectedJob = Jenkins.getInstance().getItem(value, project.getParent(), AbstractProject.class);
                         if (selectedJob == null)
                             return false;
                         
