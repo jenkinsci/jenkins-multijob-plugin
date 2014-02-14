@@ -3,6 +3,7 @@ package com.tikal.jenkins.plugins.multijob;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Action;
+import hudson.model.Item;
 import hudson.model.AutoCompletionCandidates;
 import hudson.model.Describable;
 import hudson.model.JobProperty;
