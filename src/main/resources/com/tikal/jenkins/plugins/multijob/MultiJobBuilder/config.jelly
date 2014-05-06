@@ -11,6 +11,10 @@
                          help="/plugin/jenkins-multijob-plugin/help-jobName.html">
       				<f:textbox />
     			</f:entry>
+
+                <f:entry title="Trigger only if SCM changes" field="triggerOnlyIfSCMChanges">
+                    <f:checkbox name="triggerOnlyIfSCMChanges" checked="${instance.triggerOnlyIfSCMChanges}" default="false"/>
+                </f:entry>
     		
 				<f:advanced>
 				  	<f:entry title="Disable" field="disableJob">
