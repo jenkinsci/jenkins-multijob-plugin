@@ -58,10 +58,26 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
+	/**
+	 * The name of the parameter in the build.getBuildVariables() to enable the job build, regardless
+	 * of scm changes.
+	 */
+
+	public static final String BUILD_ALWAYS_KEY = "hudson.scm.multijob.build.always";
+	/**
+	 * List of messages to show to show by console.
+	 */
+	private static final String[]  TRIGGER_MESSAGES = {
+		"    >> [%s] has changes since last build. Adding to build queue.",
+		"    >> [%s] has no changes since last build, but it will be adding to build queue.",
+		"    >> [%s] has no changes since last build, but you have enabled the 'build always' function. Adding to build queue.",
+		"    >> [%s] has no changes since last build, so it will be skipped."
+	};
 
 	private String phaseName;
 	private List<PhaseJobsConfig> phaseJobs;
 	private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
+
 
 	@DataBoundConstructor
 	public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
@@ -102,8 +118,49 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				continue;
 			}
 
-			reportStart(listener, subJob);
+/*
+	Hope this works!!!
+
+	If the build contains the variable named hudson.scm.multijob.force.build.always with a value of "true",
+	we force the build always. Useful to overwrite the subJob.poll(...).hasChanges() value.
+	When to build
+
+			   VALUES
+	hasChanges		Y 	Y 	Y 	Y 	N
+	buildOnly 		Y 	Y 	N 	N 	Y 	Y 	N 	N
+	buildAlways 	Y 	N 	Y 	N 	Y 	N 	Y 	N
+	---------------------------------------------------------------------------
+	Build 			Y 	Y 	Y 	Y 	Y 	N 	Y 	Y
+
+	hasChanges 		Y ==> build ==> Y
+					N
+					buildAlways N ==> build ==> N
+					otherwise ==> Y
+	--------------------------
+	If the job has SCM changes then message = 0 ==> Add to queue
+	If the job has no SCM changes:
+		If !buildOnlyIsSCMChanges message = 1 ==> No buildOnly, add to queue
+		If buildAlways, the message = 2 ==> No SCM changes, but forced to build.
+		If !buildAlways, then message = 3 ==> No SCM changes, not forced to build. Skipped.
+
+*/
 			PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
+			final boolean buildOnlyIsSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
+			final boolean buildAlways = Boolean.valueOf(build.getBuildVariables().get(BUILD_ALWAYS_KEY));
+			final boolean hasChanges = false;//subJob.poll(listener).hasChanges();
+			
+			final int message = 
+				(hasChanges)
+					? 0 
+					: (!buildOnlyIsSCMChanges
+						? 1
+						: ((buildAlways) ? 2 : 3)
+					);
+			listener.getLogger().println(String.format(TRIGGER_MESSAGES[message], subJob.getName()));
+			if (message == 3) {
+				continue;
+			}
+			reportStart(listener, subJob);
 			List<Action> actions = new ArrayList<Action>();
 			prepareActions(multiJobBuild, subJob, phaseConfig, listener,
 					actions);

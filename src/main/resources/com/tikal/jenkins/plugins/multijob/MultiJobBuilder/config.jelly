@@ -11,6 +11,10 @@
                          help="/plugin/jenkins-multijob-plugin/help-jobName.html">
       				<f:textbox />
     			</f:entry>
+
+                <f:entry title="Build only if SCM changes" field="buildOnlyIfSCMChanges">
+                    <f:checkbox name="buildOnlyIfSCMChanges" checked="${instance.buildOnlyIfSCMChanges}" default="false"/>
+                </f:entry>
     		
 				<f:advanced>
 				  	<f:entry title="Disable" field="disableJob">
