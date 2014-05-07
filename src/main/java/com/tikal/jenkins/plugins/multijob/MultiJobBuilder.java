@@ -147,7 +147,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
 			final boolean buildOnlyIsSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
 			final boolean buildAlways = Boolean.valueOf(build.getBuildVariables().get(BUILD_ALWAYS_KEY));
-			final boolean hasChanges = false;//subJob.poll(listener).hasChanges();
+			final boolean hasChanges = subJob.poll(listener).hasChanges();
 			
 			final int message = 
 				(hasChanges)
