@@ -126,7 +126,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	When to build
 
 			   VALUES
-	hasChanges		Y 	Y 	Y 	Y 	N
+	hasChanges		Y 	Y 	Y 	Y 	N 	N 	N 	N
 	buildOnly 		Y 	Y 	N 	N 	Y 	Y 	N 	N
 	buildAlways 	Y 	N 	Y 	N 	Y 	N 	Y 	N
 	---------------------------------------------------------------------------
@@ -139,20 +139,20 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	--------------------------
 	If the job has SCM changes then message = 0 ==> Add to queue
 	If the job has no SCM changes:
-		If !buildOnlyIsSCMChanges message = 1 ==> No buildOnly, add to queue
+		If !buildOnlyIfSCMChanges message = 1 ==> No buildOnly, add to queue
 		If buildAlways, the message = 2 ==> No SCM changes, but forced to build.
 		If !buildAlways, then message = 3 ==> No SCM changes, not forced to build. Skipped.
 
 */
 			PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
-			final boolean buildOnlyIsSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
+			final boolean buildOnlyIfSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
 			final boolean buildAlways = Boolean.valueOf(build.getBuildVariables().get(BUILD_ALWAYS_KEY));
 			final boolean hasChanges = subJob.poll(listener).hasChanges();
 			
 			final int message = 
 				(hasChanges)
 					? 0 
-					: (!buildOnlyIsSCMChanges
+					: (!buildOnlyIfSCMChanges
 						? 1
 						: ((buildAlways) ? 2 : 3)
 					);
