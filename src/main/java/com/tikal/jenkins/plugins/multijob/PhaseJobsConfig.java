@@ -54,6 +54,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private List<AbstractBuildParameters> configs;
 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 
+	private boolean triggerOnlyIfSCMChanges = false;
+
+	public boolean isTriggerOnlyIfSCMChanges() {
+		return this.triggerOnlyIfSCMChanges;
+	}
+
 	public boolean isDisableJob() {
 		return disableJob;
 	}
@@ -77,6 +83,10 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	public void setExposedSCM(boolean exposedSCM) {
 		this.exposedSCM = exposedSCM;
+	}
+
+	public void setTriggerOnlyIfSCMChanges(boolean triggerOnlyIfSCMChanges) {
+		this.triggerOnlyIfSCMChanges = triggerOnlyIfSCMChanges;
 	}
 
 	public boolean isCurrParams() {
@@ -115,13 +125,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	public PhaseJobsConfig(String jobName, String jobProperties,
 			boolean currParams, List<AbstractBuildParameters> configs,
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
-			boolean disableJob) {
+			boolean disableJob, boolean triggerOnlyIfSCMChanges) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
 		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
 		this.disableJob = disableJob;
 		this.configs = Util.fixNull(configs);
+		this.triggerOnlyIfSCMChanges = triggerOnlyIfSCMChanges;
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {

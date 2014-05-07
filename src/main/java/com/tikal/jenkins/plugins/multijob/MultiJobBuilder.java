@@ -91,7 +91,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 		}
 
+
 		List<SubTask> subTasks = new ArrayList<SubTask>();
+
 		for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
 			AbstractProject subJob = phaseSubJob.job;
 			if (subJob.isDisabled()) {
@@ -101,6 +103,33 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 								subJob.getName()));
 				continue;
 			}
+
+/*
+	RRQ: Hope this works!!!
+*/
+			// If the build contains the variable named hudson.scm.multijob.force.build.always with a value of "true",
+			// we force the build always. Useful to overwrite the subJob.poll(...).hasChanges() value.
+			final boolean forceBuildAlways = Boolean.valueOf(build.getBuildVariables().get("hudson.scm.multijob.force.build.always"));
+			if (!subJob.poll(listener).hasChanges()) {
+				if(forceBuildAlways) {
+					listener.getLogger().println(
+					String.format(
+							"This Job has no changes since last build, but you force build always.",
+							subJob.getName()));
+
+				} else {
+					listener.getLogger().println(
+					String.format(
+							"Skipping %s. This Job has no changes since last build.",
+							subJob.getName()));
+					continue;
+				}
+			}
+
+			listener.getLogger().println(
+					String.format(
+							"%s. This Job has changes since last build. Adding to build queue.",
+							subJob.getName()));
 
 			reportStart(listener, subJob);
 			PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);

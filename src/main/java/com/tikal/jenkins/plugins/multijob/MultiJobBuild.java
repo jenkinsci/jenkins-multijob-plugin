@@ -95,12 +95,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 				}
 				String value = stringParameter.value;
 				String name = stringParameter.getName();
-				buffer.append(
-						"<input type='text' size='15' value='" + name
-								+ "' readonly/>")
-						.append("&nbsp;")
-						.append("<input type='text' size='35' value='" + value
-								+ "'/ readonly>").append("</br>");
+				// RRQ: Changes optimizing append (from .append(string1+string2) to .append(string1).append(string2))
+				// RRQ: Fix: .append("'/ readonly>") with .append("' readonly/>")
+				buffer
+					.append("<input type='text' size='15' value='")
+					.append(name)
+					.append("' readonly/>&nbsp;")
+					.append("<input type='text' size='35' value='")
+					.append(value)
+					.append("'readonly/></br>");
 			}
 			return buffer.toString();
 		} catch (Exception e) {
