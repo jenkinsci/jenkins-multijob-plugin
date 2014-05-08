@@ -22,6 +22,8 @@ import hudson.model.Run;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 
@@ -139,16 +141,19 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	--------------------------
 	If the job has SCM changes then message = 0 ==> Add to queue
 	If the job has no SCM changes:
-		If !buildOnlyIfSCMChanges message = 1 ==> No buildOnly, add to queue
-		If buildAlways, the message = 2 ==> No SCM changes, but forced to build.
+		If !buildOnlyIfSCMChanges, then message = 1 ==> No buildOnly, add to queue
+		If buildAlways, then message = 2 ==> No SCM changes, but forced to build.
 		If !buildAlways, then message = 3 ==> No SCM changes, not forced to build. Skipped.
 
 */
-			PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
+			final SCM scm = subJob.getScm();
+			final SCMRevisionState scmRS = scm.calcRevisionsFromBuild((AbstractBuild) subJob.getLastBuild(), launcher, listener);
+			final boolean hasChanges = scm.poll(subJob, launcher, subJob.getWorkspace(), listener, scmRS).hasChanges();
+
+			final PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
 			final boolean buildOnlyIfSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
 			final boolean buildAlways = Boolean.valueOf(build.getBuildVariables().get(BUILD_ALWAYS_KEY));
-			final boolean hasChanges = subJob.poll(listener).hasChanges();
-			
+
 			final int message = 
 				(hasChanges)
 					? 0 
@@ -162,8 +167,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 			reportStart(listener, subJob);
 			List<Action> actions = new ArrayList<Action>();
-			prepareActions(multiJobBuild, subJob, phaseConfig, listener,
-					actions);
+			prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
 
 			while (subJob.isInQueue()) {
 				TimeUnit.SECONDS.sleep(subJob.getQuietPeriod());
@@ -460,7 +464,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 				listener, project, projectConfig.isCurrParams());
 		actions.addAll(parametersActions);
 		// }
-
 	}
 
 	public String getPhaseName() {
