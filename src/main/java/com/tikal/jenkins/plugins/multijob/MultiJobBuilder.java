@@ -67,7 +67,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
 	public static final String BUILD_ALWAYS_KEY = "hudson.scm.multijob.build.always";
 	/**
-	 * List of messages to show to show by console.
+	 * List of messages to show by console.
 	 */
 	private static final String[]  TRIGGER_MESSAGES = {
 		"    >> [%s] added to build queue.\n",
@@ -124,7 +124,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 /*
 	Hope this works!!!
 
-	If the build contains the variable named hudson.scm.multijob.force.build.always with a value of "true",
+	If the build contains the variable named hudson.scm.multijob.build.always with a value of "true",
 	we force the build always. Useful to overwrite the subJob.poll(...).hasChanges() value.
 	When to build
 
