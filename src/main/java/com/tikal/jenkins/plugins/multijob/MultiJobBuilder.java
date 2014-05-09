@@ -70,10 +70,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 	 * List of messages to show to show by console.
 	 */
 	private static final String[]  TRIGGER_MESSAGES = {
-		"    >> [%s] has changes since last build. Adding to build queue.",
-		"    >> [%s] has no changes since last build, but it will be adding to build queue.",
-		"    >> [%s] has no changes since last build, but you have enabled the 'build always' function. Adding to build queue.",
-		"    >> [%s] has no changes since last build, so it will be skipped."
+		"    >> [%s] added to build queue.\n",
+		"    >> [%s] has changes since last build. Adding to build queue.\n",
+		"    >> [%s] has no changes since last build, but it will be adding to build queue.\n",
+		"    >> [%s] has no changes since last build, but you have enabled the 'build always' function. Adding to build queue.\n",
+		"    >> [%s] has no changes since last build, so it will be skipped.\n",
+		"    >> [%s] has been disabled. Skipping it.\n"
 	};
 
 	private String phaseName;
@@ -113,10 +115,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
 			AbstractProject subJob = phaseSubJob.job;
 			if (subJob.isDisabled()) {
-				listener.getLogger().println(
-						String.format(
-								"Skipping %s. This Job has been disabled.",
-								subJob.getName()));
+				listener.getLogger().printf(
+								TRIGGER_MESSAGES[5],
+								subJob.getName());
 				continue;
 			}
 
@@ -155,14 +156,17 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			final boolean buildAlways = Boolean.valueOf(build.getBuildVariables().get(BUILD_ALWAYS_KEY));
 
 			final int message = 
-				(hasChanges)
-					? 0 
-					: (!buildOnlyIfSCMChanges
+				(!buildOnlyIfSCMChanges)
+					? 0
+					: (hasChanges
 						? 1
-						: ((buildAlways) ? 2 : 3)
+						: (!buildOnlyIfSCMChanges
+							? 2
+							: ((buildAlways) ? 3 : 4)
+						)
 					);
-			listener.getLogger().println(String.format(TRIGGER_MESSAGES[message], subJob.getName()));
-			if (message == 3) {
+			listener.getLogger().printf(TRIGGER_MESSAGES[message], subJob.getName());
+			if (message >= 4) {
 				continue;
 			}
 			reportStart(listener, subJob);
@@ -183,9 +187,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			if (future != null) {
 				subTasks.add(new SubTask(future, phaseConfig));
 			} else {
-				listener.getLogger().println(
-						String.format("Warning: %s sub job is disabled.",
-								subJob.getName()));
+				listener.getLogger().printf(
+						TRIGGER_MESSAGES[5],
+						subJob.getName());
 			}
 		}
 
@@ -336,7 +340,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			Result result) {
 		listener.getLogger().println(
 				"Finished Build : "
-						+ HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",
+						+ HyperlinkNote.encodeTo('/' + jobBuild.getUrl() + '/',
 								String.valueOf(jobBuild.getDisplayName()))
 						+ " of Job : "
 						+ HyperlinkNote.encodeTo('/' + jobBuild.getProject()
