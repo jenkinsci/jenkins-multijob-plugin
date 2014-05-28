@@ -147,9 +147,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 		If !buildAlways, then message = 3 ==> No SCM changes, not forced to build. Skipped.
 
 */
+			// If we has no last build, we can not calculate revisionState since it, so we force to build.
+			final boolean containsLastBuild = ( subJob.getLastBuild() != null );
 			final SCM scm = subJob.getScm();
-			final SCMRevisionState scmRS = scm.calcRevisionsFromBuild((AbstractBuild) subJob.getLastBuild(), launcher, listener);
-			final boolean hasChanges = scm.poll(subJob, launcher, subJob.getWorkspace(), listener, scmRS).hasChanges();
+			final SCMRevisionState scmRS = ( containsLastBuild ? scm.calcRevisionsFromBuild((AbstractBuild) subJob.getLastBuild(), launcher, listener) : null );
+			final boolean hasChanges = ( containsLastBuild ? scm.poll(subJob, launcher, subJob.getWorkspace(), listener, scmRS).hasChanges() : true );
 
 			final PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
 			final boolean buildOnlyIfSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
