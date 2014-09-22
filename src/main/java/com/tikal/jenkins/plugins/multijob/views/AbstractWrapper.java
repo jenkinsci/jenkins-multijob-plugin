@@ -18,83 +18,83 @@ import hudson.security.ACL;
 import hudson.security.Permission;
 
 abstract public class AbstractWrapper implements TopLevelItem {
-	public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
-	}
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+    }
 
-	public void onCopiedFrom(Item src) {
-	}
+    public void onCopiedFrom(Item src) {
+    }
 
-	public void onCreatedFromScratch() {
-	}
+    public void onCreatedFromScratch() {
+    }
 
-	public void save() throws IOException {
-	}
+    public void save() throws IOException {
+    }
 
-	public void delete() throws IOException, InterruptedException {
-	}
+    public void delete() throws IOException, InterruptedException {
+    }
 
-	public void checkPermission(Permission permission) throws AccessDeniedException {
-	}
+    public void checkPermission(Permission permission) throws AccessDeniedException {
+    }
 
-	public String getUrl() {
-		return null;
-	}
+    public String getUrl() {
+        return null;
+    }
 
-	public String getShortUrl() {
-		return null;
-	}
+    public String getShortUrl() {
+        return null;
+    }
 
-	@Deprecated
-	public String getAbsoluteUrl() {
-		return null;
-	}
+    @Deprecated
+    public String getAbsoluteUrl() {
+        return null;
+    }
 
-	public File getRootDir() {
-		return null;
-	}
+    public File getRootDir() {
+        return null;
+    }
 
-	public Search getSearch() {
-		return null;
-	}
+    public Search getSearch() {
+        return null;
+    }
 
-	public String getSearchName() {
-		return null;
-	}
+    public String getSearchName() {
+        return null;
+    }
 
-	public String getSearchUrl() {
-		return null;
-	}
+    public String getSearchUrl() {
+        return null;
+    }
 
-	public SearchIndex getSearchIndex() {
-		return null;
-	}
+    public SearchIndex getSearchIndex() {
+        return null;
+    }
 
-	public ACL getACL() {
-		return null;
-	}
+    public ACL getACL() {
+        return null;
+    }
 
-	public boolean hasPermission(Permission permission) {
-		return true;
-	}
+    public boolean hasPermission(Permission permission) {
+        return true;
+    }
 
-	public Hudson getParent() {
-		return Hudson.getInstance();
-	}
+    public Hudson getParent() {
+        return Hudson.getInstance();
+    }
 
-	public TopLevelItemDescriptor getDescriptor() {
-		return null;
-	}
+    public TopLevelItemDescriptor getDescriptor() {
+        return null;
+    }
 
-	public HealthReport getBuildHealth() {
-		return null;
-	}
+    public HealthReport getBuildHealth() {
+        return null;
+    }
 
-	public List<HealthReport> getBuildHealthReports() {
-		return null;
-	}
+    public List<HealthReport> getBuildHealthReports() {
+        return null;
+    }
 
-	public boolean isBuildable() {
-		return false;
-	}
+    public boolean isBuildable() {
+        return false;
+    }
 
 }

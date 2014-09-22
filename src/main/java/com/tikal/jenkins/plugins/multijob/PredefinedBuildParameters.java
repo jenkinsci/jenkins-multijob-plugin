@@ -27,59 +27,59 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 public class PredefinedBuildParameters extends AbstractBuildParameters {
 
-	private String jobProperties;
+    private String jobProperties;
 
-	@DataBoundConstructor
-	public PredefinedBuildParameters(String jobProperties) {
-		this.jobProperties = jobProperties;
-	}
+    @DataBoundConstructor
+    public PredefinedBuildParameters(String jobProperties) {
+        this.jobProperties = jobProperties;
+    }
 
-	public Action getAction(AbstractBuild<?,?> build, TaskListener listener, AbstractProject project)
-			throws IOException, InterruptedException {
-		EnvVars env = build.getEnvironment(listener);
-//		List actions = project.getActions();
-//		ParametersDefinitionProperty parameters=null;
-//		for (Object object : actions) {
-//			if(object instanceof hudson.model.ParametersDefinitionProperty)
-//				parameters = (ParametersDefinitionProperty)object;
-//				
-//		}
-		Properties pProp = new Properties();
-		pProp.load(new StringInputStream(jobProperties));
-		LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
-			
+    public Action getAction(AbstractBuild<?,?> build, TaskListener listener, AbstractProject project)
+            throws IOException, InterruptedException {
+        EnvVars env = build.getEnvironment(listener);
+//        List actions = project.getActions();
+//        ParametersDefinitionProperty parameters=null;
+//        for (Object object : actions) {
+//            if(object instanceof hudson.model.ParametersDefinitionProperty)
+//                parameters = (ParametersDefinitionProperty)object;
+//
+//        }
+        Properties pProp = new Properties();
+        pProp.load(new StringInputStream(jobProperties));
+        LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
+
 //        if (parameters !=null){
-//        	boolean overwrite=false;
-//			for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
-//				params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
-        		for (Map.Entry<Object, Object> entry : pProp.entrySet()) {
-//				    if (parameterdef.getName().equals(entry.getKey())){
-					    //override with multyjob value
-				    	params.put(entry.getKey().toString(), new StringParameterValue(entry.getKey().toString(),
-				    			env.expand(entry.getValue().toString())));
-				    	//((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
-					   // values.add(((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
-//					    break;
-				}
-//			    }
-//			}
+//            boolean overwrite=false;
+//            for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
+//                params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
+                for (Map.Entry<Object, Object> entry : pProp.entrySet()) {
+//                    if (parameterdef.getName().equals(entry.getKey())){
+                        //override with multyjob value
+                        params.put(entry.getKey().toString(), new StringParameterValue(entry.getKey().toString(),
+                                env.expand(entry.getValue().toString())));
+                        //((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
+                       // values.add(((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
+//                        break;
+                }
+//                }
+//            }
 //         }
         return new ParametersAction(params.values().toArray(new ParameterValue[params.size()]));
-	}
+    }
 
-	public String getJobProperties() {
-		return jobProperties;
-	}
-	
-	public void setJobProperties(String jobProperties) {
-		this.jobProperties = jobProperties;
-	}
+    public String getJobProperties() {
+        return jobProperties;
+    }
 
-	@Extension
-	public static class DescriptorImpl extends Descriptor<AbstractBuildParameters> {
-		@Override
-		public String getDisplayName() {
-			return "Predefined parameters";
-		}
-	}
+    public void setJobProperties(String jobProperties) {
+        this.jobProperties = jobProperties;
+    }
+
+    @Extension
+    public static class DescriptorImpl extends Descriptor<AbstractBuildParameters> {
+        @Override
+        public String getDisplayName() {
+            return "Predefined parameters";
+        }
+    }
 }

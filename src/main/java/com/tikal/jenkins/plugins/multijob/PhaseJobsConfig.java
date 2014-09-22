@@ -42,471 +42,466 @@ import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.StaplerRequest;
+
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
-
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
+    private String jobName;
+    private String jobProperties;
+    private boolean currParams;
+    private boolean exposedSCM;
+    private boolean disableJob;
+    private String parsingRulesPath;
+    private int maxRetries;
+    private boolean enableRetryStrategy;
+    private boolean enableCondition;
+    private boolean abortAllJob;
+    private String condition;
+    private List<AbstractBuildParameters> configs;
+    private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 
-	private String jobName;
-	private String jobProperties;
-	private boolean currParams;
-	private boolean exposedSCM;
-	private boolean disableJob;
-	private List<AbstractBuildParameters> configs;
-	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
+    public void setParsingRulesPath(String parsingRulesPath) {
+        this.parsingRulesPath = parsingRulesPath;
+    }
 
-	public boolean isDisableJob() {
-		return disableJob;
-	}
+    public String getParsingRulesPath() {
+        return parsingRulesPath;
+    }
 
-	public void setDisableJob(boolean disableJob) {
-		this.disableJob = disableJob;
-	}
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
 
-	public KillPhaseOnJobResultCondition getKillPhaseOnJobResultCondition() {
-		return killPhaseOnJobResultCondition;
-	}
+    public String getCondition() {
+        return condition;
+    }
 
-	public void setKillPhaseOnJobResultCondition(
-			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition) {
-		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
-	}
+    public void setMaxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
+    }
 
-	public boolean isExposedSCM() {
-		return currParams;
-	}
+    public int getMaxRetries() {
+        return maxRetries;
+    }
 
-	public void setExposedSCM(boolean exposedSCM) {
-		this.exposedSCM = exposedSCM;
-	}
+    public void setEnableRetryStrategy(boolean enableRetryStrategy) {
+        this.enableRetryStrategy = enableRetryStrategy;
+    }
 
-	public boolean isCurrParams() {
-		return currParams;
-	}
+    public boolean getEnableRetryStrategy() {
+        return enableRetryStrategy;
+    }
 
-	public void setCurrParams(boolean currParams) {
-		this.currParams = currParams;
-	}
+    public void setEnableCondition(boolean enableCondition) {
+        this.enableCondition = enableCondition;
+    }
 
-	public String getJobProperties() {
-		return jobProperties;
-	}
+    public boolean getEnableCondition() {
+        return enableCondition;
+    }
 
-	public void setJobProperties(String jobProperties) {
-		this.jobProperties = jobProperties;
-	}
+    public void setAbortAllJob(boolean abortAllJob) {
+        this.abortAllJob = abortAllJob;
+    }
 
-	public String getJobName() {
-		return jobName;
-	}
+    public boolean getAbortAllJob() {
+        return abortAllJob;
+    }
 
-	public void setJobName(String jobName) {
-		this.jobName = jobName;
-	}
+    public boolean isDisableJob() {
+        return disableJob;
+    }
 
-	public Descriptor<PhaseJobsConfig> getDescriptor() {
-		return Hudson.getInstance().getDescriptorOrDie(getClass());
-	}
+    public void setDisableJob(boolean disableJob) {
+        this.disableJob = disableJob;
+    }
 
-	public String getDisplayName() {
-		return getClass().getSimpleName();
-	}
+    public KillPhaseOnJobResultCondition getKillPhaseOnJobResultCondition() {
+        return killPhaseOnJobResultCondition;
+    }
 
-	@DataBoundConstructor
-	public PhaseJobsConfig(String jobName, String jobProperties,
-			boolean currParams, List<AbstractBuildParameters> configs,
-			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
-			boolean disableJob) {
-		this.jobName = jobName;
-		this.jobProperties = jobProperties;
-		this.currParams = currParams;
-		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
-		this.disableJob = disableJob;
-		this.configs = Util.fixNull(configs);
-	}
+    public void setKillPhaseOnJobResultCondition(
+            KillPhaseOnJobResultCondition killPhaseOnJobResultCondition) {
+        this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
+    }
 
-	public List<AbstractBuildParameters> getConfigs() {
-		return configs;
-	}
+    public boolean isExposedSCM() {
+        return exposedSCM;
+    }
 
-	@Extension(optional = true)
-	public static class DescriptorImpl extends Descriptor<PhaseJobsConfig> {
-		@Override
-		public String getDisplayName() {
-			return "Phase Jobs Config";
-		}
+    public void setExposedSCM(boolean exposedSCM) {
+        this.exposedSCM = exposedSCM;
+    }
 
-		public List<Descriptor<AbstractBuildParameters>> getBuilderConfigDescriptors() {
-			return Hudson
-					.getInstance()
-					.<AbstractBuildParameters, Descriptor<AbstractBuildParameters>> getDescriptorList(
-							AbstractBuildParameters.class);
-		}
+    public boolean isCurrParams() {
+        return currParams;
+    }
 
-		public AutoCompletionCandidates doAutoCompleteJobName(
-				@QueryParameter String value) {
-			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (String localJobName : Hudson.getInstance().getJobNames()) {
-				if (localJobName.toLowerCase().startsWith(value.toLowerCase()))
-					c.add(localJobName);
-			}
-			return c;
-		}
+    public void setCurrParams(boolean currParams) {
+        this.currParams = currParams;
+    }
 
-		public FormValidation doCheckJobName(@QueryParameter String value) {
-			FormValidation result = FormValidation
-					.errorWithMarkup("Invalid job name");
-			if (value.isEmpty()) {
-				result = FormValidation
-						.errorWithMarkup("Job name must not be empty");
-				return result;
-			}
+    public String getJobProperties() {
+        return jobProperties;
+    }
 
-			if (findOtherUpstreamProjects(value)) {
-				result = FormValidation
-						.warning("Found other upstream projects for selected job. Due to Jenkins limitations, "
-								+ "recommended to clone the job.");
-				return result;
-			}
+    public void setJobProperties(String jobProperties) {
+        this.jobProperties = jobProperties;
+    }
 
-			for (String localJobName : Hudson.getInstance().getJobNames()) {
-				if (localJobName.toLowerCase().equals(value.toLowerCase())) {
-					// savePhaseJobConfigParameters(localJobName);
-					result = FormValidation.ok();
-				}
+    public String getJobName() {
+        return jobName;
+    }
 
-			}
-			return result;
-		}
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
 
-		private boolean findOtherUpstreamProjects(String value) {
-			List<Project> projects = Jenkins.getInstance().getProjects();
-			for (Project project : projects) {
-				if (value.equalsIgnoreCase(project.getName())) {
-					List upstreamProjects = project.getUpstreamProjects();
-					if (upstreamProjects != null && upstreamProjects.size() > 1)
-						return true;
-					return false;
-				}
-			}
-			return false;
-		}
+    public Descriptor<PhaseJobsConfig> getDescriptor() {
+        return Hudson.getInstance().getDescriptorOrDie(getClass());
+    }
 
-		private void savePhaseJobConfigParameters(String localJobName) {
-			AbstractProject project = ((AbstractProject) Jenkins.getInstance()
-           			.getItemByFullName(localJobName));
-			List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
-			StringBuilder sb = new StringBuilder();
-			// ArrayList<ModuleLocation> scmLocation = null;
-			for (ParameterDefinition pdef : parameterDefinitions) {
-				String paramValue = null;
-				if (pdef instanceof StringParameterDefinition) {
-					StringParameterDefinition stringParameterDefinition = (StringParameterDefinition) pdef;
-					paramValue = stringParameterDefinition
-							.getDefaultParameterValue().value;
-				} else if (pdef instanceof BooleanParameterDefinition) {
-					BooleanParameterDefinition booleanParameterDefinition = (BooleanParameterDefinition) pdef;
-					paramValue = String.valueOf(booleanParameterDefinition
-							.getDefaultParameterValue().value);
-				}
-				sb.append(pdef.getName()).append("=").append(paramValue)
-						.append("\n");
-			}
+    public String getDisplayName() {
+        return getClass().getSimpleName();
+    }
 
-			AbstractProject item = getCurrentJob();
-			if (item instanceof MultiJobProject) {
-				MultiJobProject parentProject = (MultiJobProject) item;
-				List<Builder> builders = parentProject.getBuilders();
-				if (builders != null) {
-					for (Builder builder : builders) {
-						if (builder instanceof MultiJobBuilder) {
-							MultiJobBuilder multiJobBuilder = (MultiJobBuilder) builder;
-							List<PhaseJobsConfig> phaseJobs = multiJobBuilder
-									.getPhaseJobs();
-							for (PhaseJobsConfig phaseJob : phaseJobs) {
-								if (phaseJob.getJobName().equals(localJobName)) {
-									phaseJob.setJobProperties(sb.toString());
-									// if (phaseJob.isExposedSCM()){
-									// if
-									// (parentProject.getScm().getType().equals(MultiJobScm.class.getName())){
-									// ((MultiJobScm)parentProject.getScm()).addScm(project,
-									// project.getScm());
-									// }
-									// }
-									save();
-								}
-							}
-						}
-					}
+    @DataBoundConstructor
+    public PhaseJobsConfig(String jobName, String jobProperties,
+            boolean currParams, List<AbstractBuildParameters> configs,
+            KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
+            boolean disableJob,
+            boolean enableRetry,
+            String parsingRulesPath,
+            int maxRetry,
+            boolean enableCondition,
+            boolean abortAllJob,
+            String condition) {
+        this.jobName = jobName;
+        this.jobProperties = jobProperties;
+        this.currParams = currParams;
+        this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
+        this.disableJob = disableJob;
+        this.configs = Util.fixNull(configs);
+        this.enableRetryStrategy = enableRetry;
+        this.maxRetries = maxRetry;
+        if (this.maxRetries < 0) {
+            this.maxRetries = 0;
+        }
+        this.parsingRulesPath = Util.fixNull(parsingRulesPath);
+        this.enableCondition = enableCondition;
+        this.abortAllJob = abortAllJob;
+        this.condition = Util.fixNull(condition);
+    }
 
-				}
-				// if
-				// (parentProject.getScm().getType().equals(MultiJobScm.class.getName())
-				// && scmLocation !=null){
-				// scmLocation.addAll(Arrays.asList(((SubversionSCM)parentProject.getScm()).getLocations()));
-				// SubversionSCM scm =new SubversionSCM(scmLocation,
-				// ((SubversionSCM)parentProject.getScm()).getWorkspaceUpdater(),((SubversionSCM)parentProject.getScm()).getBrowser(),((SubversionSCM)parentProject.getScm()).getExcludedRegions(),((SubversionSCM)parentProject.getScm()).getExcludedUsers(),
-				// ((SubversionSCM)parentProject.getScm()).getExcludedRevprop(),((SubversionSCM)parentProject.getScm()).getExcludedCommitMessages(),
-				// ((SubversionSCM)parentProject.getScm()).getIncludedRegions());
-				// try {
-				// parentProject.setScm(scm);
-				// } catch (IOException e) {
-				// e.fillInStackTrace();
-				// }
-				// }
-			}
+    public List<AbstractBuildParameters> getConfigs() {
+        return configs;
+    }
 
-		}
+    @Extension(optional = true)
+    public static class DescriptorImpl extends Descriptor<PhaseJobsConfig> {
+        private ParserRuleFile[] parsingRulesGlobal = new ParserRuleFile[0];
 
-		private AbstractProject getCurrentJob() {
-			String nameUrl = Descriptor.getCurrentDescriptorByNameUrl();
-			String jobName = nameUrl.substring(nameUrl.lastIndexOf("/") + 1);
-			return (AbstractProject) Jenkins.getInstance().getItemByFullName(jobName);
-		}
+        public DescriptorImpl() {
+            load();
+        }
 
-		public List<ParameterDefinition> getParameterDefinition(
-				AbstractProject project) {
-			List<ParameterDefinition> list = new ArrayList<ParameterDefinition>();
-			Map<JobPropertyDescriptor, JobProperty> map = project
-					.getProperties();
-			for (Map.Entry<JobPropertyDescriptor, JobProperty> entry : map
-					.entrySet()) {
-				JobProperty property = entry.getValue();
-				if (property instanceof ParametersDefinitionProperty) {
-					ParametersDefinitionProperty pdp = (ParametersDefinitionProperty) property;
-					for (ParameterDefinition parameterDefinition : pdp
-							.getParameterDefinitions()) {
-						if (parameterDefinition instanceof StringParameterDefinition
-								|| parameterDefinition instanceof BooleanParameterDefinition
-								|| parameterDefinition instanceof ChoiceParameterDefinition) {
-							list.add(parameterDefinition);
-						}
-					}
-				}
-			}
-			return list;
-		}
+        @Override
+        public String getDisplayName() {
+            return "Phase Jobs Config";
+        }
 
-		public String doFillJobProperties(@QueryParameter String jobName) {
+        public List<Descriptor<AbstractBuildParameters>> getBuilderConfigDescriptors() {
+            return Hudson
+                    .getInstance()
+                    .<AbstractBuildParameters, Descriptor<AbstractBuildParameters>> getDescriptorList(
+                            AbstractBuildParameters.class);
+        }
 
-			return "fill=in";
-		}
+        public AutoCompletionCandidates doAutoCompleteJobName(
+                @QueryParameter String value) {
+            AutoCompletionCandidates c = new AutoCompletionCandidates();
+            for (String localJobName : Hudson.getInstance().getJobNames()) {
+                if (localJobName.toLowerCase().startsWith(value.toLowerCase()))
+                    c.add(localJobName);
+            }
+            return c;
+        }
 
-	}
+        private void savePhaseJobConfigParameters(String localJobName) {
+            AbstractProject project = ((AbstractProject) Jenkins.getInstance()
+                       .getItemByFullName(localJobName));
+            List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
+            StringBuilder sb = new StringBuilder();
+            // ArrayList<ModuleLocation> scmLocation = null;
+            for (ParameterDefinition pdef : parameterDefinitions) {
+                String paramValue = null;
+                if (pdef instanceof StringParameterDefinition) {
+                    StringParameterDefinition stringParameterDefinition = (StringParameterDefinition) pdef;
+                    paramValue = stringParameterDefinition
+                            .getDefaultParameterValue().value;
+                } else if (pdef instanceof BooleanParameterDefinition) {
+                    BooleanParameterDefinition booleanParameterDefinition = (BooleanParameterDefinition) pdef;
+                    paramValue = String.valueOf(booleanParameterDefinition
+                            .getDefaultParameterValue().value);
+                }
+                sb.append(pdef.getName()).append("=").append(paramValue)
+                        .append("\n");
+            }
 
-	public List<ParameterValue> getJobParameters(AbstractBuild<?, ?> build,
-			TaskListener listener) {
-		ParametersAction action = build.getAction(ParametersAction.class);
-		List<ParameterValue> values = new ArrayList<ParameterValue>(action
-				.getParameters().size());
-		if (action != null) {
-			for (ParameterValue value : action.getParameters())
-				// FileParameterValue is currently not reusable, so omit these:
-				if (!(value instanceof FileParameterValue))
-					values.add(value);
-		}
+            AbstractProject item = getCurrentJob();
+            if (item instanceof MultiJobProject) {
+                MultiJobProject parentProject = (MultiJobProject) item;
+                List<Builder> builders = parentProject.getBuilders();
+                if (builders != null) {
+                    for (Builder builder : builders) {
+                        if (builder instanceof MultiJobBuilder) {
+                            MultiJobBuilder multiJobBuilder = (MultiJobBuilder) builder;
+                            List<PhaseJobsConfig> phaseJobs = multiJobBuilder
+                                    .getPhaseJobs();
+                            for (PhaseJobsConfig phaseJob : phaseJobs) {
+                                if (phaseJob.getJobName().equals(localJobName)) {
+                                    phaseJob.setJobProperties(sb.toString());
+                                    save();
+                                }
+                            }
+                        }
+                    }
 
-		return values;
+                }
+            }
+        }
 
-	}
+        private AbstractProject getCurrentJob() {
+            String nameUrl = Descriptor.getCurrentDescriptorByNameUrl();
+            String jobName = nameUrl.substring(nameUrl.lastIndexOf("/") + 1);
+            return (AbstractProject) Jenkins.getInstance().getItemByFullName(jobName);
+        }
 
-	private static ParametersAction mergeParameters(ParametersAction base,
-			ParametersAction overlay) {
-		LinkedHashMap<String, ParameterValue> params = new LinkedHashMap<String, ParameterValue>();
-		for (ParameterValue param : base.getParameters())
-			if (param != null)
-				params.put(param.getName(), param);
-		for (ParameterValue param : overlay.getParameters())
-			params.put(param.getName(), param);
-		return new ParametersAction(params.values().toArray(
-				new ParameterValue[params.size()]));
-	}
+        public List<ParameterDefinition> getParameterDefinition(
+                AbstractProject project) {
+            List<ParameterDefinition> list = new ArrayList<ParameterDefinition>();
+            Map<JobPropertyDescriptor, JobProperty> map = project
+                    .getProperties();
+            for (Map.Entry<JobPropertyDescriptor, JobProperty> entry : map
+                    .entrySet()) {
+                JobProperty property = entry.getValue();
+                if (property instanceof ParametersDefinitionProperty) {
+                    ParametersDefinitionProperty pdp = (ParametersDefinitionProperty) property;
+                    for (ParameterDefinition parameterDefinition : pdp
+                            .getParameterDefinitions()) {
+                        if (parameterDefinition instanceof StringParameterDefinition
+                                || parameterDefinition instanceof BooleanParameterDefinition
+                                || parameterDefinition instanceof ChoiceParameterDefinition) {
+                            list.add(parameterDefinition);
+                        }
+                    }
+                }
+            }
+            return list;
+        }
 
-	/**
-	 * Create a list of actions to pass to the triggered build of project.
-	 * 
-	 * This will create a single ParametersAction which will use the defaults
-	 * from the project being triggered and override these, With the current
-	 * parameters defined in this build. if configured. With any matching items
-	 * defined in the different configs, e.g. predefined parameters.
-	 * 
-	 * @param build
-	 *            build that is triggering project
-	 * @param listener
-	 * @param project
-	 *            Project that is being triggered
-	 * @param isCurrentInclude
-	 *            Include parameters from the current build.
-	 * @return
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	public List<Action> getActions(AbstractBuild build, TaskListener listener,
-			AbstractProject project, boolean isCurrentInclude)
-			throws IOException, InterruptedException {
-		List<Action> actions = new ArrayList<Action>();
-		ParametersAction params = null;
-		LinkedList<ParameterValue> paramsValuesList = new LinkedList<ParameterValue>();
+        public String doFillJobProperties(@QueryParameter String jobName) {
 
-		List originalActions = project.getActions();
+            return "fill=in";
+        }
 
-		// Check to see if the triggered project has Parameters defined.
-		ParametersDefinitionProperty parameters = null;
-		for (Object object : originalActions) {
-			if (object instanceof hudson.model.ParametersDefinitionProperty)
-				parameters = (ParametersDefinitionProperty) object;
-		}
-		// Get and add ParametersAction for default parameters values
-		// if triggered project is Parameterized.
-		// Values will get overridden later as required
-		if (parameters != null) {
-			for (ParameterDefinition parameterdef : parameters
-					.getParameterDefinitions()) {
-				if (parameterdef.getDefaultParameterValue() != null)
-					paramsValuesList.add(parameterdef
-							.getDefaultParameterValue());
-			}
-			params = new ParametersAction(
-					paramsValuesList
-							.toArray(new ParameterValue[paramsValuesList.size()]));
+        public ParserRuleFile[] getParsingRulesGlobal() {
+            return parsingRulesGlobal;
+        }
 
-		}
+        @Override
+        public boolean configure(final StaplerRequest req, final JSONObject json) throws FormException {
+            parsingRulesGlobal = req.bindParametersToList(ParserRuleFile.class, "jenkins-multijob-plugin.").toArray(new ParserRuleFile[0]);
+            save();
+            return true;
+        }
 
-		// Merge current parameters with the defaults from the triggered job.
-		// Current parameters override the defaluts.
-		if (isCurrentInclude) {
-			ParametersAction defaultParameters = build
-					.getAction(ParametersAction.class);
+    }
 
-			if (params != null && defaultParameters != null) {
-				params = mergeParameters(params, defaultParameters);
-			} else if (params == null) {
-				params = defaultParameters;
-			}
-		}
-		// Backward compatibility
-		// get actions from configs merge ParametersActions if needed.
-		if (configs != null) {
-			for (AbstractBuildParameters config : configs) {
-				Action a;
-				try {
-					a = config.getAction(build, listener);
-					if (a instanceof ParametersAction) {
-						params = params == null ? (ParametersAction) a
-								: mergeParameters(params, (ParametersAction) a);
-					} else if (a != null) {
-						actions.add(a);
-					}
-				} catch (DontTriggerException e) {
-					// don't trigger on this configuration
-					listener.getLogger().println(
-							"[multiJob] DontTriggerException: " + e);
-				}
-			}
-		}
+    public List<ParameterValue> getJobParameters(AbstractBuild<?, ?> build,
+            TaskListener listener) {
+        ParametersAction action = build.getAction(ParametersAction.class);
+        List<ParameterValue> values = new ArrayList<ParameterValue>(action
+                .getParameters().size());
+        if (action != null) {
+            for (ParameterValue value : action.getParameters())
+                // FileParameterValue is currently not reusable, so omit these:
+                if (!(value instanceof FileParameterValue))
+                    values.add(value);
+        }
 
-		if (params != null)
-			actions.add(params);
+        return values;
 
-		return actions;
-		// EnvVars env = build.getEnvironment(listener);
-		// List actions = project.getActions();
-		// ParametersDefinitionProperty parameters=null;
-		// for (Object object : actions) {
-		// if(object instanceof hudson.model.ParametersDefinitionProperty)
-		// parameters = (ParametersDefinitionProperty)object;
-		//
-		// }
-		// Properties pProp = new Properties();
-		// pProp.load(new StringInputStream(jobProperties));
-		// LinkedHashMap<String,ParameterValue> params = new
-		// LinkedHashMap<String,ParameterValue>();
-		//
-		// if (parameters !=null){
-		// boolean overwrite=false;
-		// for (ParameterDefinition parameterdef :
-		// parameters.getParameterDefinitions()) {
-		// params.put(parameterdef.getName(),parameterdef.getDefaultParameterValue());
-		// for (Map.Entry<Object, Object> entry : pProp.entrySet()) {
-		// if (parameterdef.getName().equals(entry.getKey())){
-		// //override with multyjob value
-		// params.put(parameterdef.getName(),((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
-		// //
-		// values.add(((SimpleParameterDefinition)parameterdef).createValue(env.expand(entry.getValue().toString())));
-		// break;
-		// }
-		// }
-		// }
-		// }
-		// return new ParametersAction(params.values().toArray(new
-		// ParameterValue[params.size()]));
-	}
+    }
 
-	public boolean hasProperties() {
-		return this.jobProperties != null && !this.jobProperties.isEmpty();
-	}
+    private static ParametersAction mergeParameters(ParametersAction base,
+            ParametersAction overlay) {
+        LinkedHashMap<String, ParameterValue> params = new LinkedHashMap<String, ParameterValue>();
+        for (ParameterValue param : base.getParameters())
+            if (param != null)
+                params.put(param.getName(), param);
+        for (ParameterValue param : overlay.getParameters())
+            params.put(param.getName(), param);
+        return new ParametersAction(params.values().toArray(
+                new ParameterValue[params.size()]));
+    }
 
-	// compatibility with earlier plugins
-	public Object readResolve() {
-		if (hasProperties()) {
-			AbstractBuildParameters buildParameters = new PredefinedBuildParameters(
-					jobProperties);
-			if (configs == null)
-				configs = new ArrayList<AbstractBuildParameters>();
-			configs.add(buildParameters);
-		}
+    /**
+     * Create a list of actions to pass to the triggered build of project.
+     *
+     * This will create a single ParametersAction which will use the defaults
+     * from the project being triggered and override these, With the current
+     * parameters defined in this build. if configured. With any matching items
+     * defined in the different configs, e.g. predefined parameters.
+     *
+     * @param build
+     *            build that is triggering project
+     * @param listener
+     * @param project
+     *            Project that is being triggered
+     * @param isCurrentInclude
+     *            Include parameters from the current build.
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public List<Action> getActions(AbstractBuild build, TaskListener listener,
+            AbstractProject project, boolean isCurrentInclude)
+            throws IOException, InterruptedException {
+        List<Action> actions = new ArrayList<Action>();
+        ParametersAction params = null;
+        LinkedList<ParameterValue> paramsValuesList = new LinkedList<ParameterValue>();
 
-		List<AbstractBuildParameters> oldParams = new ArrayList<AbstractBuildParameters>();
-		if (configs != null && configs.size() > 0) {
-			Iterator parametersIterator = configs.iterator();
-			while (parametersIterator.hasNext()) {
-				Object param = parametersIterator.next();
-				if (param instanceof com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) {
-					com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters previosStringParam = (com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) param;
-					parametersIterator.remove();
-					oldParams.add(new PredefinedBuildParameters(
-							previosStringParam.getJobProperties()));
-				} else if (param instanceof com.tikal.jenkins.plugins.multijob.FileBuildParameters) {
-					com.tikal.jenkins.plugins.multijob.FileBuildParameters previosFileParam = (com.tikal.jenkins.plugins.multijob.FileBuildParameters) param;
-					parametersIterator.remove();
-					oldParams.add(new FileBuildParameters(previosFileParam
-							.getPropertiesFile()));
-				}
-			}
-			configs.addAll(oldParams);
-		}
-		return this;
-	}
+        List originalActions = project.getActions();
 
-	public static enum KillPhaseOnJobResultCondition {
-		FAILURE("Failure (stop the phase execution if the job is failed)") {
-			@Override
-			public boolean isKillPhase(Result result) {
-				return result.isWorseOrEqualTo(Result.FAILURE);
-			}
-		},
-		NEVER("Never (ignore the job result and continue the phase execution)") {
-			@Override
-			public boolean isKillPhase(Result result) {
-				return result.equals(Result.ABORTED) ? true : false;
-			}
-		},
-		UNSTABLE("Unstable (stop the phase execution if the job is unstable)") {
-			@Override
-			public boolean isKillPhase(Result result) {
-				return result.isWorseOrEqualTo(Result.UNSTABLE);
-			}
-		};
+        // Check to see if the triggered project has Parameters defined.
+        ParametersDefinitionProperty parameters = null;
+        for (Object object : originalActions) {
+            if (object instanceof hudson.model.ParametersDefinitionProperty)
+                parameters = (ParametersDefinitionProperty) object;
+        }
+        // Get and add ParametersAction for default parameters values
+        // if triggered project is Parameterized.
+        // Values will get overridden later as required
+        if (parameters != null) {
+            for (ParameterDefinition parameterdef : parameters
+                    .getParameterDefinitions()) {
+                if (parameterdef.getDefaultParameterValue() != null)
+                    paramsValuesList.add(parameterdef
+                            .getDefaultParameterValue());
+            }
+            params = new ParametersAction(
+                    paramsValuesList
+                            .toArray(new ParameterValue[paramsValuesList.size()]));
 
-		abstract public boolean isKillPhase(Result result);
+        }
 
-		private KillPhaseOnJobResultCondition(String label) {
-			this.label = label;
-		}
+        // Merge current parameters with the defaults from the triggered job.
+        // Current parameters override the defaluts.
+        if (isCurrentInclude) {
+            ParametersAction defaultParameters = build
+                    .getAction(ParametersAction.class);
 
-		final private String label;
+            if (params != null && defaultParameters != null) {
+                params = mergeParameters(params, defaultParameters);
+            } else if (params == null) {
+                params = defaultParameters;
+            }
+        }
+        // Backward compatibility
+        // get actions from configs merge ParametersActions if needed.
+        if (configs != null) {
+            for (AbstractBuildParameters config : configs) {
+                Action a;
+                try {
+                    a = config.getAction(build, listener);
+                    if (a instanceof ParametersAction) {
+                        params = params == null ? (ParametersAction) a
+                                : mergeParameters(params, (ParametersAction) a);
+                    } else if (a != null) {
+                        actions.add(a);
+                    }
+                } catch (DontTriggerException e) {
+                    // don't trigger on this configuration
+                    listener.getLogger().println(
+                            "[multiJob] DontTriggerException: " + e);
+                }
+            }
+        }
 
-		public String getLabel() {
-			return label;
-		}
-	}
+        if (params != null)
+            actions.add(params);
+
+        return actions;
+    }
+
+    public boolean hasProperties() {
+        return this.jobProperties != null && !this.jobProperties.isEmpty();
+    }
+
+    // compatibility with earlier plugins
+    public Object readResolve() {
+        if (hasProperties()) {
+            AbstractBuildParameters buildParameters = new PredefinedBuildParameters(
+                    jobProperties);
+            if (configs == null)
+                configs = new ArrayList<AbstractBuildParameters>();
+            configs.add(buildParameters);
+        }
+
+        List<AbstractBuildParameters> oldParams = new ArrayList<AbstractBuildParameters>();
+        if (configs != null && configs.size() > 0) {
+            Iterator parametersIterator = configs.iterator();
+            while (parametersIterator.hasNext()) {
+                Object param = parametersIterator.next();
+                if (param instanceof com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) {
+                    com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters previosStringParam = (com.tikal.jenkins.plugins.multijob.PredefinedBuildParameters) param;
+                    parametersIterator.remove();
+                    oldParams.add(new PredefinedBuildParameters(
+                            previosStringParam.getJobProperties()));
+                } else if (param instanceof com.tikal.jenkins.plugins.multijob.FileBuildParameters) {
+                    com.tikal.jenkins.plugins.multijob.FileBuildParameters previosFileParam = (com.tikal.jenkins.plugins.multijob.FileBuildParameters) param;
+                    parametersIterator.remove();
+                    oldParams.add(new FileBuildParameters(previosFileParam
+                            .getPropertiesFile()));
+                }
+            }
+            configs.addAll(oldParams);
+        }
+        return this;
+    }
+
+    public static enum KillPhaseOnJobResultCondition {
+        FAILURE("Failure (stop the phase execution if the job is failed)") {
+            @Override
+            public boolean isKillPhase(Result result) {
+                return result.isWorseOrEqualTo(Result.FAILURE);
+            }
+        },
+        NEVER("Never (ignore the job result and continue the phase execution)") {
+            @Override
+            public boolean isKillPhase(Result result) {
+                return result.equals(Result.ABORTED) ? true : false;
+            }
+        },
+        UNSTABLE("Unstable (stop the phase execution if the job is unstable)") {
+            @Override
+            public boolean isKillPhase(Result result) {
+                return result.isWorseOrEqualTo(Result.UNSTABLE);
+            }
+        };
+
+        abstract public boolean isKillPhase(Result result);
+
+        private KillPhaseOnJobResultCondition(String label) {
+            this.label = label;
+        }
+
+        final private String label;
+
+        public String getLabel() {
+            return label;
+        }
+    }
 }

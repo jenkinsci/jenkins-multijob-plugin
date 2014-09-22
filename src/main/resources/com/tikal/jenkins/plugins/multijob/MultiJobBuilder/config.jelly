@@ -1,56 +1,76 @@
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-		<f:entry title="Phase name" field="phaseName"
-                help="/plugin/jenkins-multijob-plugin/help-phaseName.html">
-			<f:textbox name="phaseName" value="${instance.phaseName}" />
-		</f:entry>
-		<f:entry title="Phase jobs" field="phaseJobs">
-    		<f:repeatable field="phaseJobs" noAddButton="true" minimum="1">
-    			<table width="100%">
-    			<f:entry title="Job name" field="jobName"
-                         help="/plugin/jenkins-multijob-plugin/help-jobName.html">
-      				<f:textbox />
-    			</f:entry>
-    		
-				<f:advanced>
-				  	<f:entry title="Disable" field="disableJob">
-  						<f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
-  					</f:entry>
-				    <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
-  						<f:enum field="killPhaseOnJobResultCondition">
-							${it.getLabel()}
-						</f:enum>
-  					</f:entry>
-				    <f:block>
-    					<f:hetero-list name="configs" hasHeader="true"
-                   		descriptors="${descriptor.getBuilderConfigDescriptors()}"
-                   		oneEach="true"
-                   		items="${instance.configs}"
-                   		addCaption="${%Add Parameters}"	/>
-    				</f:block>
-					<f:entry title="Current job parameters" field="currParams"
-						help="/plugin/jenkins-multijob-plugin/help-currParams.html">
-  						<f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
-  					</f:entry>
-  					<f:entry title="Exposed SCM" field="exposedSCM"
-						help="/plugin/jenkins-multijob-plugin/help-repository.html">
-  						<f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="true"/>
-  					</f:entry>
-				</f:advanced>
-		        <f:entry>
-		          <div align="right">
-		            <input type="button" value="${%Add jobs...}" class="repeatable-add show-if-last" />
-		            <input type="button" value="${%Delete}" class="repeatable-delete show-if-not-only" style="margin-left: 1em;" />
-		          </div>
-		        </f:entry>
-		        </table>
-    		</f:repeatable>
-  		</f:entry>
-  		<f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
-			field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">
-			<f:enum field="continuationCondition">
-				${it.getLabel()}
-			</f:enum>
-		</f:entry>
-  		
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="Phase name" field="phaseName"
+            help="/plugin/jenkins-multijob-plugin/help-phaseName.html">
+        <f:textbox name="phaseName" value="${instance.phaseName}" />
+    </f:entry>
+    <f:entry title="Phase jobs" field="phaseJobs">
+        <f:repeatable field="phaseJobs" add="Add jobs..." header="Job" minimum="1">
+            <table width="100%">
+            <f:entry title="Job name" field="jobName"
+                     help="/plugin/jenkins-multijob-plugin/help-jobName.html">
+                <f:textbox />
+            </f:entry>
+        
+            <f:advanced>
+                <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
+                    <f:enum field="killPhaseOnJobResultCondition">
+                        ${it.getLabel()}
+                    </f:enum>
+                </f:entry>
+                <f:entry title="Disable" field="disableJob">
+                    <f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
+                </f:entry>
+                <f:entry title="Abort all other job" field="abortAllJob" help="/plugin/jenkins-multijob-plugin/help-abort.html">
+                    <f:checkbox name="abortAllJob" checked="${instance.abortAllJob}" default="true"/>
+                </f:entry>
+                <f:entry title="Current job parameters" field="currParams" help="/plugin/jenkins-multijob-plugin/help-currParams.html">
+                    <f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
+                </f:entry>
+                <f:entry title="Exposed SCM" field="exposedSCM" help="/plugin/jenkins-multijob-plugin/help-repository.html">
+                    <f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="true"/>
+                </f:entry>
+                <f:optionalBlock title="Enable retry" name="enableRetry" inline="true" checked="${instance.enableRetry}" help="/plugin/jenkins-multijob-plugin/help-retry.html">
+                    <f:block>
+                        <f:entry title="Select strategy" field="currentRulePath" help="/plugin/jenkins-multijob-plugin/help-ParseRuleChoice.html">
+                            <select name="parsingRulesPath">
+                                <j:forEach var="i" items="${descriptor.parsingRulesGlobal}">
+                                    <f:option selected="${i.path == instance.parsingRulesPath}" value="${i.path}">${i.name}</f:option>
+                                </j:forEach>
+                            </select>
+                        </f:entry>
+                        <f:entry title="Max retry" field="maxRetry" help="/plugin/jenkins-multijob-plugin/help-maxRetry.html">
+                            <f:number name="maxRetry" default="0" clazz="number positive-number" />
+                        </f:entry>
+                    </f:block>
+                </f:optionalBlock>
+                <f:optionalBlock title="Enable condition" name="enableCondition" inline="true" checked="${instance.enableCondition}" help="/plugin/jenkins-multijob-plugin/help-condition.html">
+                    <f:block>
+                        <f:entry title="Condition" field="condition">
+                            <f:textbox name="condition" default="" />
+                        </f:entry>
+                    </f:block>
+                </f:optionalBlock>
+                <f:block>
+                    <f:hetero-list name="configs" hasHeader="true"
+                       descriptors="${descriptor.getBuilderConfigDescriptors()}"
+                       oneEach="true"
+                       items="${instance.configs}"
+                       addCaption="${%Add Parameters}"    />
+                </f:block>
+            </f:advanced>
+            <f:entry>
+              <div align="right" class="show-if-not-only" style="margin-left: 1em;">
+                <f:repeatableDeleteButton value="Delete job" />
+              </div>
+              <br />
+            </f:entry>
+            </table>
+        </f:repeatable>
+      </f:entry>
+      <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
+        field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">
+        <f:enum field="continuationCondition">
+            ${it.getLabel()}
+        </f:enum>
+    </f:entry>
 </j:jelly>
