@@ -3,22 +3,16 @@ package com.tikal.jenkins.plugins.multijob;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.model.Action;
-import hudson.model.Describable;
 import hudson.model.ParameterValue;
-import hudson.model.SimpleParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
-import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 

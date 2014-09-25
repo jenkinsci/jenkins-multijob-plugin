@@ -7,7 +7,6 @@ import hudson.Util;
 import hudson.console.HyperlinkNote;
 import hudson.model.Action;
 import hudson.model.BallColor;
-import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
@@ -17,8 +16,6 @@ import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.Cause.UpstreamCause;
-import hudson.model.Run;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
@@ -37,7 +34,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -49,10 +45,8 @@ import net.sf.json.JSONObject;
 import jenkins.model.Jenkins;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FileNotFoundException;
 
 import org.jenkinsci.lib.envinject.EnvInjectLogger;

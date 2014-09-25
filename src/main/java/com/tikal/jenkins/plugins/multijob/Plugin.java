@@ -3,7 +3,6 @@ package com.tikal.jenkins.plugins.multijob;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.TopLevelItem;
-import hudson.model.Hudson;
 import hudson.model.listeners.ItemListener;
 import hudson.tasks.Builder;
 import jenkins.model.Jenkins;

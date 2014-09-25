@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 
 public class MultiJobChangeLogSet extends ChangeLogSet<ChangeLogSet.Entry> {
 

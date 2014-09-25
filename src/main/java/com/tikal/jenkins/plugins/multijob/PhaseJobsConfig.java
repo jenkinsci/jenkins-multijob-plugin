@@ -20,14 +20,12 @@ import hudson.model.Hudson;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Project;
 import hudson.model.StringParameterDefinition;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
 import hudson.plugins.parameterizedtrigger.FileBuildParameters;
 import hudson.plugins.parameterizedtrigger.PredefinedBuildParameters;
 import hudson.tasks.Builder;
-import hudson.util.FormValidation;
 
 import java.io.IOException;
 import java.util.ArrayList;

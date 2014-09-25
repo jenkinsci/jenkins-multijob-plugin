@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.565.1</version>
+		<version>1.580</version>
 	</parent>
 	<!-- parent> <groupId>org.jvnet.hudson.plugins</groupId> <artifactId>hudson-plugin-parent</artifactId> 
 		<version>2.1.0</version> <relativePath>../pom.xml</relativePath> </parent -->
@@ -78,7 +78,12 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>token-macro</artifactId>
             <version>1.10</version>
-            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>maven-plugin</artifactId>
+            <version>2.6</version>
         </dependency>
 	</dependencies>
 
