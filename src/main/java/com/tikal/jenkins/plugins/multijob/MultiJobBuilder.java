@@ -263,6 +263,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         if (future.isDone()) {
                             break;
                         }
+                        Thread.sleep(1000);
                     }
                     if (jobBuild != null && !finish) {
                         result = jobBuild.getResult();
