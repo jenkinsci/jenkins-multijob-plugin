@@ -29,7 +29,7 @@
                 <f:entry title="Exposed SCM" field="exposedSCM" help="/plugin/jenkins-multijob-plugin/help-repository.html">
                     <f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="true"/>
                 </f:entry>
-                <f:optionalBlock title="Enable retry" name="enableRetry" inline="true" checked="${instance.enableRetry}" help="/plugin/jenkins-multijob-plugin/help-retry.html">
+                <f:optionalBlock title="Enable retry" name="enableRetryStrategy" inline="true" checked="${instance.enableRetryStrategy}" help="/plugin/jenkins-multijob-plugin/help-retry.html">
                     <f:block>
                         <f:entry title="Select strategy" field="currentRulePath" help="/plugin/jenkins-multijob-plugin/help-ParseRuleChoice.html">
                             <select name="parsingRulesPath">
@@ -38,8 +38,8 @@
                                 </j:forEach>
                             </select>
                         </f:entry>
-                        <f:entry title="Max retry" field="maxRetry" help="/plugin/jenkins-multijob-plugin/help-maxRetry.html">
-                            <f:number name="maxRetry" default="0" clazz="number positive-number" />
+                        <f:entry title="Max retry" field="maxRetries" help="/plugin/jenkins-multijob-plugin/help-maxRetry.html">
+                            <f:number name="maxRetries" default="0" clazz="number positive-number" />
                         </f:entry>
                     </f:block>
                 </f:optionalBlock>

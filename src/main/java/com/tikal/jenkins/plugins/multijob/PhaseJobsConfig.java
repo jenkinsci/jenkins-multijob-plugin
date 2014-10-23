@@ -82,7 +82,6 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
     public int getMaxRetries() {
         return maxRetries;
     }
-
     public void setEnableRetryStrategy(boolean enableRetryStrategy) {
         this.enableRetryStrategy = enableRetryStrategy;
     }
@@ -169,9 +168,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
             boolean currParams, List<AbstractBuildParameters> configs,
             KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
             boolean disableJob,
-            boolean enableRetry,
+            boolean enableRetryStrategy,
             String parsingRulesPath,
-            int maxRetry,
+            int maxRetries,
             boolean enableCondition,
             boolean abortAllJob,
             String condition) {
@@ -181,8 +180,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
         this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
         this.disableJob = disableJob;
         this.configs = Util.fixNull(configs);
-        this.enableRetryStrategy = enableRetry;
-        this.maxRetries = maxRetry;
+        this.enableRetryStrategy = enableRetryStrategy;
+        this.maxRetries = maxRetries;
         if (this.maxRetries < 0) {
             this.maxRetries = 0;
         }

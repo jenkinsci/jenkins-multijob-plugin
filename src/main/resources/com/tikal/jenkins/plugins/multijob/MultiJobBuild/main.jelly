@@ -64,7 +64,7 @@
 						</j:choose>
 	 				</td>
 	 				<td class="no-wrap" width="50%">
-	 					<a href="${rootURL}/job/${builder.jobName}">${builder.jobName}</a>
+	 					<a href="${rootURL}/${builder.url}">${builder.jobName}</a>
 	 				</td>
 					<td class="no-wrap" width="5%">
 						<j:choose>

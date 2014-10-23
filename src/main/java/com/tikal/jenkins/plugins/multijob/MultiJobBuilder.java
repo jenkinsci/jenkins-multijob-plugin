@@ -235,7 +235,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     retry++;
                     QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
                     while (true) {
-                        if (future.isCancelled() || subTask.isCancelled()) {
+                    	if (subTask.isCancelled()) {
                             if (jobBuild != null) {
                                 Executor exect = jobBuild.getExecutor();
                                 if (exect != null) {
@@ -244,15 +244,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
                                 reportFinish(listener, jobBuild, Result.ABORTED);
                                 abortSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
-                            }
 
-                            finish = true;
-                            break;
+                                finish = true;
+                                break;
+                            }
                         }
 
                         try {
                             jobBuild = future.getStartCondition().get(5, TimeUnit.SECONDS);
-                            updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
                         } catch (Exception e) {
                             if (e instanceof TimeoutException)
                                 continue;
@@ -260,10 +259,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                                 throw e;
                             }
                         }
+                        updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
                         if (future.isDone()) {
                             break;
                         }
-                        Thread.sleep(1000);
+                        Thread.sleep(2500);
                     }
                     if (jobBuild != null && !finish) {
                         result = jobBuild.getResult();

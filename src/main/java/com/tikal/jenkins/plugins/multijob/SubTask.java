@@ -7,6 +7,8 @@ import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UpstreamCause;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -34,14 +36,11 @@ public final class SubTask {
 
     public void cancelJob() {
         this.cancel = true;
-        if (this.future != null) {
-            this.future.cancel(true);
-        }
     }
 
     public void GenerateFuture() {
         this.future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
                                             new UpstreamCause((Run) multiJobBuild),
-                                            actions.toArray(new Action[0]));
+                                            actions.toArray(new Action[actions.size()]));
     }
 }
