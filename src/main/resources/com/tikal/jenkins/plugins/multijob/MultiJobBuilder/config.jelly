@@ -15,7 +15,13 @@
 				<f:advanced>
 				  	<f:entry title="Disable" field="disableJob">
   						<f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
-  					</f:entry>
+				  	</f:entry>
+				  	<f:entry field="runCondition"
+								title="Run condition command"
+								help="/plugin/jenkins-multijob-plugin/help-runCondition.html"
+								description="${%runConditionDescription(rootURL)}">
+							<f:textarea class="fixed-width" />
+				  	</f:entry>
 				    <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
   						<f:enum field="killPhaseOnJobResultCondition">
 							${it.getLabel()}
