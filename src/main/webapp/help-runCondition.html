@@ -1,0 +1,20 @@
+<div>
+    A shell script that determines if this job should run.  A non-zero exit value will prevent
+    the job from running.
+
+    <p>
+    Type in the contents of your shell script. If your shell script has no header line like #!/bin/sh,
+    then the shell configured system-wide will be used, but you can also use the header line to write
+    script in another language (like #!/bin/perl) or control the options that shell uses.
+    Default shell is the same as configured for the Execute shell build step.
+
+    <p>
+    By default, the shell will be invoked with the "-ex" option. So all of the commands are printed
+    before being executed, and the build is considered a failure if any of the commands exits with
+    a non-zero exit code. Again, add the #!/bin/... line to change this behavior.
+
+    <p>
+    As a best practice, try not to put a long shell script in here. Instead, consider adding the shell
+    script in SCM and simply call that shell script from Jenkins (via bash -ex myscript.sh or something like that),
+    so that you can track changes in your shell script.
+</div>

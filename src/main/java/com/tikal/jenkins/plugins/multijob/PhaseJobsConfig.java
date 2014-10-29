@@ -51,6 +51,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private boolean currParams;
 	private boolean exposedSCM;
 	private boolean disableJob;
+	private String runCondition;
 	private List<AbstractBuildParameters> configs;
 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 
@@ -87,6 +88,18 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.currParams = currParams;
 	}
 
+	public boolean hasRunCondition() {
+		return !(runCondition == null || runCondition == "");
+	}
+
+	public String getRunCondition() {
+		return runCondition;
+	}
+
+	public void setRunCondition(String runCondition) {
+		this.runCondition = runCondition;
+	}
+
 	public String getJobProperties() {
 		return jobProperties;
 	}
@@ -115,13 +128,22 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	public PhaseJobsConfig(String jobName, String jobProperties,
 			boolean currParams, List<AbstractBuildParameters> configs,
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
-			boolean disableJob) {
+			boolean disableJob, String runCondition) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
 		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
 		this.disableJob = disableJob;
+		this.runCondition = runCondition;
 		this.configs = Util.fixNull(configs);
+	}
+
+	@Deprecated
+	public PhaseJobsConfig(String jobName, String jobProperties,
+			boolean currParams, List<AbstractBuildParameters> configs,
+			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
+			boolean disableJob) {
+		this(jobName, jobProperties, currParams, configs, killPhaseOnJobResultCondition, disableJob, null);
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {

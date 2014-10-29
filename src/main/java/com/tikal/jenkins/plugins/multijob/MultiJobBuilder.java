@@ -56,6 +56,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
+import com.tikal.jenkins.plugins.multijob.ShellCondition;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
@@ -113,19 +114,28 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			}
 
 			Future<AbstractBuild> future = null;
-			if (!phaseConfig.isDisableJob()) {
-				future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
-						new UpstreamCause((Run) multiJobBuild),
-						actions.toArray(new Action[0]));
-			}
-
-			if (future != null) {
-				subTasks.add(new SubTask(future, phaseConfig));
-			} else {
+			if (phaseConfig.isDisableJob()) {
 				listener.getLogger().println(
 						String.format("Warning: %s sub job is disabled.",
 								subJob.getName()));
+				continue;
 			}
+
+			if (phaseConfig.hasRunCondition()) {
+				ShellCondition condition = new ShellCondition(phaseConfig.getRunCondition());
+				if (!condition.runPerform(multiJobBuild, listener)) {
+					listener.getLogger().println(
+							String.format("%s sub job does not pass run condition.",
+									subJob.getName()));
+					continue;
+				}
+			}
+
+			future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
+					new UpstreamCause((Run) multiJobBuild),
+					actions.toArray(new Action[0]));
+
+			subTasks.add(new SubTask(future, phaseConfig));
 		}
 
 		if (subTasks.size() < 1)
