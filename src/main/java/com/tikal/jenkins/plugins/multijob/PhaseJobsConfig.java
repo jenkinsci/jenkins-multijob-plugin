@@ -45,6 +45,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
+
     private String jobName;
     private String jobProperties;
     private boolean currParams;
@@ -58,6 +59,18 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
     private String condition;
     private List<AbstractBuildParameters> configs;
     private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
+	private boolean buildOnlyIfSCMChanges = false;
+
+	
+	public boolean isBuildOnlyIfSCMChanges() {
+		return this.buildOnlyIfSCMChanges;
+	}
+	
+	public void setBuildOnlyIfSCMChanges(boolean triggerOnlyIfSCMChanges) {
+		this.buildOnlyIfSCMChanges = triggerOnlyIfSCMChanges;
+	}
+
+
 
     public void setParsingRulesPath(String parsingRulesPath) {
         this.parsingRulesPath = parsingRulesPath;
@@ -173,7 +186,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
             int maxRetries,
             boolean enableCondition,
             boolean abortAllJob,
-            String condition) {
+            String condition,
+            boolean buildOnlyIfSCMChanges) {
         this.jobName = jobName;
         this.jobProperties = jobProperties;
         this.currParams = currParams;
@@ -189,6 +203,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
         this.enableCondition = enableCondition;
         this.abortAllJob = abortAllJob;
         this.condition = Util.fixNull(condition);
+        this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
     }
 
     public List<AbstractBuildParameters> getConfigs() {
