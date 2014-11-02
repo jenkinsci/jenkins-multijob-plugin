@@ -17,6 +17,9 @@
                         ${it.getLabel()}
                     </f:enum>
                 </f:entry>
+                <f:entry title="Build only if SCM changes" field="buildOnlyIfSCMChanges">
+                    <f:checkbox name="buildOnlyIfSCMChanges" checked="${instance.buildOnlyIfSCMChanges}" default="false"/>
+                </f:entry>
                 <f:entry title="Disable" field="disableJob">
                     <f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
                 </f:entry>
@@ -25,9 +28,6 @@
                 </f:entry>
                 <f:entry title="Current job parameters" field="currParams" help="/plugin/jenkins-multijob-plugin/help-currParams.html">
                     <f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
-                </f:entry>
-                <f:entry title="Exposed SCM" field="exposedSCM" help="/plugin/jenkins-multijob-plugin/help-repository.html">
-                    <f:checkbox name="exposedSCM" checked="${instance.exposedSCM}" default="true"/>
                 </f:entry>
                 <f:optionalBlock title="Enable retry" name="enableRetryStrategy" inline="true" checked="${instance.enableRetryStrategy}" help="/plugin/jenkins-multijob-plugin/help-retry.html">
                     <f:block>

@@ -19,9 +19,12 @@ import hudson.model.AbstractProject;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.model.Executor;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,12 +39,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 import net.sf.json.JSONObject;
-
 import jenkins.model.Jenkins;
 
 import java.io.BufferedReader;
@@ -60,11 +61,30 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
+
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 import groovy.util.*;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
+	/**
+	 * The name of the parameter in the build.getBuildVariables() to enable the job build, regardless
+	 * of scm changes.
+	 */
+
+	public static final String BUILD_ALWAYS_KEY = "hudson.scm.multijob.build.always";
+	/**
+	 * List of messages to show by console.
+	 */
+	private static final String[]  TRIGGER_MESSAGES = {
+		"    >> [%s] added to build queue.\n",
+		"    >> [%s] has changes since last build. Adding to build queue.\n",
+		"    >> [%s] has no changes since last build, but it will be adding to build queue.\n",
+		"    >> [%s] has no changes since last build, but you have enabled the 'build always' function. Adding to build queue.\n",
+		"    >> [%s] has no changes since last build, so it will be skipped.\n",
+		"    >> [%s] has been disabled. Skipping it.\n"
+	};
+
 
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
@@ -91,7 +111,29 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
         return matcher.replaceAll("");
     }
+    private int getScmChange(AbstractProject subjob,PhaseJobsConfig phaseConfig,AbstractBuild build, BuildListener listener,Launcher launcher) throws IOException, InterruptedException{
+    	final boolean containsLastBuild = ( subjob.getLastBuild() != null );
+		final SCM scm = subjob.getScm();
+		final SCMRevisionState scmRS = ( containsLastBuild ? scm.calcRevisionsFromBuild((AbstractBuild) subjob.getLastBuild(), launcher, listener) : null );
+		final boolean hasChanges = ( containsLastBuild ? scm.poll(subjob, launcher, subjob.getWorkspace(), listener, scmRS).hasChanges() : true );
 
+		final boolean buildOnlyIfSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
+		final boolean buildAlways = Boolean.valueOf((String)(build.getBuildVariables().get(BUILD_ALWAYS_KEY)));
+
+		final int message = 
+			(!buildOnlyIfSCMChanges)
+				? 0
+				: (hasChanges
+					? 1
+					: (!buildOnlyIfSCMChanges
+						? 2
+						: ((buildAlways) ? 3 : 4)
+					)
+				);
+		listener.getLogger().printf(TRIGGER_MESSAGES[message], subjob.getName());
+	    return message; 
+
+    }
     public boolean evalCondition(final String condition, final AbstractBuild<?, ?> build, final BuildListener listener) {
         try {
             return (Boolean) Eval.me(expandToken(condition, build, listener).toLowerCase().trim());
@@ -136,7 +178,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     continue;
                 }
             }
-
+            if (getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher ) >= 4) {
+				continue;
+			}
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
             prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
