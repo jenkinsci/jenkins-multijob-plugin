@@ -23,11 +23,11 @@
 		<j:forEach var="act" items="${it.prominentActions}">
 			<t:summary icon="${act.iconFileName}" href="${act.urlName}">
 				${act.displayName}
-      </t:summary>
+            </t:summary>
 		</j:forEach>
 		<t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
 			${%Workspace}
-    </t:summary>
+        </t:summary>
 
 		<t:artifactList caption="${%Last Successful Artifacts}"
 			build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
