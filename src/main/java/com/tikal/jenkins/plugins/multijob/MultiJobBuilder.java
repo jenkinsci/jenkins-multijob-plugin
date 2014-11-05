@@ -178,8 +178,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     continue;
                 }
             }
-            if (getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher ) >= 4) {
-				continue;
+            if (phaseConfig.isBuildOnlyIfSCMChanges()){
+            	if( getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher ) >= 4) {
+            		continue;
+            	}
 			}
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
