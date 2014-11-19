@@ -485,7 +485,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     protected boolean checkPhaseTermination(SubTask subTask, List<SubTask> subTasks, final BuildListener listener) {
         try {
             KillPhaseOnJobResultCondition killCondition = subTask.phaseConfig.getKillPhaseOnJobResultCondition();
-            if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER)) {
+            if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER) && subTask.result != Result.ABORTED) {
                 return false;
             }
             if (killCondition.isKillPhase(subTask.result)) {
