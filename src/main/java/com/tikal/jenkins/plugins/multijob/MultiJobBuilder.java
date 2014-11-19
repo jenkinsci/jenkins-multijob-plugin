@@ -771,10 +771,22 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public static enum ContinuationCondition {
 
+        ALWAYS("Always") {
+            @Override
+            public boolean isContinue(Result result) {
+                return true;
+            }
+        },
         SUCCESSFUL("Successful") {
             @Override
             public boolean isContinue(Result result) {
                 return result.equals(Result.SUCCESS);
+            }
+        },
+        COMPLETED("Completed") {
+            @Override
+            public boolean isContinue(Result result) {
+                return result.isCompleteBuild();
             }
         },
         UNSTABLE("Stable or Unstable but not Failed") {
@@ -783,18 +795,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 return result.isBetterOrEqualTo(Result.UNSTABLE);
             }
         },
-        COMPLETED("Complete (always continue)") {
-            @Override
-            public boolean isContinue(Result result) {
-                return result.equals(Result.ABORTED) ? true : result
-                        .isBetterOrEqualTo(Result.FAILURE);
-            }
-        },
         FAILURE("Failed") {
             @Override
             public boolean isContinue(Result result) {
-                return result.equals(Result.ABORTED) ||
-                             result.isBetterOrEqualTo(Result.FAILURE);
+                return result.isWorseOrEqualTo(Result.FAILURE);
             }
         };
 
