@@ -182,7 +182,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             	if( getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher ) >= 4) {
             		continue;
             	}
-			}
+            }
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
             prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
@@ -213,13 +213,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             executor.shutdown();
             int resultCounter = 0;
             while (!executor.isTerminated()) {
-                SubTask subTask = queue.take();
-                resultCounter++;
-                if (subTask.result != null) {
-                    jobResults.add(subTask.result);
-                    checkPhaseTermination(subTask, subTasks, listener);
+                SubTask subTask = queue.poll(5, TimeUnit.SECONDS);
+                if (subTask != null) {
+                    resultCounter++;
+                    if (subTask.result != null) {
+                        jobResults.add(subTask.result);
+                        checkPhaseTermination(subTask, subTasks, listener);
+                    }
                 }
-                if (subTasks.size() == resultCounter) {
+                if (subTasks.size() <= resultCounter) {
                     break;
                 }
             }
@@ -315,7 +317,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         result = jobBuild.getResult();
                         reportFinish(listener, jobBuild, result);
 
-                        if (result.isWorseOrEqualTo(Result.FAILURE) && result.isCompleteBuild()) {
+                        if (result.isWorseOrEqualTo(Result.FAILURE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
                             if (isKnownRandomFailure(jobBuild)) {
                                 if (retry <= maxRetries) {
                                     listener.getLogger().println("Known failure detected, retrying this build. Try " + retry + " of " + maxRetries + ".");
@@ -483,7 +485,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     protected boolean checkPhaseTermination(SubTask subTask, List<SubTask> subTasks, final BuildListener listener) {
         try {
             KillPhaseOnJobResultCondition killCondition = subTask.phaseConfig.getKillPhaseOnJobResultCondition();
-            if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER)) {
+            if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER) && subTask.result != Result.ABORTED) {
                 return false;
             }
             if (killCondition.isKillPhase(subTask.result)) {
@@ -769,10 +771,22 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public static enum ContinuationCondition {
 
+        ALWAYS("Always") {
+            @Override
+            public boolean isContinue(Result result) {
+                return true;
+            }
+        },
         SUCCESSFUL("Successful") {
             @Override
             public boolean isContinue(Result result) {
                 return result.equals(Result.SUCCESS);
+            }
+        },
+        COMPLETED("Completed") {
+            @Override
+            public boolean isContinue(Result result) {
+                return result.isCompleteBuild();
             }
         },
         UNSTABLE("Stable or Unstable but not Failed") {
@@ -781,18 +795,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 return result.isBetterOrEqualTo(Result.UNSTABLE);
             }
         },
-        COMPLETED("Complete (always continue)") {
-            @Override
-            public boolean isContinue(Result result) {
-                return result.equals(Result.ABORTED) ? true : result
-                        .isBetterOrEqualTo(Result.FAILURE);
-            }
-        },
         FAILURE("Failed") {
             @Override
             public boolean isContinue(Result result) {
-                return result.equals(Result.ABORTED) ||
-                             result.isBetterOrEqualTo(Result.FAILURE);
+                return result.isWorseOrEqualTo(Result.FAILURE);
             }
         };
 
