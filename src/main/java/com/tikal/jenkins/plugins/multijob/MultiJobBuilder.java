@@ -155,7 +155,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 phaseJobs.size());
 
         for (PhaseJobsConfig phaseJobConfig : phaseJobs) {
-            Item item = jenkins.getItemByFullName(phaseJobConfig.getJobName());
+            Item item = jenkins.getItem(phaseJobConfig.getJobName(), multiJobBuild.getParent(), AbstractProject.class);
             if (item instanceof AbstractProject) {
                 AbstractProject job = (AbstractProject) item;
                 phaseSubJobs.put(new PhaseSubJob(job), phaseJobConfig);
@@ -730,7 +730,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if (phaseJobsConfigs == null)
             return;
         for (PhaseJobsConfig project : phaseJobsConfigs) {
-            Item topLevelItem = jenkins.getItemByFullName(project.getJobName());
+            Item topLevelItem = jenkins.getItem(project.getJobName(), owner.getParent(), AbstractProject.class);
             if (topLevelItem instanceof AbstractProject) {
                 Dependency dependency = new Dependency(owner,
                         (AbstractProject) topLevelItem) {
