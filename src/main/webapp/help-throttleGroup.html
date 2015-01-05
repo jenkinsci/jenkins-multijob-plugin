@@ -1,0 +1,22 @@
+<div>
+	A throttle group restricts which jobs can run in parallel.  All jobs with identical
+	throttle groups will run in series rather than parallel.
+
+	<p>
+	By default, all jobs within a phase run in parallel.  So if you have jobs A, B, and C -
+	they will all execute in parallel.  This looks like:
+	<pre>
+  A......
+  B........
+  C...
+  </pre>
+
+	<p>
+	With throttle groups, you can assign the same string to jobs A and C.  This will cause
+	C to wait until A finishes executing before it starts.  This would look like:
+	<pre>
+  A......
+  B........
+         C...
+  </pre>
+</div>
