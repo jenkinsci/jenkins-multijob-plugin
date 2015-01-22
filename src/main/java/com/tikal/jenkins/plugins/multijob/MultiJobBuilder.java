@@ -281,7 +281,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
                 while (retry <= maxRetries && !finish) {
                     retry++;
-                    QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
                     while (true) {
                     	if (subTask.isCancelled()) {
                             if (jobBuild != null) {
@@ -299,7 +298,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         }
 
                         try {
-                            jobBuild = future.getStartCondition().get(5, TimeUnit.SECONDS);
+                            jobBuild = subTask.future.getStartCondition().get(5, TimeUnit.SECONDS);
                         } catch (Exception e) {
                             if (e instanceof TimeoutException)
                                 continue;
@@ -308,7 +307,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                             }
                         }
                         updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
-                        if (future.isDone()) {
+                        if (subTask.future.isDone()) {
                             break;
                         }
                         Thread.sleep(2500);
@@ -528,7 +527,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             MultiJobProject multiJobProject, PhaseJobsConfig phaseConfig) {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
                 multiJobBuild.getNumber(), phaseConfig.getJobName(), 0,
-                phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "");
+                phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "", null);
         multiJobBuild.addSubBuild(subBuild);
     }
 
@@ -538,7 +537,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 multiJobBuild.getNumber(), jobBuild.getProject().getName(),
                 jobBuild.getNumber(), phaseName, null, jobBuild.getIconColor()
                         .getImage(), jobBuild.getDurationString(),
-                jobBuild.getUrl());
+                jobBuild.getUrl(), jobBuild);
         multiJobBuild.addSubBuild(subBuild);
     }
 
@@ -548,7 +547,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
                 multiJobBuild.getNumber(), jobBuild.getProject().getName(),
                 jobBuild.getNumber(), phaseName, result, jobBuild.getIconColor().getImage(),
-                jobBuild.getDurationString(), jobBuild.getUrl());
+                jobBuild.getDurationString(), jobBuild.getUrl(), jobBuild);
         multiJobBuild.addSubBuild(subBuild);
     }
 
@@ -558,14 +557,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
                 multiJobBuild.getNumber(), jobBuild.getProject().getName(),
                 jobBuild.getNumber(), phaseName, result, jobBuild.getIconColor().getImage(),
-                jobBuild.getDurationString(), jobBuild.getUrl(), retry, false);
+                jobBuild.getDurationString(), jobBuild.getUrl(), retry, false, jobBuild);
         multiJobBuild.addSubBuild(subBuild);
     }
 
     private void abortSubBuild(MultiJobBuild multiJobBuild, MultiJobProject multiJobProject, AbstractBuild jobBuild) {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
                 multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-                jobBuild.getNumber(), phaseName, Result.ABORTED, BallColor.ABORTED.getImage(), "", jobBuild.getUrl(), false, true);
+                jobBuild.getNumber(), phaseName, Result.ABORTED, BallColor.ABORTED.getImage(), "", jobBuild.getUrl(),
+                false, true, jobBuild);
         multiJobBuild.addSubBuild(subBuild);
     }
 

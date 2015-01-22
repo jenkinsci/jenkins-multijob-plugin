@@ -1,5 +1,7 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.Util;
+import hudson.model.AbstractBuild;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
@@ -14,6 +16,7 @@ import hudson.scm.ChangeLogSet.Entry;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +84,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public String getBuildParams(SubBuild subBuild) {
         try {
             AbstractProject project = (AbstractProject) Jenkins.getInstance()
-            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);;
+            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
             Run build = project.getBuildByNumber(subBuild.getBuildNumber());
             ParametersAction action = build.getAction(ParametersAction.class);
             List<ParameterValue> parameters = action.getParameters();
@@ -171,8 +174,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public static class SubBuild {
 
         private final String parentJobName;
-        private final int parentBuildNumber;
         private final String jobName;
+        private final int parentBuildNumber;
         private final int buildNumber;
         private final String phaseName;
         private final Result result;
@@ -181,19 +184,26 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final String url;
         private final boolean retry;
         private final boolean aborted;
+        private final AbstractBuild jobBuild;
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url) {
-            this.parentJobName = parentJobName;
+                Result result, String icon, String duration, String url,
+                AbstractBuild jobBuild) {
+            this.parentJobName = Util.fixNull(parentJobName);
             this.parentBuildNumber = parentBuildNumber;
-            this.jobName = jobName;
+            this.jobBuild = jobBuild;
+            this.jobName = Util.fixNull(jobName);
             this.buildNumber = buildNumber;
-            this.phaseName = phaseName;
+            this.phaseName = Util.fixNull(phaseName);
+            if (result == null) {
+                this.result = Result.NOT_BUILT;
+            } else  {
             this.result = result;
-            this.icon = icon;
-            this.duration = duration;
-            this.url = url;
+            }
+            this.icon = Util.fixNull(icon);
+            this.duration = Util.fixNull(duration);
+            this.url = Util.fixNull(url);
             this.retry = false;
             this.aborted = false;
         }
@@ -201,16 +211,21 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
-                boolean retry, boolean aborted) {
-            this.parentJobName = parentJobName;
+                boolean retry, boolean aborted, AbstractBuild jobBuild) {
+            this.parentJobName = Util.fixNull(parentJobName);
             this.parentBuildNumber = parentBuildNumber;
-            this.jobName = jobName;
+            this.jobBuild = jobBuild;
+            this.jobName = Util.fixNull(jobName);
             this.buildNumber = buildNumber;
-            this.phaseName = phaseName;
+            this.phaseName = Util.fixNull(phaseName);
+            if (result == null) {
+                this.result = Result.NOT_BUILT;
+            } else  {
             this.result = result;
-            this.icon = icon;
-            this.duration = duration;
-            this.url = url;
+            }
+            this.icon = Util.fixNull(icon);
+            this.duration = Util.fixNull(duration);
+            this.url = Util.fixNull(url);
             this.retry = retry;
             this.aborted = aborted;
         }
@@ -270,6 +285,29 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public Result getResult() {
             return result;
         }
+
+        public List<String> getLog(int number) {
+            try {
+                return jobBuild.getLog(number);
+            } catch (IOException ex) {
+                
+            }
+            return new ArrayList<String>();
+        }
+
+        public List<SubBuild> getSubBuilds() {
+            if (jobBuild != null) {
+                try {
+                    if (jobBuild instanceof MultiJobBuild) {
+                        return ((MultiJobBuild) jobBuild).getSubBuilds();
+                    }
+                } catch(ClassCastException e) {
+                    // Nothing, this build was not a MultiJobBuild
+                }
+            }
+            return new ArrayList<SubBuild>();
+        }
+        
 
         @Override
         public String toString() {
