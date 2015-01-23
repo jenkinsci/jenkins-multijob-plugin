@@ -85,7 +85,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         "    >> [%s] has been disabled. Skipping it.\n"
     };
 
-
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
@@ -114,8 +113,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private int getScmChange(AbstractProject subjob, PhaseJobsConfig phaseConfig, AbstractBuild build, BuildListener listener,Launcher launcher) throws IOException, InterruptedException{
         final boolean buildOnlyIfSCMChanges = phaseConfig.isBuildOnlyIfSCMChanges();
         final boolean buildAlways = Boolean.valueOf((String)(build.getBuildVariables().get(BUILD_ALWAYS_KEY)));
-        final boolean containsLastBuild = subjob.getLastBuild() != null;
-        final boolean hasChanges = !containsLastBuild || subjob.poll(listener).hasChanges();
+        final boolean containsLastBuild = buildAlways ? false : subjob.getLastBuild() != null;
+        final boolean hasChanges = buildAlways ? false : !containsLastBuild || subjob.poll(listener).hasChanges();
 
         final int message = 
             (!buildOnlyIfSCMChanges)
