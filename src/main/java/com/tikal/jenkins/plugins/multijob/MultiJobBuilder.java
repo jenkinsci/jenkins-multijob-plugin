@@ -85,6 +85,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         "    >> [%s] has been disabled. Skipping it.\n"
     };
 
+    private static final Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
+
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
@@ -105,8 +107,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             listener.getLogger().println(e.getMessage());
         }
 
-        Pattern pattern = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(expandedExpression);
+        Matcher matcher = PATTERN.matcher(expandedExpression);
 
         return matcher.replaceAll("");
     }
