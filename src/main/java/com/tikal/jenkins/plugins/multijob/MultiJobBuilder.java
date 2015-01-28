@@ -278,6 +278,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
                 while (retry <= maxRetries && !finish) {
                     retry++;
+                    QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
                     while (true) {
                         if (subTask.isCancelled()) {
                             if (jobBuild != null) {
@@ -295,7 +296,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         }
 
                         try {
-                            jobBuild = subTask.future.getStartCondition().get(5, TimeUnit.SECONDS);
+                            jobBuild = future.getStartCondition().get(5, TimeUnit.SECONDS);
                         } catch (Exception e) {
                             if (e instanceof TimeoutException)
                                 continue;
@@ -304,7 +305,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                             }
                         }
                         updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
-                        if (subTask.future.isDone()) {
+                        if (future.isDone()) {
                             break;
                         }
                         Thread.sleep(2500);
