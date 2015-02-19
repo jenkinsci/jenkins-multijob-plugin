@@ -133,7 +133,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public boolean evalCondition(final String condition, final AbstractBuild<?, ?> build, final BuildListener listener) {
         try {
-            return (Boolean) Eval.me(expandToken(condition, build, listener).toLowerCase().trim());
+            return (Boolean) Eval.me(expandToken(condition, build, listener).trim());
         } catch (Exception e) {
             listener.getLogger().println("Can't evaluate expression, false is assumed.");
             listener.getLogger().println(e.toString());
