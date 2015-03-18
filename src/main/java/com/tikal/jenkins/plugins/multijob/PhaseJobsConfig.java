@@ -21,6 +21,7 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
+import hudson.model.StringParameterValue;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
 import hudson.plugins.parameterizedtrigger.FileBuildParameters;
@@ -34,6 +35,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import java.util.Random;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -448,11 +451,31 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			}
 		}
 
-		if (params != null)
-			actions.add(params);
+		if (params != null) {
+                    actions.add(params);
+                }
 
+                // We created this parameters for each sub task. This create an unique job
+                // because jenkins queue accept only different job in this queue.
+                // Exemple: A and B the same job, if A was in queue, B will point
+                // on A, but with a MultiJobId, A and B was not the same job.
+                String jobNameSafe = build.getProject().getName().replaceAll("[^A-Za-z0-9]", "_");
+                actions.add(new ParametersAction(new StringParameterValue("MultiJobId", createRandomString(12))));
+                actions.add(new ParametersAction(new StringParameterValue("ParentJobName", jobNameSafe)));
+                actions.add(new ParametersAction(new StringParameterValue("ParentBuildNumber", Integer.toString(build.getNumber()))));
+                
 		return actions;
 	}
+
+        static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        static Random rnd = new Random();
+
+        public String createRandomString(int length) {
+           StringBuilder sb = new StringBuilder(length);
+           for(int i = 0; i < length; ++i)
+               sb.append(AB.charAt(rnd.nextInt(AB.length())));
+           return sb.toString();
+        }
 
 	public boolean hasProperties() {
 		return this.jobProperties != null && !this.jobProperties.isEmpty();

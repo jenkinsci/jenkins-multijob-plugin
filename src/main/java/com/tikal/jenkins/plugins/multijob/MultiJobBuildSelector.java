@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 import hudson.matrix.MatrixRun;
 import hudson.plugins.copyartifact.BuildFilter;
 import hudson.plugins.copyartifact.BuildSelector;
-import hudson.plugins.copyartifact.Messages;
 import hudson.plugins.copyartifact.SimpleBuildSelectorDescriptor;
 import jenkins.model.Jenkins;
 

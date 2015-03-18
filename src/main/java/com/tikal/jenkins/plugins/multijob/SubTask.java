@@ -10,7 +10,7 @@ import hudson.model.Cause.UpstreamCause;
 import hudson.model.queue.QueueTaskFuture;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public final class SubTask {
     final public AbstractProject subJob;
@@ -39,13 +39,17 @@ public final class SubTask {
         
         // Cancel the job in the queue
         if (this.future != null) {
-            this.future.cancel(false);
+            if (this.future.cancel(false)) {
+                this.future = null; // Mark the build cancelled
+            }
         }
     }
 
     public void GenerateFuture() {
-        this.future = (QueueTaskFuture<AbstractBuild>) subJob.scheduleBuild2(subJob.getQuietPeriod(),
-                                            new UpstreamCause((Run) multiJobBuild),
+        if (!isCancelled()) {
+            future = (QueueTaskFuture<AbstractBuild>) subJob.scheduleBuild2(subJob.getQuietPeriod(),
+                                                                             new UpstreamCause((Run) multiJobBuild),
                                                                              actions);
+        }
     }
 }
