@@ -63,6 +63,7 @@ import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCo
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 import groovy.util.*;
+import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
 import java.util.LinkedList;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
@@ -181,7 +182,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     
                     reportStart(listener, subJob);
                     List<Action> actions = new ArrayList<Action>();
-                    prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
+                    
+                    try {
+                        prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
+                    } catch (DontTriggerException exception) {
+                        listener.getLogger().println(String.format("Skipping %s.", subJob.getName()));
+                        continue;
+                    }
+
                     subTaskQueue.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
 
                 } else {
@@ -650,9 +658,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @SuppressWarnings("rawtypes")
     private void prepareActions(AbstractBuild build, AbstractProject project,
             PhaseJobsConfig projectConfig, BuildListener listener,
-            List<Action> actions) throws IOException, InterruptedException {
-        List<Action> parametersActions = (List<Action>) projectConfig.getActions(build, listener, project, projectConfig.isCurrParams());
+            List<Action> actions) throws IOException, InterruptedException, DontTriggerException {
+        List<Action> parametersActions = (List<Action>) projectConfig.getActions(
+                build, listener, project, projectConfig.isCurrParams());
         actions.addAll(parametersActions);
+
     }
 
     public String getPhaseName() {
