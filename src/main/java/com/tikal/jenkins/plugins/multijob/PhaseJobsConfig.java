@@ -440,18 +440,22 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
                     }
 		}
 
-		if (params != null) {
-                    actions.add(params);
-                }
-
                 // We created this parameters for each sub task. This create an unique job
                 // because jenkins queue accept only different job in this queue.
                 // Exemple: A and B the same job, if A was in queue, B will point
                 // on A, but with a MultiJobId, A and B was not the same job.
                 String jobNameSafe = build.getProject().getName().replaceAll("[^A-Za-z0-9]", "_");
-                actions.add(new ParametersAction(new StringParameterValue("MultiJobId", createRandomString(12))));
-                actions.add(new ParametersAction(new StringParameterValue("ParentJobName", jobNameSafe)));
-                actions.add(new ParametersAction(new StringParameterValue("ParentBuildNumber", Integer.toString(build.getNumber()))));
+                if (params != null) {
+                    params = mergeParameters(params, new ParametersAction(new StringParameterValue("Multi-Job-Id", createRandomString(12))));
+                } else {
+                    params = new ParametersAction(new StringParameterValue("Multi-Job-Id", createRandomString(12)));
+                }
+                params = mergeParameters(params, new ParametersAction(new StringParameterValue("Parent-Job-Name", jobNameSafe)));
+                params = mergeParameters(params, new ParametersAction(new StringParameterValue("Parent-Build-Number", Integer.toString(build.getNumber()))));
+
+		if (params != null) {
+                    actions.add(params);
+                }
                 
 		return actions;
 	}
