@@ -84,8 +84,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "" , true);
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
-		// check single ParametersAction created, 0 created previously + 3 actions create by MultiJob
-		assertEquals(3, actions.size());
+		// check single ParametersAction created
+		assertEquals(0, actions.size());
 	}
 
 	@Test
@@ -96,8 +96,11 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false);
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
-		// check 1 Parameters, 1 created previously + 3 actions create by MultiJob
-		assertEquals(4, actions.size());
+		// check single ParametersAction created
+		assertEquals(1, actions.size());
+
+		ParametersAction pa = getParametersAction(actions);
+		checkParameterMatch(DEFAULT_KEY_VALUES, pa);
 
 	}
 
@@ -114,8 +117,14 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
-		// check single ParametersAction created, 1 created previously + 3 actions create by MultiJob
-		assertEquals(4, actions.size());
+		// check single ParametersAction created
+		assertEquals(1, actions.size());
+		ParametersAction pa = getParametersAction(actions);
+
+		HashMap<String,String> combinedlist = new HashMap<String,String>(DEFAULT_KEY_VALUES);
+		combinedlist.putAll(CURRENT_KEY_VALUES);
+
+		checkParameterMatch(combinedlist, pa);
 	}
 
 	@Test
@@ -131,8 +140,14 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
-		// check single ParametersAction created, 1 created previously + 3 actions create by MultiJob
-		assertEquals(4, actions.size());
+		// check single ParametersAction created
+		assertEquals(1, actions.size());
+		ParametersAction pa = getParametersAction(actions);
+
+		HashMap<String,String> combinedlist = new HashMap<String,String>(DEFAULT_KEY_VALUES);
+		combinedlist.putAll(OVERRIDES_KEY_VALUES);
+
+		checkParameterMatch(combinedlist, pa);
 	}
 	@Test
 	/**
@@ -146,8 +161,11 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false);
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);
 
-		// check single ParametersAction created, 1 created previously + 3 actions create by MultiJob
-		assertEquals(4, actions.size());
+		// check single ParametersAction created
+		assertEquals(1, actions.size());
+		ParametersAction pa = getParametersAction(actions);
+
+		checkParameterMatch(DEFAULT_KEY_VALUES, pa);
 	}
 	@Test
 	/**
@@ -168,8 +186,15 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
-		// check 5 actions created, 2 created previously + 3 actions create by MultiJob
-		assertEquals(5, actions.size());
+		// check 2 actions created
+		assertEquals(2, actions.size());
+		ParametersAction pa = getParametersAction(actions);
+
+		//check that expected parameter is listed
+		HashMap<String,String> combinedlist = new HashMap<String,String>(DEFAULT_KEY_VALUES);
+		combinedlist.putAll(OVERRIDES_KEY_VALUES);
+
+		checkParameterMatch(combinedlist, pa);
 	}
 	@Test
 	/**
@@ -189,8 +214,15 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
-		// check 5 actions created, 2 created previously + 3 actions create by MultiJob
-		assertEquals(5, actions.size());
+		// check 2 actions created
+		assertEquals(2, actions.size());
+		ParametersAction pa = getParametersAction(actions);
+
+		HashMap<String,String> combinedlist = new HashMap<String,String>(DEFAULT_KEY_VALUES);
+		combinedlist.putAll(OVERRIDES_KEY_VALUES);
+		combinedlist.putAll(CONFIG_OVERRIDES_KEY_VALUES);
+
+		checkParameterMatch(combinedlist, pa);
 	}
 
 		@Test
@@ -212,8 +244,13 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);
 
-		// check 2 actions created, 2 created previously + 3 actions create by MultiJob
-		assertEquals(5, actions.size());
+		// check 2 actions created
+		assertEquals(2, actions.size());
+		ParametersAction pa = getParametersAction(actions);
+		HashMap<String,String> combinedlist = new HashMap<String,String>(DEFAULT_KEY_VALUES);
+		combinedlist.putAll(CONFIG_OVERRIDES_KEY_VALUES);
+
+		checkParameterMatch(combinedlist, pa);
 	}
 
 	private MultiJobBuild createTriggeringBuild(ParametersAction parametersAction) throws Exception {
