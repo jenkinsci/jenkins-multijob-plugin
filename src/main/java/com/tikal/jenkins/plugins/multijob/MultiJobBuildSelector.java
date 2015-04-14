@@ -38,9 +38,9 @@ public class MultiJobBuildSelector extends BuildSelector {
         }
         // Nope, look for Upstream MultiJob that triggered this run (Are we in a Phase job?)
         else {
-			// Matrix run is triggered by its parent project, so check causes of parent build:
-			for (Cause cause : parent instanceof MatrixRun
-					? ((MatrixRun)parent).getParentBuild().getCauses() : parent.getCauses()) {
+            // Matrix run is triggered by its parent project, so check causes of parent build:
+            for (Cause cause : parent instanceof MatrixRun
+                    ? ((MatrixRun)parent).getParentBuild().getCauses() : parent.getCauses()) {
                 UpstreamCause upstreamCause = (UpstreamCause)cause;
                 Job upstreamJob = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), Job.class);
                 Run upstreamRun = upstreamJob.getBuildByNumber(upstreamCause.getUpstreamBuild());
@@ -58,7 +58,10 @@ public class MultiJobBuildSelector extends BuildSelector {
         for (MultiJobBuild.SubBuild subBuild : multiJobBuild.getSubBuilds()) {
             // Find Job's specific build we want
             if (subBuild.getJobName().equals(job.getFullDisplayName())) {
-                return job.getBuildByNumber(subBuild.getBuildNumber());
+                Run run = job.getBuildByNumber(subBuild.getBuildNumber());
+                if (filter.isSelectable(run, env)) {
+                    return run;
+                }
             }
         }
         return null;
