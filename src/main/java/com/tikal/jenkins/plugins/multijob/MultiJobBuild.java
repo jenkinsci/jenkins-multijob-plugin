@@ -188,24 +188,28 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
+                Result result, String icon, String duration, String url) {
+            this(parentJobName, parentBuildNumber, jobName, buildNumber,
+                    phaseName, result, icon, duration, url, false,
+                    false, null);
+        }
+
+        public SubBuild(String parentJobName, int parentBuildNumber,
+                String jobName, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
                 AbstractBuild jobBuild) {
-            this.parentJobName = Util.fixNull(parentJobName);
-            this.parentBuildNumber = parentBuildNumber;
-            this.jobBuild = jobBuild;
-            this.jobName = Util.fixNull(jobName);
-            this.buildNumber = buildNumber;
-            this.phaseName = Util.fixNull(phaseName);
-            if (result == null) {
-                this.result = Result.NOT_BUILT;
-            } else  {
-            this.result = result;
-            }
-            this.icon = Util.fixNull(icon);
-            this.duration = Util.fixNull(duration);
-            this.url = Util.fixNull(url);
-            this.retry = false;
-            this.aborted = false;
+            this(parentJobName, parentBuildNumber, jobName, buildNumber,
+                    phaseName, result, icon, duration, url, false,
+                    false, jobBuild);
+        }
+
+        public SubBuild(String parentJobName, int parentBuildNumber,
+                String jobName, int buildNumber, String phaseName,
+                Result result, String icon, String duration, String url,
+                boolean retry, boolean aborted) {
+            this(parentJobName, parentBuildNumber, jobName, buildNumber,
+                    phaseName, result, icon, duration, url, retry,
+                    aborted, null);
         }
 
         public SubBuild(String parentJobName, int parentBuildNumber,
@@ -290,24 +294,17 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             try {
                 return jobBuild.getLog(number);
             } catch (IOException ex) {
-                
+                // When there is a problem reading the log file.
             }
             return new ArrayList<String>();
         }
 
         public List<SubBuild> getSubBuilds() {
-            if (jobBuild != null) {
-                try {
-                    if (jobBuild instanceof MultiJobBuild) {
-                        return ((MultiJobBuild) jobBuild).getSubBuilds();
-                    }
-                } catch(ClassCastException e) {
-                    // Nothing, this build was not a MultiJobBuild
-                }
+            if (jobBuild instanceof MultiJobBuild) {
+                return ((MultiJobBuild) jobBuild).getSubBuilds();
             }
             return new ArrayList<SubBuild>();
         }
-        
 
         @Override
         public String toString() {
