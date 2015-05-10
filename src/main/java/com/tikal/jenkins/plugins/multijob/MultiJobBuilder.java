@@ -88,20 +88,20 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     /**
      * The name of the new variable which stores the status of the current job.
-     * The state is the name of the corresponding value in JobStatusCondition enum.
+     * The state is the name of the corresponding value in {@link StatusJob} enum.
      * @since 1.0.0
-     * @see JobStatusCondition#isBuildable()
+     * @see StatusJob#isBuildable()
      */
     public static final String JOB_STATUS = "JOB_STATUS";
 
     /**
      * The name of the new variable which stores if the job is buildable or not.
-     * This value is getted from the JobStatusCondition.isBuildable().
-     * The only values of this variable are <code>true</code> when the job is buildable, or <code>false</code> when
-     * the job is not buildable.
+     * This value is getted from the {@link StatusJob#isBuildable()}.
+     * The only values of this variable are <code>true</code> when the job is buildable, 
+     * or <code>false</code> when the job is not buildable.
      *
      * @since 1.0.0
-     * @see JobStatusCondition#isBuildable()
+     * @see StatusJob#isBuildable()
      */
     public static final String JOB_IS_BUILDABLE = "JOB_IS_BUILDABLE";
 
@@ -124,36 +124,61 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         return PATTERN.matcher(expandedExpression).replaceAll("");
     }
 
-    private JobStatusCondition getScmChange(AbstractProject subjob,PhaseJobsConfig phaseConfig,AbstractBuild build, BuildListener listener,Launcher launcher)
+    /**
+     * Reports the status of the job.
+     * <p>The sequence of the checks are the following (the first winner stops the sequence and returns):</p>
+     *
+     * <ol>
+     *      <li>If job is disabled
+     *          then returns <code>{@link StatusJob#IS_DISABLED}</code>.</li>
+     *      <li>If job is disabled at phase configuration
+     *          then returns <code>{@link StatusJob#IS_DISABLED_AT_PHASECONFIG}</code>.</li>
+     *      <li>If BuildOnlyIfSCMChanges is disabled
+     *          then returns <code>{@link StatusJob#BUILD_ONLY_IF_SCM_CHANGES_DISABLED}</code>.</li>
+     *      <li>If 'Build Always' feature is enabled
+     *          then returns <code>{@link StatusJob#BUILD_ALWAYS_IS_ENABLED}</code>.</li>
+     *      <li>If job doesn't contains lastbuild
+     *          then returns <code>{@link StatusJob#DOESNT_CONTAINS_LASTBUILD}</code>.</li>
+     *      <li>If lastbuild result of the job is worse than unstable 
+     *          then returns <code>{@link StatusJob#LASTBUILD_RESULT_IS_WORSE_THAN_UNSTABLE}</code>.</li>
+     *      <li>If job's workspace is empty
+     *          then returns <code>{@link StatusJob#WORKSPACE_IS_EMPTY}</code>.</li>
+     *      <li>If job contains scm changes
+     *          then returns <code>{@link StatusJob#CHANGED_SINCE_LAST_BUILD}</code>.</li>
+     *      <li>If job's doesn't contains scm changes
+     *          then returns <code>{@link StatusJob#NOT_CHANGED_SINCE_LAST_BUILD}</code>.</li>
+     * </ol>
+     */
+    private StatusJob getScmChange(AbstractProject subjob,PhaseJobsConfig phaseConfig,AbstractBuild build, BuildListener listener,Launcher launcher)
     throws IOException, InterruptedException {
         if ( subjob.isDisabled() ) {
-            return JobStatusCondition.IS_DISABLED;
+            return StatusJob.IS_DISABLED;
         }
         if( phaseConfig.isDisableJob() ) {
-            return JobStatusCondition.IS_DISABLED_AT_PHASECONFIG;
+            return StatusJob.IS_DISABLED_AT_PHASECONFIG;
         }
         if ( !phaseConfig.isBuildOnlyIfSCMChanges() ){
-            return JobStatusCondition.NO_BUILD_ONLY_IF_SCM_CHANGES;
+            return StatusJob.BUILD_ONLY_IF_SCM_CHANGES_DISABLED;
         }
         final boolean buildAlways = Boolean.valueOf((String)(build.getBuildVariables().get(BUILD_ALWAYS_KEY)));
 
         if ( buildAlways ) {
-            return JobStatusCondition.BUILD_ALWAYS_IS_ENABLED;
+            return StatusJob.BUILD_ALWAYS_IS_ENABLED;
         }
         final AbstractBuild lastBuild = subjob.getLastBuild();
         if ( lastBuild == null ) {
-            return JobStatusCondition.DOESNT_CONTAINS_LASTBUILD;
+            return StatusJob.DOESNT_CONTAINS_LASTBUILD;
         }
         if ( lastBuild.getResult().isWorseThan(Result.UNSTABLE) ) {
-            return JobStatusCondition.LASTBUILD_RESULT_IS_WORSE_THAN_UNSTABLE;
+            return StatusJob.LASTBUILD_RESULT_IS_WORSE_THAN_UNSTABLE;
         }
         if ( !lastBuild.getWorkspace().exists() ) {
-            return JobStatusCondition.WORKSPACE_IS_EMPTY;
+            return StatusJob.WORKSPACE_IS_EMPTY;
         }
         if ( subjob.poll(listener).hasChanges() ) {
-            return JobStatusCondition.CHANGED_SINCE_LAST_BUILD;
+            return StatusJob.CHANGED_SINCE_LAST_BUILD;
         }
-        return JobStatusCondition.NOT_CHANGED_SINCE_LAST_BUILD;
+        return StatusJob.NOT_CHANGED_SINCE_LAST_BUILD;
     }
 
     public boolean evalCondition(final String condition, final AbstractBuild<?, ?> build, final BuildListener listener) {
@@ -189,15 +214,17 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             // To be coherent with final results, we need to do this here.
             PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
-            JobStatusCondition jobStatus = getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher );
+            StatusJob jobStatus = getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher );
             listener.getLogger().println(jobStatus.getMessage(subJob));
-            // We are ready to inject vars about scm status, to use them at job evaluate condition
+            // We are ready to inject vars about scm status. It is useful at condition level.
             Map<String, String> jobScmVars = new HashMap<String, String>();
+// New injected variable. It stores the status of the last job executed. It is useful at condition level.
             jobScmVars.put(JOB_STATUS, jobStatus.name());
+// New injected variable. It reports if the job is buildable.
             jobScmVars.put(JOB_IS_BUILDABLE, String.valueOf(jobStatus.isBuildable()));
             injectEnvVars(build, listener, jobScmVars);
 
-            if (jobStatus == JobStatusCondition.IS_DISABLED) {
+            if (jobStatus == StatusJob.IS_DISABLED) {
                 phaseCounters.processSkipped();
                 continue;
             }
@@ -224,7 +251,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 TimeUnit.SECONDS.sleep(subJob.getQuietPeriod());
             }
 
-            if ( jobStatus == JobStatusCondition.IS_DISABLED_AT_PHASECONFIG ) {
+            if ( jobStatus == StatusJob.IS_DISABLED_AT_PHASECONFIG ) {
                 phaseCounters.processSkipped();
             } else {
                 subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
@@ -250,7 +277,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 if (subTask != null) {
                     resultCounter++;
                     if (subTask.result != null) {
-listener.getLogger().println(">> AÑADIENDO " + subTask.result.toString());
                         jobResults.add(subTask.result);
                         phaseCounters.process(subTask.result);
                         checkPhaseTermination(subTask, subTasks, listener);
@@ -662,7 +688,7 @@ listener.getLogger().println("Trying to inject phaseCounters");
                 Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
                 // Acumule PHASEJOB and MULTIJOB counters.
                 // Values are in variables (current values) and incomingVars.
-                Map<String, String> mixtured = CounterHelper.accumulateAndMerge(incomingVars, variables);
+                Map<String, String> mixtured = CounterHelper.putPhaseAddMultijobAndMergeTheRest(incomingVars, variables);
 
                 // Resolve variables
                 final Map<String, String> resultVariables = envInjectEnvVarsService

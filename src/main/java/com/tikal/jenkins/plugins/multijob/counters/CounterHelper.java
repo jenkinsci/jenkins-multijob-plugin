@@ -3,11 +3,19 @@ package com.tikal.jenkins.plugins.multijob.counters;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Helper methods for counters.
+ */
 public final class CounterHelper {
     private CounterHelper() {}
 
-
-    public static Map<String, String> accumulateAndMerge(
+    /**
+     * Put the counters in phase variables,
+     * add the counters to the multijob variables,
+     * and merge all in previous variables.
+     */
+    public static Map<String, String> putPhaseAddMultijobAndMergeTheRest(
         final Map<String, String> incomingVars,
         final Map<String, String> previousEnvVars) {
         

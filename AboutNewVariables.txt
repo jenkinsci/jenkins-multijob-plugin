@@ -1,0 +1,78 @@
+About the new multijob, phasejob and job variables
+===================================================
+
+1) INTRODUCTION
+===============
+With the current multijob plugin we can not write conditions that includes:
+* The 'Build Only If SCM Changes' value.
+* The number of aborted jobs in previous phase.
+* The number of stable jobs triggered in previous phase.
+* The number of stable jobs triggered till now.
+* And so on.
+
+And this is useful for... what scenery?
+
+
+2) AN EXAMPLE
+============== 
+
+Imagine a hypotetical scenery, we have a multijob project that:
+* Phase 1: builds the job_1 (when scm changes), job_2 (when scm changes) and job_3 (when scm changes).
+* Phase 2: builds the job_4 every time. This job packs artifacts of previous jobs in a zip file, for example.
+
+We want to optimize the condition that triggers the job_4: only when scm changes or one of the following conditions are true (all are equivalent in this scenery):
+* Number of (stable + unstable) results of jobs in phase 1 (or in this case of multijob) is greater than 0. 
+* Number of (stable + unstable) results in multijob build is greater than 0.
+* Previous phase result is UNSTABLE or STABLE.
+
+How do you express the condition for job_4? As one of:
+* ${JOB_IS_BUILDABLE} || ${PHASEJOB_SUCCESSFUL} > 0
+* ${JOB_IS_BUILDABLE} || ${MULTIJOB_SUCCESSFUL} > 0
+* ${JOB_IS_BUILDABLE} || "${PHASEJOB_RESULT}" == "UNSTABLE" || "${PHASEJOB_RESULT}" == "STABLE"
+
+3) WARNINGS
+===========
+You must to keep in mind that:
+* If you write a condition and you want the 'Build Only If SCM Changes' you must include in condition the expression ${JOB_IS_BUILDABLE}.
+* If you don't write a condition, then it works as previous version, checking the 'Build Only If SCM Changes' feature.
+
+4) WHAT ARE THE NEW VARIABLES AVAILABLE IN CONDITION EXPRESSIONS?
+=================================================================
+
+4.A VARIABLES RELATED TO JOB AND USED ONLY AT JOB CONDITION EVALUATION
+======================================================================
+We injected some variables previous to a job condition evaluation, which are related to the job and it state.
+These variables are the following:
+
+* JOB_IS_BUILDABLE: A text with 'true' or 'false' string to use as a boolean expression.
+                    It reports if the status of the job allows the build of the job.
+* JOB_STATUS: The name of the type of StatusJob enumeration, for example:
+              CHANGED_SINCE_LAST_BUILD, BUILD_ONLY_IF_SCM_CHANGES_DISABLED or IS_DISABLED_AT_PHASECONFIG.
+
+4.B VARIABLES RELATED TO THE PREVIOUS PHASE
+===========================================
+We injected some variables at the end of the phase execution, which are related to the phase statistics and the phase result.
+These variables are the following:
+
+* PHASE_RESULT: A text with the name of the result of the phase.
+                The result of the phase is the worse of the job results triggered.
+* PHASEJOB_RESULT: with the result (as string) of the previous phase.
+* PHASEJOB_SUCCESSFUL: the number of jobs with UNSTABLE or SUCCESS results.
+* PHASEJOB_STABLE: the number of jobs with SUCCESS results.
+* PHASEJOB_UNSTABLE: the number of jobs with UNSTABLE results.
+* PHASEJOB_FAILED: the number of jobs with FAILED results.
+* PHASEJOB_ABORTED: the number of jobs with ABORTED results.
+* PHASEJOB_SKIPPED: the number of jobs with has been skipped.
+
+4.C VARIABLES RELATED TO THE MULTIJOB EXECUTION
+===============================================
+We injected some variables at the end of the phase execution, which are related to the multijob statistics.
+These variables are the following:
+
+ * MULTIJOB_SUCCESSFUL: the number of jobs with UNSTABLE or SUCCESS results.
+ * MULTIJOB_STABLE: the number of jobs with SUCCESS results.
+ * MULTIJOB_UNSTABLE: the number of jobs with UNSTABLE results.
+ * MULTIJOB_FAILED: the number of jobs with FAILED results.
+ * MULTIJOB_ABORTED: the number of jobs with ABORTED results.
+ * MULTIJOB_SKIPPED: the number of jobs with has been skipped.
+ 
