@@ -1,0 +1,8 @@
+==================
+OTHER IMPROVEMENTS
+==================
+
+1) The UNSTABLE_ONLY for Phase condition evaluation.
+====================================================
+
+Added the UNSTABLE_ONLY to ContinuationCondition, to allow check for only UNSTABLE result on phase condition.
