@@ -15,8 +15,8 @@ import hudson.model.Result;
  * (of course, these new variables are available in the next phase):</p>
  *
  * <ul>
- *      <li><b>${PHASEJOB_SUCCESSFUL} > 1</b>: The number of <b>SUCCESSFUL</b> jobs are greater than 1.</li>
- *      <li><b>${PHASEJOB_ABORTED} == 0 || ${PHASEJOB_UNSTABLE} == 2</b>:
+ *      <li><b>${PHASE_SUCCESSFUL} > 1</b>: The number of <b>SUCCESSFUL</b> jobs are greater than 1.</li>
+ *      <li><b>${PHASE_ABORTED} == 0 || ${PHASE_UNSTABLE} == 2</b>:
  *      The number of <b>ABORTED</b> jobs are equals to 0,
  *      or the number of <b>UNSTABLE</b> jobs are equals to 2.</li>
  * </ul>
@@ -85,7 +85,7 @@ public enum CounterKey {
     };
 
     /**
-     * A convenient static array of all multijob and phasejob keys.
+     * A convenient static array of all multijob and phase keys.
      */
     public static final String[] KEYS;
 
@@ -94,7 +94,7 @@ public enum CounterKey {
         int index = 0;
         for (CounterKey key: CounterKey.values()) {
             keys[index++] = key.getMultiJobKey();
-            keys[index++] = key.getPhaseJobKey();
+            keys[index++] = key.getPhaseKey();
         }
         KEYS = keys;
     }
@@ -105,7 +105,7 @@ public enum CounterKey {
      * This methods reports if the result applies to the CounterKey.
      *
      * @param result the {@link Result} of the job that we checked if applies to the CounterKey.
-     * @return <code>true</code> when the result applies to the counterKey, 
+     * @return <code>true</code> when the result applies to the counterKey,
      *      <code>false</code> if not applies.
      * @see Result
      */
@@ -119,7 +119,7 @@ public enum CounterKey {
     /**
      * The name of the key that it is associated with the phase and this key.
      */
-    private final String phaseJobKey = "PHASEJOB_" + this.name();
+    private final String phaseKey = "PHASE_" + this.name();
 
     /**
      * Returns the name of the key associated with the multijob project and the counterKey.
@@ -133,8 +133,8 @@ public enum CounterKey {
      * Returns the name of the key associated with the phase and the counterKey.
      * @return a String with the name of key that will be used to store the counter.
      */
-    public String getPhaseJobKey() {
-        return this.phaseJobKey;
+    public String getPhaseKey() {
+        return this.phaseKey;
     }
 
 

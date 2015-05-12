@@ -1,4 +1,4 @@
-About the new multijob, phasejob and job variables
+About the new multijob, last phase, phase and job variables
 ===================================================
 
 1) INTRODUCTION
@@ -12,23 +12,24 @@ With the current multijob plugin we can not write conditions that includes:
 
 And this is useful for... what scenery?
 
-
 2) AN EXAMPLE
-============== 
+==============
 
 Imagine a hypotetical scenery, we have a multijob project that:
 * Phase 1: builds the job_1 (when scm changes), job_2 (when scm changes) and job_3 (when scm changes).
 * Phase 2: builds the job_4 every time. This job packs artifacts of previous jobs in a zip file, for example.
 
 We want to optimize the condition that triggers the job_4: only when scm changes or one of the following conditions are true (all are equivalent in this scenery):
-* Number of (stable + unstable) results of jobs in phase 1 (or in this case of multijob) is greater than 0. 
+* Number of (stable + unstable) results of jobs in phase 1 (or in this case of multijob) is greater than 0.
 * Number of (stable + unstable) results in multijob build is greater than 0.
 * Previous phase result is UNSTABLE or STABLE.
 
-How do you express the condition for job_4? As one of:
-* ${JOB_IS_BUILDABLE} || ${PHASEJOB_SUCCESSFUL} > 0
+How do you express the condition for job_4? As one of (PHASE_2 is the result of converting "Phase 2" to
+uppercase after replacing all characters not in [A-Za-z0-9] with _:
+* ${JOB_IS_BUILDABLE} || ${PHASE_SUCCESSFUL} > 0
 * ${JOB_IS_BUILDABLE} || ${MULTIJOB_SUCCESSFUL} > 0
-* ${JOB_IS_BUILDABLE} || "${PHASEJOB_RESULT}" == "UNSTABLE" || "${PHASEJOB_RESULT}" == "STABLE"
+* ${JOB_IS_BUILDABLE} || "${PHASE_RESULT}" == "UNSTABLE" || "${PHASE_RESULT}" == "STABLE"
+* ${PHASE_2_UNSTABLE}
 
 3) WARNINGS
 ===========
@@ -36,8 +37,8 @@ You must to keep in mind that:
 * If you write a condition and you want the 'Build Only If SCM Changes' you must include in condition the expression ${JOB_IS_BUILDABLE}.
 * If you don't write a condition, then it works as previous version, checking the 'Build Only If SCM Changes' feature.
 
-4) WHAT ARE THE NEW VARIABLES AVAILABLE IN CONDITION EXPRESSIONS?
-=================================================================
+4) THE NEW VARIABLES AVAILABLE IN CONDITIONS
+============================================
 
 4.A VARIABLES RELATED TO JOB AND USED ONLY AT JOB CONDITION EVALUATION
 ======================================================================
@@ -56,15 +57,34 @@ These variables are the following:
 
 * PHASE_RESULT: A text with the name of the result of the phase.
                 The result of the phase is the worse of the job results triggered.
-* PHASEJOB_RESULT: with the result (as string) of the previous phase.
-* PHASEJOB_SUCCESSFUL: the number of jobs with UNSTABLE or SUCCESS results.
-* PHASEJOB_STABLE: the number of jobs with SUCCESS results.
-* PHASEJOB_UNSTABLE: the number of jobs with UNSTABLE results.
-* PHASEJOB_FAILED: the number of jobs with FAILED results.
-* PHASEJOB_ABORTED: the number of jobs with ABORTED results.
-* PHASEJOB_SKIPPED: the number of jobs with has been skipped.
+* PHASE_SUCCESSFUL: the number of jobs with UNSTABLE or SUCCESS results.
+* PHASE_STABLE: the number of jobs with SUCCESS results.
+* PHASE_UNSTABLE: the number of jobs with UNSTABLE results.
+* PHASE_FAILED: the number of jobs with FAILED results.
+* PHASE_ABORTED: the number of jobs with ABORTED results.
+* PHASE_SKIPPED: the number of jobs with has been skipped.
 
-4.C VARIABLES RELATED TO THE MULTIJOB EXECUTION
+4.C VARIABLES RELATED TO A CONCRETE PHASE
+=========================================
+These variables are injected as part of the end of the phase execution described at 4.B:
+
+* ${SAFETY_PHASE_NAME}_RESULT: A text with the name of the result of the phase.
+                The result of the phase is the worse of the job results triggered.
+* ${SAFETY_PHASE_NAME}_SUCCESSFUL: the number of jobs with UNSTABLE or SUCCESS results.
+* ${SAFETY_PHASE_NAME}_STABLE: the number of jobs with SUCCESS results.
+* ${SAFETY_PHASE_NAME}_UNSTABLE: the number of jobs with UNSTABLE results.
+* ${SAFETY_PHASE_NAME}_FAILED: the number of jobs with FAILED results.
+* ${SAFETY_PHASE_NAME}_ABORTED: the number of jobs with ABORTED results.
+* ${SAFETY_PHASE_NAME}_SKIPPED: the number of jobs with has been skipped.
+
+Where ${SAFETY_PHASE_NAME} is the name of the phase but expressed as an uppercase string,
+where every character not in "[A-Za-z0-9]" is replaced with "_".
+For example, the name of the phase
+    "Build and deploy at server #1"
+is expressed as
+    "BUILD_AND_DEPLOY_AT_SERVER__1".
+
+4.D VARIABLES RELATED TO THE MULTIJOB EXECUTION
 ===============================================
 We injected some variables at the end of the phase execution, which are related to the multijob statistics.
 These variables are the following:
@@ -75,4 +95,3 @@ These variables are the following:
  * MULTIJOB_FAILED: the number of jobs with FAILED results.
  * MULTIJOB_ABORTED: the number of jobs with ABORTED results.
  * MULTIJOB_SKIPPED: the number of jobs with has been skipped.
- 

@@ -97,7 +97,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     /**
      * The name of the new variable which stores if the job is buildable or not.
      * This value is getted from the {@link StatusJob#isBuildable()}.
-     * The only values of this variable are <code>true</code> when the job is buildable, 
+     * The only values of this variable are <code>true</code> when the job is buildable,
      * or <code>false</code> when the job is not buildable.
      *
      * @since 1.0.0
@@ -139,7 +139,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      *          then returns <code>{@link StatusJob#BUILD_ALWAYS_IS_ENABLED}</code>.</li>
      *      <li>If job doesn't contains lastbuild
      *          then returns <code>{@link StatusJob#DOESNT_CONTAINS_LASTBUILD}</code>.</li>
-     *      <li>If lastbuild result of the job is worse than unstable 
+     *      <li>If lastbuild result of the job is worse than unstable
      *          then returns <code>{@link StatusJob#LASTBUILD_RESULT_IS_WORSE_THAN_UNSTABLE}</code>.</li>
      *      <li>If job's workspace is empty
      *          then returns <code>{@link StatusJob#WORKSPACE_IS_EMPTY}</code>.</li>
@@ -258,8 +258,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
         }
 
-        if (subTasks.size() < 1)
+        if (subTasks.size() < 1) {
+// We inject the variables also when no jobs will be triggered.
+            injectEnvVars(build, listener, phaseCounters.toMap());
             return true;
+        }
 
         ExecutorService executor = Executors.newFixedThreadPool(subTasks.size());
         Set<Result> jobResults = new HashSet<Result>();
@@ -302,7 +305,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             throw new InterruptedException();
 
         }
-listener.getLogger().println("Trying to inject phaseCounters");
         injectEnvVars(build, listener, phaseCounters.toMap());
 
         for (Result result : jobResults) {
@@ -686,9 +688,9 @@ listener.getLogger().println("Trying to inject phaseCounters");
 
                 // Get current envVars
                 Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
-                // Acumule PHASEJOB and MULTIJOB counters.
+                // Acumule PHASE, PHASENAME and MULTIJOB counters.
                 // Values are in variables (current values) and incomingVars.
-                Map<String, String> mixtured = CounterHelper.putPhaseAddMultijobAndMergeTheRest(incomingVars, variables);
+                Map<String, String> mixtured = CounterHelper.putPhaseAddMultijobAndMergeTheRest(this.phaseName, incomingVars, variables);
 
                 // Resolve variables
                 final Map<String, String> resultVariables = envInjectEnvVarsService
