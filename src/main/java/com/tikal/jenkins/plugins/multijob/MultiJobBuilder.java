@@ -164,13 +164,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                     
                     if (phaseConfig.isDisableJob()) {
-                        listener.getLogger().println(String.format("Warning: %s subjob is disabled.", subJob.getName()));
+                        listener.getLogger().println(String.format("[MultiJob] Warning: %s subjob is disabled.", subJob.getName()));
                         continue;
                     }
 
                     if (phaseConfig.getEnableCondition() && phaseConfig.getCondition() != null) {
                         if (!evalCondition(phaseConfig.getCondition(), build, listener)) {
-                            listener.getLogger().println(String.format("Skipping %s. Condition is evaluate to false.", subJob.getName()));
+                            listener.getLogger().println(String.format("[MultiJob] Skipping %s. Condition evaluates to false.", subJob.getName()));
                             continue;
                         }
                     }
@@ -186,14 +186,18 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     try {
                         prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
                     } catch (DontTriggerException exception) {
-                        listener.getLogger().println(String.format("Skipping %s.", subJob.getName()));
+                        listener.getLogger().println(String.format("[MultiJob] Skipping %s.", subJob.getName()));
                         continue;
                     }
 
-                    subTaskQueue.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
+                    try {
+                        subTaskQueue.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
+                    } catch(InstantiationException exception) {
+                        listener.getLogger().println(String.format("[MultiJob] Error initializing %s, skipping it.", subJob.getName()));
+                    }
 
                 } else {
-                    listener.getLogger().println(String.format("Skipping %s. This job was not found.", phaseConfig.getJobName()));
+                    listener.getLogger().println(String.format("[MultiJob] Skipping %s. This job was not found.", phaseConfig.getJobName()));
                 }
             }
 
@@ -234,9 +238,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
             }
         } catch (InterruptedException exception) {
-            listener.getLogger().println("Aborting all subjobs.");
+            listener.getLogger().println("[MultiJob] Aborting all subjobs.");
             for (SubTask _subTask : subTaskQueue) {
-                listener.getLogger().println(String.format("Abort %s.", _subTask.subJob.getName()));
+                listener.getLogger().println(String.format("[MultiJob] Aborting %s.", _subTask.subJob.getName()));
                 _subTask.cancelJob();
             }
             
@@ -326,16 +330,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         if (result.isWorseOrEqualTo(Result.FAILURE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
                             if (isKnownRandomFailure(jobBuild)) {
                                 if (retry <= maxRetries) {
-                                    listener.getLogger().println("Known failure detected, retrying this build. Try " + retry + " of " + maxRetries + ".");
+                                    listener.getLogger().println("[MultiJob] Known failure detected, retrying this build. Try " + retry + " of " + maxRetries + ".");
                                     updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result, true);
 
                                     subTask.GenerateFuture();
                                 } else {
-                                    listener.getLogger().println("Known failure detected, max retries (" + maxRetries + ") exceeded.");
+                                    listener.getLogger().println("[MultiJob] Known failure detected, max retries (" + maxRetries + ") exceeded.");
                                     updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result);
                                 }
                             } else {
-                                listener.getLogger().println("Failed the build, the failure doesn't match the rules.");
+                                listener.getLogger().println("[MultiJob] Failed the build, the failure doesn't match the rules.");
                                 updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result);
                                 finish = true;
                             }
@@ -373,7 +377,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             if (compiledPatterns == null) {
                 compiledPatterns = new ArrayList<Pattern>();
                 try {
-                    listener.getLogger().println("Scanning failed job console output using parsing rule file " + subTask.phaseConfig.getParsingRulesPath() + ".");
+                    listener.getLogger().println("[MultiJob] Scanning failed job console output using parsing rule file " + subTask.phaseConfig.getParsingRulesPath() + ".");
                     final File rulesFile = new File(subTask.phaseConfig.getParsingRulesPath());
                     final BufferedReader reader = new BufferedReader(new FileReader(rulesFile.getAbsolutePath()));
                     try {
@@ -477,7 +481,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 if (e instanceof InterruptedException) {
                     throw new InterruptedException();
                 } else if (e instanceof FileNotFoundException) {
-                    listener.getLogger().println("Parser rules file not found.");
+                    listener.getLogger().println("[MultiJob] Parser rules file not found.");
                     failure = false;
                 } else {
                     listener.getLogger().println(e.toString());
@@ -511,7 +515,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     private void reportStart(BuildListener listener, AbstractProject subJob) {
         listener.getLogger().printf(
-                "Starting build job %s.\n",
+                "[MultiJob] Starting job %s.\n",
                 HyperlinkNote.encodeTo('/' + subJob.getUrl(),
                         subJob.getFullName()));
     }
@@ -519,7 +523,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private void reportFinish(BuildListener listener, AbstractBuild jobBuild,
             Result result) {
         listener.getLogger().println(
-                "Finished Build : "
+                "[MultiJob] Finished Build : "
                         + HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",
                                 String.valueOf(jobBuild.getDisplayName()))
                         + " of Job : "
