@@ -33,7 +33,7 @@ abstract public class MultiJobListViewColumn extends ListViewColumn {
     }
 
     @SuppressWarnings("unchecked")
-    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(StatusColumn.class, JobColumn.class, WeatherColumn.class,
+    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(StatusColumn.class, WeatherColumn.class, JobColumn.class,
             LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, ConsoleColumn.class, BuildButtonColumn.class);
 
     private static final Logger LOGGER = Logger.getLogger(MultiJobListViewColumn.class.getName());
