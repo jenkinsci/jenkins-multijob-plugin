@@ -1,4 +1,4 @@
-![picture alt](http://www.tikalk.com/files/upload/1/tikal_com_logo45n45.png "Tikal Community") Jenkins MultiJob Plugin
+![picture alt](http://www.tikalk.com/assets/logo-1bb9a466c9d195c148557434c3437446.png "Tikal Community") Jenkins MultiJob Plugin
 ====
 
 ## When to use MultiJob plugin ? 
