@@ -50,6 +50,13 @@
                         </f:entry>
                     </f:block>
                 </f:optionalBlock>
+                <f:optionalBlock title="Enable throttle group" name="enableThrottleGroup" inline="true" checked="${instance.enableThrottleGroup}" help="/plugin/jenkins-multijob-plugin/help-throttleGroup.html">
+                    <f:block>
+                        <f:entry title="Throttle group" field="throttleGroup">
+                            <f:textbox name="throttleGroup" default="" />
+                        </f:entry>
+                    </f:block>
+                </f:optionalBlock>
                 <f:block>
                     <f:hetero-list name="configs" hasHeader="true"
                        descriptors="${descriptor.getBuilderConfigDescriptors()}"

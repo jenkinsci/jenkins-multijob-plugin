@@ -18,16 +18,17 @@ public final class SubTask {
     final public List<Action> actions;
     public Future<AbstractBuild> future;
     final public MultiJobBuild multiJobBuild;
+    final public String throttleGroup;
     public Result result;
     private boolean cancel;
 
-    SubTask(AbstractProject subJob, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild) {
+    SubTask(AbstractProject subJob, String throttleGroup, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild) {
         this.subJob = subJob;
+        this.throttleGroup = throttleGroup;
         this.phaseConfig = phaseConfig;
         this.actions = actions;
         this.multiJobBuild = multiJobBuild;
         this.cancel = false;
-        GenerateFuture();
     }
 
     public boolean isCancelled() {

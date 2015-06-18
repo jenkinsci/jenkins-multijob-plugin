@@ -30,8 +30,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -148,7 +151,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         MultiJobBuild multiJobBuild = (MultiJobBuild) build;
         MultiJobProject thisProject = multiJobBuild.getProject();
 
-        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
+        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new LinkedHashMap<PhaseSubJob, PhaseJobsConfig>(
                 phaseJobs.size());
 
         for (PhaseJobsConfig phaseJobConfig : phaseJobs) {
@@ -159,7 +162,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
         }
 
-        List<SubTask> subTasks = new ArrayList<SubTask>();
+        Queue<SubTask> subTaskQueue = new LinkedList<SubTask>();
         for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
             AbstractProject subJob = phaseSubJob.job;
             if (subJob.isDisabled()) {
@@ -168,6 +171,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
 
             PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
+
+            if (phaseConfig.isDisableJob()) {
+                listener.getLogger().println(String.format("Warning: %s subjob is disabled.", subJob.getName()));
+                continue;
+            }
 
             if (phaseConfig.getEnableCondition() && phaseConfig.getCondition() != null) {
                 if (!evalCondition(phaseConfig.getCondition(), build, listener)) {
@@ -180,46 +188,95 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     continue;
                 }
             }
-            reportStart(listener, subJob);
+
+            String throttleGroup = null;
+            if (phaseConfig.getEnableThrottleGroup() && phaseConfig.getThrottleGroup() != null) {
+                throttleGroup = expandToken(phaseConfig.getThrottleGroup(), build, listener).trim();
+                // treat blank and false throttle groups as none
+                if (throttleGroup.equals("") || throttleGroup.equals("false")) {
+                    throttleGroup = null;
+                }
+            }
+
             List<Action> actions = new ArrayList<Action>();
             prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
 
-            while (subJob.isInQueue()) {
-                TimeUnit.SECONDS.sleep(subJob.getQuietPeriod());
-            }
-
-            if (!phaseConfig.isDisableJob()) {
-                subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
-            } else {
-                listener.getLogger().println(String.format("Warning: %s subjob is disabled.", subJob.getName()));
-            }
+            subTaskQueue.add(new SubTask(subJob, throttleGroup, phaseConfig, actions, multiJobBuild));
         }
 
-        if (subTasks.size() < 1)
+        if (subTaskQueue.size() < 1)
             return true;
 
-        ExecutorService executor = Executors.newFixedThreadPool(subTasks.size());
-        Set<Result> jobResults = new HashSet<Result>();
-        BlockingQueue<SubTask> queue = new ArrayBlockingQueue<SubTask>(subTasks.size());
-        for (SubTask subTask : subTasks) {
-            Runnable worker = new SubJobWorker(thisProject, listener, subTask, queue);
-            executor.execute(worker);
+        // calculate the number of executors we'll need: one for each throttle group
+        // plus one for every task without a throttle group
+        int numExecutors = 0;
+        Set seenThrottleGroups = new HashSet<String>();
+        for (SubTask subTask : subTaskQueue) {
+            if (subTask.throttleGroup == null) {
+                numExecutors++;
+            } else if (!seenThrottleGroups.contains(subTask.throttleGroup)) {
+                seenThrottleGroups.add(subTask.throttleGroup);
+                numExecutors++;
+            }
         }
 
+        // subTasks holds a list of jobs that have been submitted for execution
+        List<SubTask> subTasks = new ArrayList<SubTask>();
+        Set<Result> jobResults = new HashSet<Result>();
+        ExecutorService executor = Executors.newFixedThreadPool(numExecutors);
+        BlockingQueue<SubTask> executeQueue = new ArrayBlockingQueue<SubTask>(numExecutors);
+        Set executorThrottleGroups = new HashSet<String>(numExecutors - 1);
+
         try {
-            executor.shutdown();
             int resultCounter = 0;
             while (!executor.isTerminated()) {
-                SubTask subTask = queue.poll(5, TimeUnit.SECONDS);
+                if (subTaskQueue.isEmpty()) {
+                    if (subTasks.size() <= resultCounter) {
+                        break;
+                    }
+                } else {
+                    // Add executors for open throttle groups
+                    Iterator<SubTask> it = subTaskQueue.iterator();
+                    while(it.hasNext()) {
+                        SubTask subTask = it.next();
+
+                        if (subTask.throttleGroup != null) {
+                            if (executorThrottleGroups.contains(subTask.throttleGroup)) {
+                                continue;
+                            }
+                            // Occupy a spot in the executorThrottleGroups so no other subTasks
+                            // in this throttle group may execute until this one completes
+                            executorThrottleGroups.add(subTask.throttleGroup);
+                        }
+
+                        // Remove the subTask from the queue since we are submitting it for execution
+                        it.remove();
+
+                        reportStart(listener, subTask.subJob);
+                        subTask.GenerateFuture();
+                        subTasks.add(subTask);
+                        Runnable worker = new SubJobWorker(thisProject, listener, subTask, executeQueue);
+                        executor.execute(worker);
+                    }
+
+                    // Once all jobs have been submitted for execution, disallow further subTasks
+                    // from executing
+                    if (subTaskQueue.isEmpty()) {
+                        executor.shutdown();
+                    }
+                }
+
+                SubTask subTask = executeQueue.poll(5, TimeUnit.SECONDS);
+
                 if (subTask != null) {
                     resultCounter++;
+                    if (subTask.throttleGroup != null) {
+                        executorThrottleGroups.remove(subTask.throttleGroup);
+                    }
                     if (subTask.result != null) {
                         jobResults.add(subTask.result);
                         checkPhaseTermination(subTask, subTasks, listener);
                     }
-                }
-                if (subTasks.size() <= resultCounter) {
-                    break;
                 }
             }
 
