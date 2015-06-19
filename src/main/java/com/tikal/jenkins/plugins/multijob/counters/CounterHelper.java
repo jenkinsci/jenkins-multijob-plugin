@@ -3,6 +3,7 @@ package com.tikal.jenkins.plugins.multijob.counters;
 import java.util.HashMap;
 import java.util.Map;
 
+import hudson.model.BuildListener;
 
 /**
  * Helper methods for counters.
@@ -15,7 +16,8 @@ public final class CounterHelper {
      * add the counters to the multijob variables,
      * and merge all in previous variables.
      */
-    public static Map<String, String> putPhaseAddMultijobAndMergeTheRest(
+    public static synchronized Map<String, String> putPhaseAddMultijobAndMergeTheRest(
+        BuildListener listener,
         final String phaseName,
         final Map<String, String> incomingVars,
         final Map<String, String> previousEnvVars) {
@@ -32,14 +34,16 @@ public final class CounterHelper {
                 mixtured.put(key, incomingValue);
             } else {
                 key = counterKey.getPhaseKey();
-                final String previousValue = zeroIfNull(previousEnvVars.get(key));
+                String previousValue = zeroIfNull(previousEnvVars.get(key));
                 incomingValue = zeroIfNull(incomingValue);
+//listener.getLogger().println("putPhase " + phaseName + ": " + counterKey.name() + "/" + counterKey.getPhaseKey() + "/" + counterKey.getMultiJobKey() + " = " + previousValue + "/" + incomingValue);
                 // Updating PHASE_????? and PHASENAME_?????
                 mixtured.put(key, incomingValue);
                 mixtured.put(safePhaseName + "_" + counterKey.name(), incomingValue);
 
                 // Updating MULTIJOB_?????_KEY
                 key = counterKey.getMultiJobKey();
+                previousValue = zeroIfNull(previousEnvVars.get(key));
                 mixtured.put(
                     key,
                     String.valueOf(Integer.parseInt(incomingValue) + Integer.parseInt(previousValue))
