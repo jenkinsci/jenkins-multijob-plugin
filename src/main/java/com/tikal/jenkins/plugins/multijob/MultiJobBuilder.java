@@ -229,7 +229,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 continue;
             }
 
-
             if (phaseConfig.getEnableCondition() && phaseConfig.getCondition() != null) {
                 if (!evalCondition(phaseConfig.getCondition(), build, listener)) {
                     listener.getLogger().println(String.format("Skipping %s. Condition is evaluate to false.", subJob.getName()));
@@ -253,13 +252,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             if ( jobStatus == StatusJob.IS_DISABLED_AT_PHASECONFIG ) {
                 phaseCounters.processSkipped();
+                continue;
             } else {
                 subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
             }
         }
 
         if (subTasks.size() < 1) {
-// We inject the variables also when no jobs will be triggered.
+            // We inject the variables also when no jobs will be triggered.
             injectEnvVars(build, listener, phaseCounters.toMap());
             return true;
         }
@@ -289,8 +289,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     break;
                 }
             }
-
             executor.shutdownNow();
+
         } catch (InterruptedException exception) {
             listener.getLogger().println("Aborting all subjobs.");
             for (SubTask _subTask : subTasks) {
@@ -690,12 +690,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
                 // Acumule PHASE, PHASENAME and MULTIJOB counters.
                 // Values are in variables (current values) and incomingVars.
-                Map<String, String> mixtured = CounterHelper.putPhaseAddMultijobAndMergeTheRest(this.phaseName, incomingVars, variables);
-
+                Map<String, String> mixtured = CounterHelper.putPhaseAddMultijobAndMergeTheRest(listener, this.phaseName, incomingVars, variables);
                 // Resolve variables
                 final Map<String, String> resultVariables = envInjectEnvVarsService
                         .getMergedVariables(variables, mixtured);
-
 
                 // Set the new build variables map
                 build.addAction(new EnvInjectBuilderContributionAction(
