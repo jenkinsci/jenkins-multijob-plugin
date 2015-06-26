@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.model.Queue;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.DependencyGraph;
@@ -13,7 +14,7 @@ import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 import hudson.tasks.test.AbstractTestResultAction;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
-		implements TopLevelItem {
+		implements TopLevelItem, Queue.FlyweightTask {
 
 
 	@SuppressWarnings("rawtypes")
