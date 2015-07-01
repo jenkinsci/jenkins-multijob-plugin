@@ -143,8 +143,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
         Jenkins jenkins = Jenkins.getInstance();
-        //MultiJobBuild multiJobBuild = (MultiJobBuild) build;
-        //MultiJobProject thisProject = multiJobBuild.getProject();
 
         Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
                 phaseJobs.size());
@@ -536,16 +534,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
     }
 
-    /*
-    private void updateSubBuild(MultiJobBuild multiJobBuild,
-            MultiJobProject project, PhaseJobsConfig phaseConfig) {
-        SubBuild subBuild = new SubBuild(project.getName(),
-                multiJobBuild.getNumber(), phaseConfig.getJobName(), 0,
-                phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "");
-        multiJobBuild.addSubBuild(subBuild);
-    }
-    */
-
     private void updateSubBuild(AbstractBuild multiJobBuild,
             AbstractProject project, AbstractBuild jobBuild) {
         SubBuild subBuild = new SubBuild(project.getName(),
@@ -559,18 +547,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             ((MultiJobFlyweightBuild) multiJobBuild).addSubBuild(subBuild);
         }
     }
-
-    /*
-    private void updateSubBuild(MultiJobBuild multiJobBuild,
-            MultiJobProject project, AbstractBuild jobBuild) {
-        SubBuild subBuild = new SubBuild(project.getName(),
-                multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-                jobBuild.getNumber(), phaseName, null, jobBuild.getIconColor()
-                        .getImage(), jobBuild.getDurationString(),
-                jobBuild.getUrl());
-        multiJobBuild.addSubBuild(subBuild);
-    }
-    */
 
     private void updateSubBuild(AbstractBuild multiJobBuild,
             AbstractProject project, AbstractBuild jobBuild,
@@ -586,18 +562,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
     }
 
-    /*
-    private void updateSubBuild(MultiJobBuild multiJobBuild,
-            MultiJobProject project, AbstractBuild jobBuild,
-            Result result) {
-        SubBuild subBuild = new SubBuild(project.getName(),
-                multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-                jobBuild.getNumber(), phaseName, result, jobBuild.getIconColor().getImage(),
-                jobBuild.getDurationString(), jobBuild.getUrl());
-        multiJobBuild.addSubBuild(subBuild);
-    }
-    */
-
     private void updateSubBuild(AbstractBuild multiJobBuild,
             AbstractProject project, AbstractBuild jobBuild,
             Result result, boolean retry) {
@@ -612,18 +576,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
     }
 
-    /*
-    private void updateSubBuild(MultiJobBuild multiJobBuild,
-            MultiJobProject project, AbstractBuild jobBuild,
-            Result result, boolean retry) {
-        SubBuild subBuild = new SubBuild(project.getName(),
-                multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-                jobBuild.getNumber(), phaseName, result, jobBuild.getIconColor().getImage(),
-                jobBuild.getDurationString(), jobBuild.getUrl(), retry, false);
-        multiJobBuild.addSubBuild(subBuild);
-    }
-    */
-
     private void abortSubBuild(AbstractBuild multiJobBuild, AbstractProject project, AbstractBuild jobBuild) {
         SubBuild subBuild = new SubBuild(project.getName(),
             multiJobBuild.getNumber(), jobBuild.getProject().getName(),
@@ -634,15 +586,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             ((MultiJobFlyweightBuild) multiJobBuild).addSubBuild(subBuild);
         }
     }
-
-    /*
-    private void abortSubBuild(MultiJobBuild multiJobBuild, MultiJobProject project, AbstractBuild jobBuild) {
-        SubBuild subBuild = new SubBuild(project.getName(),
-                multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-                jobBuild.getNumber(), phaseName, Result.ABORTED, BallColor.ABORTED.getImage(), "", jobBuild.getUrl(), false, true);
-        multiJobBuild.addSubBuild(subBuild);
-    }
-    */
 
     @SuppressWarnings("rawtypes")
     private void addBuildEnvironmentVariables(AbstractBuild thisBuild,
