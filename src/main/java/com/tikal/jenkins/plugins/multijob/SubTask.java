@@ -17,15 +17,15 @@ public final class SubTask {
     final public PhaseJobsConfig phaseConfig;
     final public List<Action> actions;
     public Future<AbstractBuild> future;
-    final public MultiJobBuild multiJobBuild;
+    final public AbstractBuild build;
     public Result result;
     private boolean cancel;
 
-    SubTask(AbstractProject subJob, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild) {
+    SubTask(AbstractProject subJob, PhaseJobsConfig phaseConfig, List<Action> actions, AbstractBuild build) {
         this.subJob = subJob;
         this.phaseConfig = phaseConfig;
         this.actions = actions;
-        this.multiJobBuild = multiJobBuild;
+        this.build = build;
         this.cancel = false;
         GenerateFuture();
     }
@@ -40,7 +40,7 @@ public final class SubTask {
 
     public void GenerateFuture() {
         this.future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
-                                            new UpstreamCause((Run) multiJobBuild),
+                                            new UpstreamCause((Run) build),
                                             actions.toArray(new Action[actions.size()]));
     }
 }
