@@ -572,6 +572,25 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         // Env variables map
         Map<String, String> variables = new HashMap<String, String>();
 
+        // Fetch the map of existing environment variables
+        try {
+
+            EnvInjectLogger logger = new EnvInjectLogger(listener);
+            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+            Map<String, String> previousEnvVars = variableGetter
+                    .getEnvVarsPreviousSteps(thisBuild, logger);
+
+            // Get current envVars
+            variables = new HashMap<String, String>(
+                    previousEnvVars);
+
+        } catch (Throwable throwable) {
+            listener.getLogger()
+                    .println(
+                            "[MultiJob] - [ERROR] - Problems occurs on fetching env vars as a build step: "
+                                    + throwable.getMessage());
+        }
+
         String jobName = jobBuild.getProject().getName();
         String jobNameSafe = jobName.replaceAll("[^A-Za-z0-9]", "_")
                 .toUpperCase();
