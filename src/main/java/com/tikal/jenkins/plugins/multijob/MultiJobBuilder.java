@@ -597,6 +597,18 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         String buildNumber = Integer.toString(jobBuild.getNumber());
         String buildResult = jobBuild.getResult().toString();
 
+        // If the job is run a second time, store the first job's number and result with unique keys
+        if (variables.get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe) != null) {
+            String runCount = Integer.toString(Integer.parseInt(variables
+                    .get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe)));
+            if (runCount.equals("1")) {
+                String firstBuildNumber = variables.get(jobNameSafe + "_BUILD_NUMBER");
+                String firstBuildResult = variables.get(jobNameSafe + "_BUILD_RESULT");
+                variables.put(jobNameSafe + "_" + runCount + "_BUILD_NUMBER", firstBuildNumber);
+                variables.put(jobNameSafe + "_" + runCount + "_BUILD_RESULT", firstBuildResult);
+            }
+        }
+
         // These will always reference the last build
         variables.put("LAST_TRIGGERED_JOB_NAME", jobName);
         variables.put(jobNameSafe + "_BUILD_NUMBER", buildNumber);
@@ -616,6 +628,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             String runCount = Integer.toString(Integer.parseInt(variables
                     .get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe)) + 1);
             variables.put("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe, runCount);
+            variables.put(jobNameSafe + "_" + runCount + "_BUILD_NUMBER", buildNumber);
+            variables.put(jobNameSafe + "_" + runCount + "_BUILD_RESULT", buildResult);
         }
 
         // Set the new build variables map
