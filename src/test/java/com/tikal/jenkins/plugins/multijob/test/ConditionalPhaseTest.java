@@ -73,8 +73,8 @@ public class ConditionalPhaseTest {
         multi.getBuildersList().add(new ConditionalBuilder(new AlwaysRun(), new BuildStepRunner.Run(), blist));
 
         j.assertBuildStatus(Result.SUCCESS, multi.scheduleBuild2(0, new UserCause()).get());
-        Assert.assertTrue("shell task writes 'hello' to log", free.getLastBuild().getLog(10).contains("hello"));
-        Assert.assertTrue("shell task writes 'dude' to log", multi.getLastBuild().getLog(10).contains("dude"));
+        Assert.assertTrue("shell task writes 'hello' to log", free.getLastBuild().getLog(20).contains("hello"));
+        Assert.assertTrue("shell task writes 'dude' to log", multi.getLastBuild().getLog(20).contains("dude"));
         // check for correct number of items to be displayed
         int numberOfPhases = 0;
         int numberOfConditionalPhases = 0;
