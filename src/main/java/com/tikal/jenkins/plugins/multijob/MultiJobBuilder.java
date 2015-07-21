@@ -65,6 +65,7 @@ import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import groovy.util.*;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
 import java.util.LinkedList;
+import java.util.concurrent.CancellationException;
 import jenkins.model.CauseOfInterruption;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
@@ -160,18 +161,21 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     AbstractProject subJob = (AbstractProject) item;
 
                     if (subJob.isDisabled()) {
-                        listener.getLogger().println(String.format("Skipping %s. This Job has been disabled.", subJob.getName()));
+                        listener.getLogger().println(String.format("Skipping %s. This Job has been disabled.",
+                            HyperlinkNote.encodeTo("/" + subJob.getUrl() + "/", subJob.getDisplayName())));
                         continue;
                     }
                     
                     if (phaseConfig.isDisableJob()) {
-                        listener.getLogger().println(String.format("[MultiJob] Warning: %s subjob is disabled.", subJob.getName()));
+                        listener.getLogger().println(String.format("[MultiJob] Warning: %s subjob is disabled.",
+                            HyperlinkNote.encodeTo("/" + subJob.getUrl() + "/", subJob.getDisplayName())));
                         continue;
                     }
 
                     if (phaseConfig.getEnableCondition() && phaseConfig.getCondition() != null) {
                         if (!evalCondition(phaseConfig.getCondition(), build, listener)) {
-                            listener.getLogger().println(String.format("[MultiJob] Skipping %s. Condition evaluates to false.", subJob.getName()));
+                            listener.getLogger().println(String.format("[MultiJob] Skipping %s. Condition evaluates to false.",
+                                HyperlinkNote.encodeTo("/" + subJob.getUrl() + "/", subJob.getDisplayName())));
                             continue;
                         }
                     }
@@ -187,14 +191,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     try {
                         prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
                     } catch (DontTriggerException exception) {
-                        listener.getLogger().println(String.format("[MultiJob] Skipping %s.", subJob.getName()));
+                        listener.getLogger().println(String.format("[MultiJob] Skipping %s.",
+                            HyperlinkNote.encodeTo("/" + subJob.getUrl() + "/", subJob.getDisplayName())));
                         continue;
                     }
 
                     try {
                         subTaskQueue.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
                     } catch(InstantiationException exception) {
-                        listener.getLogger().println(String.format("[MultiJob] Error initializing %s, skipping it.", subJob.getName()));
+                        listener.getLogger().println(String.format("[MultiJob] Error initializing %s, skipping it.",
+                            HyperlinkNote.encodeTo("/" + subJob.getUrl() + "/", subJob.getDisplayName())));
                     }
 
                 } else {
@@ -206,19 +212,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 return true;
             }
 
-            listener.getLogger().println("[MultiJob][Debug] Create executor service.");
             // To listen the result of executor we add the subTasks on an ExecutorService
             ExecutorService executor = Executors.newFixedThreadPool(subTaskQueue.size());
             BlockingQueue<SubTask> queue = new ArrayBlockingQueue<SubTask>(subTaskQueue.size());
             for (SubTask subTask : subTaskQueue) {
-                listener.getLogger().println("[MultiJob][Debug] Create task " + subTask.subJob.getName());
                 Runnable worker = new SubJobWorker(thisProject, listener, subTask, queue);
                 executor.execute(worker);
             }
 
             executor.shutdown();
 
-            listener.getLogger().println("[MultiJob][Debug] Shutdown.");
 
             int resultCounter = 0;
             while (!executor.isTerminated()) {
@@ -245,13 +248,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         } catch (InterruptedException exception) {
             listener.getLogger().println("[MultiJob] Aborting all subjobs.");
             for (SubTask _subTask : subTaskQueue) {
-                listener.getLogger().println(String.format("[MultiJob] Aborting %s.", _subTask.subJob.getName()));
+                listener.getLogger().println(String.format("[MultiJob] Aborting %s.",
+                        HyperlinkNote.encodeTo("/" + _subTask.multiJobBuild.getUrl() + "/",
+                            _subTask.multiJobBuild.getDisplayName())));
                 _subTask.cancelJob();
             }
             
             throw exception;
         }
-        listener.getLogger().println("[MultiJob][Debug] Continuation calculation.");
 
         for (Result result : jobResults) {
             if (!continuationCondition.isContinue(result)) {
@@ -264,17 +268,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     }
 
     public final class MultijobInterruption extends CauseOfInterruption {
-        final private SubTask subTask;
-        final private MultiJobProject multiJobProject;
-        public MultijobInterruption(SubTask subTask, MultiJobProject multiJobProject) {
-            this.subTask = subTask;
-            this.multiJobProject = multiJobProject;
+        final private AbstractBuild jobBuild;
+        public MultijobInterruption(AbstractBuild jobBuild) {
+            this.jobBuild = jobBuild;
         }
 
         @Override
         public String getShortDescription() {
-            return String.format("Aborted by multijob plugin, because the parent job (%s #%s) has been aborted.",
-                    multiJobProject.getName(), subTask.multiJobBuild.getNumber());
+            return String.format("Aborted by multijob plugin, because the parent job (%s) has been aborted.",
+                    HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/", jobBuild.getDisplayName()));
         }
     }
 
@@ -307,6 +309,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
                 int retry = 0;
                 boolean buildIsAborted = false;
+                boolean reportStarted = false;
 
                 while (retry <= maxRetries && !buildIsAborted) {
                     retry++;
@@ -316,7 +319,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                             if (jobBuild != null) {
                                 Executor exect = jobBuild.getExecutor();
                                 if (exect != null) {
-                                    exect.interrupt(Result.ABORTED, new MultijobInterruption(subTask, multiJobProject));
+                                    exect.interrupt(Result.ABORTED, new MultijobInterruption(jobBuild));
                                 }
                                 reportFinish(listener, jobBuild, Result.ABORTED);
                                 abortSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
@@ -325,23 +328,23 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                             break;
                         }
 
-                        listener.getLogger().println("[MultiJob][Debug] Thy to start future for "+ subTask.subJob.getName());
                         try {
                             jobBuild = future.getStartCondition().get(3, TimeUnit.SECONDS);
                         } catch (Exception e) {
                             if (e instanceof TimeoutException) {
-                                listener.getLogger().println("[MultiJob][Debug] Timeoutexception, continue");
                                 continue;
                             } else {
-                                listener.getLogger().println("[MultiJob][Debug]  Throw exception");
                                 throw e;
                             }
                         }
-                        listener.getLogger().println("[MultiJob][Debug] future is started");
+
                         updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
+                        if (!reportStarted) {
+                            reportBuildStart(listener, jobBuild);
+                            reportStarted = true;
+                        }
 
                         if (future.isDone() || (!jobBuild.isBuilding() && jobBuild.getResult() != null)) {
-                            listener.getLogger().println("[MultiJob][Debug] Result value is " + jobBuild.getResult().toString());
                             break;
                         }
 
@@ -351,7 +354,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         result = jobBuild.getResult();
                         reportFinish(listener, jobBuild, result);
 
-                        listener.getLogger().println("[MultiJob][Debug]  Finish execution of " + jobBuild.getResult().toString());
                         if (result.isWorseOrEqualTo(Result.FAILURE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
                             if (isKnownRandomFailure(jobBuild)) {
                                 if (retry <= maxRetries) {
@@ -386,6 +388,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         abortSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
                         subTask.result = Result.ABORTED;
                     }
+                } else if(e instanceof CancellationException) {
+                    reportFinish(listener, multiJobProject, Result.ABORTED);
+                    abortSubBuild(subTask.multiJobBuild, multiJobProject, subTask.phaseConfig);
+                    subTask.result = Result.ABORTED;
                 } else {
                     listener.getLogger().println(e.toString());
                     e.printStackTrace();
@@ -518,7 +524,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     }
 
     protected boolean checkPhaseTermination(SubTask subTask, List<SubTask> subTasks, final BuildListener listener) {
-        listener.getLogger().println("[MultiJob][Debug] Check phase termination.");
         try {
             KillPhaseOnJobResultCondition killCondition = subTask.phaseConfig.getKillPhaseOnJobResultCondition();
             if (killCondition.equals(KillPhaseOnJobResultCondition.NEVER) && subTask.result != Result.ABORTED) {
@@ -542,8 +547,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private void reportStart(BuildListener listener, AbstractProject subJob) {
         listener.getLogger().printf(
                 "[MultiJob] Starting job %s.\n",
-                HyperlinkNote.encodeTo('/' + subJob.getUrl(),
-                        subJob.getFullName()));
+                HyperlinkNote.encodeTo('/' + subJob.getUrl(), subJob.getFullName()));
+    }
+
+    private void reportBuildStart(BuildListener listener, AbstractBuild jobBuild) {
+        listener.getLogger().println(
+                "[MultiJob] Build start : "
+                        + HyperlinkNote.encodeTo("/" + jobBuild.getUrl(), jobBuild.getDisplayName()));
     }
 
     private void reportFinish(BuildListener listener, AbstractBuild jobBuild,
@@ -551,13 +561,21 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         listener.getLogger().println(
                 "[MultiJob] Finished Build : "
                         + HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",
-                                String.valueOf(jobBuild.getDisplayName()))
+                                jobBuild.getDisplayName())
                         + " of Job : "
                         + HyperlinkNote.encodeTo('/' + jobBuild.getProject()
                                 .getUrl(), jobBuild.getProject().getFullName())
                         + " with status : "
                         + HyperlinkNote.encodeTo('/' + jobBuild.getUrl()
                                 + "/console", result.toString()));
+    }
+
+    private void reportFinish(BuildListener listener, MultiJobProject project, Result result) {
+        listener.getLogger().println(
+                "[MultiJob] Finished Build : Job : "
+                        + HyperlinkNote.encodeTo('/' + project.getUrl(), project.getFullName())
+                        + " with status : "
+                        + result.toString());
     }
 
     private void updateSubBuild(MultiJobBuild multiJobBuild,
@@ -595,6 +613,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 multiJobBuild.getNumber(), jobBuild.getProject().getName(),
                 jobBuild.getNumber(), phaseName, result, jobBuild.getIconColor().getImage(),
                 jobBuild.getDurationString(), jobBuild.getUrl(), retry, false, jobBuild);
+        multiJobBuild.addSubBuild(subBuild);
+    }
+
+    private void abortSubBuild(MultiJobBuild multiJobBuild, MultiJobProject multiJobProject, PhaseJobsConfig phaseConfig) {
+        SubBuild subBuild = new SubBuild(multiJobProject.getName(),
+                multiJobBuild.getNumber(), phaseConfig.getJobName(), 0,
+                phaseName, Result.ABORTED, BallColor.ABORTED.getImage(), "Aborted in queue", "", null);
         multiJobBuild.addSubBuild(subBuild);
     }
 
