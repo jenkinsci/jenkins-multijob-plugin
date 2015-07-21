@@ -7,7 +7,7 @@
 				${job.isConditional() ? "[?]" : ""} ${job.displayName}
 			</j:when>
 			<j:when test="${!job.phase}">
-				<a href="${rootURL}/${job.url}">${job.displayName} 2</a>
+			<a href="${rootURL}/${job.url}">${job.displayName}</a>
 			</j:when>
 		</j:choose>
 	</td>
