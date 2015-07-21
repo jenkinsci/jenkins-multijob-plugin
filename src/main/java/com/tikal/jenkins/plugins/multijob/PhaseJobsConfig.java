@@ -21,6 +21,7 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
+import hudson.model.StringParameterValue;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
 import hudson.plugins.parameterizedtrigger.FileBuildParameters;
@@ -34,6 +35,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import java.util.Random;
 
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -386,7 +389,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	 */
 	public List<Action> getActions(AbstractBuild build, TaskListener listener,
 			AbstractProject project, boolean isCurrentInclude)
-			throws IOException, InterruptedException {
+			throws IOException, InterruptedException, DontTriggerException {
 		List<Action> actions = new ArrayList<Action>();
 		ParametersAction params = null;
 		LinkedList<ParameterValue> paramsValuesList = new LinkedList<ParameterValue>();
@@ -396,63 +399,76 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		// Check to see if the triggered project has Parameters defined.
 		ParametersDefinitionProperty parameters = null;
 		for (Object object : originalActions) {
-			if (object instanceof hudson.model.ParametersDefinitionProperty)
-				parameters = (ParametersDefinitionProperty) object;
+                    if (object instanceof hudson.model.ParametersDefinitionProperty)
+                        parameters = (ParametersDefinitionProperty) object;
 		}
 		// Get and add ParametersAction for default parameters values
 		// if triggered project is Parameterized.
 		// Values will get overridden later as required
 		if (parameters != null) {
-			for (ParameterDefinition parameterdef : parameters
-					.getParameterDefinitions()) {
-				if (parameterdef.getDefaultParameterValue() != null)
-					paramsValuesList.add(parameterdef
-							.getDefaultParameterValue());
-			}
-			params = new ParametersAction(
-					paramsValuesList
-							.toArray(new ParameterValue[paramsValuesList.size()]));
-
+                    for (ParameterDefinition parameterdef : parameters.getParameterDefinitions()) {
+                        if (parameterdef.getDefaultParameterValue() != null) {
+                            paramsValuesList.add(parameterdef.getDefaultParameterValue());
+                        }
+                    }
+                    params = new ParametersAction(paramsValuesList.toArray(new ParameterValue[paramsValuesList.size()]));
 		}
 
 		// Merge current parameters with the defaults from the triggered job.
 		// Current parameters override the defaluts.
 		if (isCurrentInclude) {
-			ParametersAction defaultParameters = build
-					.getAction(ParametersAction.class);
+                    ParametersAction defaultParameters = build.getAction(ParametersAction.class);
 
-			if (params != null && defaultParameters != null) {
-				params = mergeParameters(params, defaultParameters);
-			} else if (params == null) {
-				params = defaultParameters;
-			}
+                    if (params != null && defaultParameters != null) {
+                        params = mergeParameters(params, defaultParameters);
+                    } else if (params == null) {
+                        params = defaultParameters;
+                    }
 		}
+
 		// Backward compatibility
 		// get actions from configs merge ParametersActions if needed.
 		if (configs != null) {
-			for (AbstractBuildParameters config : configs) {
-				Action a;
-				try {
-					a = config.getAction(build, listener);
-					if (a instanceof ParametersAction) {
-						params = params == null ? (ParametersAction) a
-								: mergeParameters(params, (ParametersAction) a);
-					} else if (a != null) {
-						actions.add(a);
-					}
-				} catch (DontTriggerException e) {
-					// don't trigger on this configuration
-					listener.getLogger().println(
-							"[multiJob] DontTriggerException: " + e);
-				}
-			}
+                    for (AbstractBuildParameters config : configs) {
+                        Action a;
+                        a = config.getAction(build, listener);
+                        if (a instanceof ParametersAction) {
+                            params = params == null ? (ParametersAction) a : mergeParameters(params, (ParametersAction) a);
+                        } else if (a != null) {
+                            actions.add(a);
+                        }
+                    }
 		}
 
-		if (params != null)
-			actions.add(params);
+                // We created this parameters for each sub task. This create an unique job
+                // because jenkins queue accept only different job in this queue.
+                // Exemple: A and B the same job, if A was in queue, B will point
+                // on A, but with a MultiJobId, A and B was not the same job.
+                String jobNameSafe = build.getProject().getName().replaceAll("[^A-Za-z0-9]", "_");
+                if (params != null) {
+                    params = mergeParameters(params, new ParametersAction(new StringParameterValue("Multi-Job-Id", createRandomString(12))));
+                } else {
+                    params = new ParametersAction(new StringParameterValue("Multi-Job-Id", createRandomString(12)));
+                }
+                params = mergeParameters(params, new ParametersAction(new StringParameterValue("Parent-Job-Name", jobNameSafe)));
+                params = mergeParameters(params, new ParametersAction(new StringParameterValue("Parent-Build-Number", Integer.toString(build.getNumber()))));
 
+		if (params != null) {
+                    actions.add(params);
+                }
+                
 		return actions;
 	}
+
+        static final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        static Random rnd = new Random();
+
+        public String createRandomString(int length) {
+           StringBuilder sb = new StringBuilder(length);
+           for(int i = 0; i < length; ++i)
+               sb.append(AB.charAt(rnd.nextInt(AB.length())));
+           return sb.toString();
+        }
 
 	public boolean hasProperties() {
 		return this.jobProperties != null && !this.jobProperties.isEmpty();

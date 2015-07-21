@@ -10,7 +10,6 @@ import hudson.model.Project;
 import hudson.util.AlternativeUiTextProvider;
 
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
-import hudson.tasks.test.AbstractTestResultAction;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
@@ -69,10 +68,5 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 	public String getRootUrl() {
 		return Jenkins.getInstance().getRootUrl();
 	}
-
-    public AbstractTestResultAction<?> getTestResultAction() {
-        MultiJobBuild b = getLastCompletedBuild();
-        return b != null ? b.getAction(AbstractTestResultAction.class) : null;
-    }
 
 }
