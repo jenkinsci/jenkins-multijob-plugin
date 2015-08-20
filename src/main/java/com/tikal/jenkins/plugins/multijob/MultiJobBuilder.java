@@ -577,11 +577,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 .toUpperCase();
         String buildNumber = Integer.toString(jobBuild.getNumber());
         String buildResult = jobBuild.getResult().toString();
+        String buildName = jobBuild.getDisplayName().toString();
 
         // These will always reference the last build
         variables.put("LAST_TRIGGERED_JOB_NAME", jobName);
         variables.put(jobNameSafe + "_BUILD_NUMBER", buildNumber);
         variables.put(jobNameSafe + "_BUILD_RESULT", buildResult);
+        variables.put(jobNameSafe + "_BUILD_NAME", buildName);
 
         if (variables.get("TRIGGERED_JOB_NAMES") == null) {
             variables.put("TRIGGERED_JOB_NAMES", jobName);
