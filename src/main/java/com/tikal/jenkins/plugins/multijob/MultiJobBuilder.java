@@ -658,12 +658,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             variables.put("TRIGGERED_JOB_NAMES", triggeredJobNames);
         }
 
-        if (variables.get("TRIGGERED_BUILD_RUN_COUNTER_" + jobNameSafe) == null) {
-            variables.put("TRIGGERED_BUILD_RUN_COUNTER_" + jobNameSafe, "1");
+        if (variables.get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe) == null) {
+            variables.put("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe, "1");
         } else {
             String runCount = Integer.toString(Integer.parseInt(variables
-                    .get("TRIGGERED_BUILD_RUN_COUNTER_" + jobNameSafe)) + 1);
-            variables.put("TRIGGERED_BUILD_RUN_COUNTER_" + jobNameSafe, runCount);
+                    .get("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe)) + 1);
+            variables.put("TRIGGERED_BUILD_RUN_COUNT_" + jobNameSafe, runCount);
         }
         // Set the new build variables map
         injectEnvVars(thisBuild, listener, variables);
