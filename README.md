@@ -1,10 +1,14 @@
 ![picture alt](http://www.tikalk.com/files/upload/1/tikal_com_logo45n45.png "Tikal Community") Jenkins MultiJob Plugin
 ====
 
-## When to use MultiJob plugin ? 
+## When to use MultiJob plugin ?
 - If you'd like to stop the mess with downstream / upstream jobs chains definitions
 - When you want to add full hierarchy of Jenkins jobs that will be executed in sequence or in parallel
 - Add context to your buildflow implementing parameter inheritance from the MultiJob to all its Phases and Jobs, Phases are sequential whilst jobs inside each Phase are parallel
+
+## News
+In version 1.17 we inject new variables to use them in conditions, powering this feature.
+You can read the details (variable names, values, ...) [here](AboutNewVariables.md).
 
 ### More info on wiki page @: https://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin
 
