@@ -83,7 +83,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
 
 
-    final Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
+    final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
 
 
     /**
