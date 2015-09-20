@@ -193,6 +193,33 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
+        boolean resume = false;
+        Map<String, SubBuild> successBuildMap = new HashMap<String, SubBuild>();
+        Map<String, SubBuild> failedBuildMap = new HashMap<String, SubBuild>();
+        MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
+        if (null != control) {
+            MultiJobBuild prevBuild = (MultiJobBuild) control.getBuild();
+            for (SubBuild subBuild : prevBuild.getSubBuilds()) {
+                Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
+                    AbstractProject.class);
+                if (item instanceof AbstractProject) {
+                    AbstractProject childProject = (AbstractProject) item;
+                    AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
+                    if (null != childBuild) {
+                        if (childBuild.getResult().equals(Result.FAILURE)) {
+                            resume = true;
+                            failedBuildMap.put(childProject.getUrl(), subBuild);
+                        } else {
+                            successBuildMap.put(childProject.getUrl(), subBuild);
+                        }
+                    }
+                }
+            }
+            if (!resume) {
+                successBuildMap.clear();
+            }
+        }
+
         Jenkins jenkins = Jenkins.getInstance();
         MultiJobBuild multiJobBuild = (MultiJobBuild) build;
         MultiJobProject thisProject = multiJobBuild.getProject();
@@ -244,6 +271,21 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
+
+            if (resume) {
+                SubBuild subBuild = failedBuildMap.get(subJob.getUrl());
+                if (null != subBuild) {
+                    Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), multiJobBuild.getParent(),
+                        AbstractProject.class);
+                    if (item instanceof AbstractProject) {
+                        AbstractProject prj = (AbstractProject) item;
+                        AbstractBuild childBuild = prj.getBuildByNumber(subBuild.getBuildNumber());
+                        MultiJobResumeControl childControl = new MultiJobResumeControl(childBuild);
+                        actions.add(childControl);
+                    }
+                }
+            }
+
             prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
 
             while (subJob.isInQueue()) {
@@ -268,8 +310,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         Set<Result> jobResults = new HashSet<Result>();
         BlockingQueue<SubTask> queue = new ArrayBlockingQueue<SubTask>(subTasks.size());
         for (SubTask subTask : subTasks) {
-            Runnable worker = new SubJobWorker(thisProject, listener, subTask, queue);
-            executor.execute(worker);
+            SubBuild subBuild = successBuildMap.get(subTask.subJob.getUrl());
+            if (null == subBuild) {
+                Runnable worker = new SubJobWorker(thisProject, listener, subTask, queue);
+                executor.execute(worker);
+            } else {
+                AbstractBuild jobBuild = subTask.subJob.getBuildByNumber(subBuild.getBuildNumber());
+                updateSubBuild(multiJobBuild, thisProject, jobBuild, subBuild.getResult());
+            }
         }
 
         try {

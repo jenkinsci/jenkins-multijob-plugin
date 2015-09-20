@@ -4,6 +4,8 @@ import java.util.List;
 import java.io.IOException;
 import javax.servlet.ServletException;
 
+import hudson.model.AbstractBuild;
+import hudson.model.Cause;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.DependencyGraph;
@@ -137,5 +139,18 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
                 setPollSubjobs(json.getBoolean(k));
             }
         }
+    }
+
+    public void doResume(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        /*
+        AbstractBuild<?, ?> build = this.getLastBuild();
+        if (null != build) {
+            MultiJobResumeControl control = new MultiJobResumeControl(project);
+            Cause.UserIdCause cause = build.getCause(Cause.UserIdCause.class);
+            this.scheduleBuild(0, cause, control);
+        }
+
+        rsp.sendRedirect2(Jenkins.getInstance().getRootUrl() + getUrl());
+        */
     }
 }
