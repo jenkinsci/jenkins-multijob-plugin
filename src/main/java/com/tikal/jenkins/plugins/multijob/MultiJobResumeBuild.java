@@ -27,13 +27,13 @@ public class MultiJobResumeBuild implements ProminentProjectAction {
 	}
 
 	public String getUrlName() {
-		return "";
+		return "resume";
 	}
 
 	public String getInfo() {
 		return "Resume build";
 	}
-
+	
 	public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
 		AbstractProject<?, ?> project = build.getProject();
 		MultiJobResumeControl control = new MultiJobResumeControl(build);
