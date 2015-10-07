@@ -274,14 +274,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             if (resume) {
                 SubBuild subBuild = failedBuildMap.get(subJob.getUrl());
                 if (null != subBuild) {
-                    Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), multiJobBuild.getParent(),
+                    AbstractProject prj = Jenkins.getInstance().getItem(subBuild.getJobName(), multiJobBuild.getParent(),
                         AbstractProject.class);
-                    if (item instanceof AbstractProject) {
-                        AbstractProject prj = (AbstractProject) item;
-                        AbstractBuild childBuild = prj.getBuildByNumber(subBuild.getBuildNumber());
-                        MultiJobResumeControl childControl = new MultiJobResumeControl(childBuild);
-                        actions.add(childControl);
-                    }
+                    AbstractBuild childBuild = prj.getBuildByNumber(subBuild.getBuildNumber());
+                    MultiJobResumeControl childControl = new MultiJobResumeControl(childBuild);
+                    actions.add(childControl);
                 }
             }
 
