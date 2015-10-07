@@ -62,7 +62,6 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
-import com.tikal.jenkins.plugins.multijob.counters.CounterKey;
 import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
 import com.tikal.jenkins.plugins.multijob.counters.CounterManager;
 
@@ -296,7 +295,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 phaseCounters.processSkipped();
                 continue;
             } else {
-                subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild));
+                boolean shouldTrigger = null == successBuildMap.get(subJob.getUrl()) ? true : false;
+                subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild, shouldTrigger));
             }
         }
 
