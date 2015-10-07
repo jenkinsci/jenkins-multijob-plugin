@@ -5,25 +5,25 @@ import hudson.model.Action;
 
 public class MultiJobResumeControl implements Action {
 
-	private final AbstractBuild<?, ?> build;
+    private final AbstractBuild<?, ?> build;
 
-	public MultiJobResumeControl(AbstractBuild<?, ?> build) {
-		this.build = build;
-	}
+    public MultiJobResumeControl(AbstractBuild<?, ?> build) {
+        this.build = build;
+    }
 
-	public String getIconFileName() {
-		return null;
-	}
+    public String getIconFileName() {
+        return null;
+    }
 
-	public String getDisplayName() {
-		return "Resume action";
-	}
+    public String getDisplayName() {
+        return "Resume action";
+    }
 
-	public String getUrlName() {
-		return "resumecontrol";
-	}
+    public String getUrlName() {
+        return "resumecontrol";
+    }
 
-	public AbstractBuild<?, ?> getBuild() {
-		return build;
-	}
+    public AbstractBuild<?, ?> getBuild() {
+        return build;
+    }
 }

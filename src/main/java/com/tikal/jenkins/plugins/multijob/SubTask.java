@@ -8,6 +8,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause.UpstreamCause;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 

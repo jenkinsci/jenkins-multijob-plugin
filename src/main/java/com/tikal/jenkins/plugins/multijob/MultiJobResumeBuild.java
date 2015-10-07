@@ -12,34 +12,34 @@ import java.io.IOException;
 
 public class MultiJobResumeBuild implements ProminentProjectAction {
 
-	private final AbstractBuild<?, ?> build;
+    private final AbstractBuild<?, ?> build;
 
-	public MultiJobResumeBuild(AbstractBuild<?, ?> build) {
+    public MultiJobResumeBuild(AbstractBuild<?, ?> build) {
 		this.build = build;
 	}
 
-	public String getIconFileName() {
+    public String getIconFileName() {
 		return "plugin/jenkins-multijob-plugin/tool32.png";
 	}
 
-	public String getDisplayName() {
+    public String getDisplayName() {
 		return "Resume build";
 	}
 
-	public String getUrlName() {
+    public String getUrlName() {
 		return "resume";
 	}
 
-	public String getInfo() {
+    public String getInfo() {
 		return "Resume build";
 	}
-	
-	public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
-		AbstractProject<?, ?> project = build.getProject();
-		MultiJobResumeControl control = new MultiJobResumeControl(build);
-		Cause.UserIdCause cause = build.getCause(Cause.UserIdCause.class);
-		project.scheduleBuild(0, cause, control);
 
-		rsp.sendRedirect2(Jenkins.getInstance().getRootUrl() + project.getUrl());
-	}
+    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        AbstractProject<?, ?> project = build.getProject();
+        MultiJobResumeControl control = new MultiJobResumeControl(build);
+        Cause.UserIdCause cause = build.getCause(Cause.UserIdCause.class);
+        project.scheduleBuild(0, cause, control);
+
+        rsp.sendRedirect2(Jenkins.getInstance().getRootUrl() + project.getUrl());
+    }
 }
