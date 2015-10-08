@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>com.joelj.jenkins</groupId>
 			<artifactId>ez-templates</artifactId>
-			<version>1.1</version>
+			<version>1.0.5</version>
 		</dependency>
 
 		<dependency>
