@@ -1,14 +1,14 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import hudson.model.AbstractBuild;
 import hudson.model.Action;
+import hudson.model.Run;
 
 public class MultiJobResumeControl implements Action {
 
-    private final AbstractBuild<?, ?> build;
+    private final Run<?, ?> run;
 
-    public MultiJobResumeControl(AbstractBuild<?, ?> build) {
-        this.build = build;
+    public MultiJobResumeControl(Run<?, ?> run) {
+        this.run = run;
     }
 
     public String getIconFileName() {
@@ -16,14 +16,14 @@ public class MultiJobResumeControl implements Action {
     }
 
     public String getDisplayName() {
-        return "Resume action";
+        return null;
     }
 
     public String getUrlName() {
-        return "resumecontrol";
+        return null;
     }
 
-    public AbstractBuild<?, ?> getBuild() {
-        return build;
+    public Run<?, ?> getRun() {
+        return run;
     }
 }

@@ -197,7 +197,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         Map<String, SubBuild> failedBuildMap = new HashMap<String, SubBuild>();
         MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
         if (null != control) {
-            MultiJobBuild prevBuild = (MultiJobBuild) control.getBuild();
+            MultiJobBuild prevBuild = (MultiJobBuild) control.getRun();
             for (SubBuild subBuild : prevBuild.getSubBuilds()) {
                 Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
                     AbstractProject.class);
