@@ -4,6 +4,8 @@ import java.util.List;
 import java.io.IOException;
 import javax.servlet.ServletException;
 
+import hudson.model.AbstractBuild;
+import hudson.model.Cause;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.DependencyGraph;

@@ -21,13 +21,15 @@ public final class SubTask {
     public Result result;
     private boolean cancel;
 
-    SubTask(AbstractProject subJob, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild) {
+    SubTask(AbstractProject subJob, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild, boolean shouldTrigger) {
         this.subJob = subJob;
         this.phaseConfig = phaseConfig;
         this.actions = actions;
         this.multiJobBuild = multiJobBuild;
         this.cancel = false;
-        GenerateFuture();
+        if (shouldTrigger) {
+            GenerateFuture();
+        }
     }
 
     public boolean isCancelled() {
