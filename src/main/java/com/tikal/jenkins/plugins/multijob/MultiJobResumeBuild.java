@@ -3,6 +3,7 @@ package com.tikal.jenkins.plugins.multijob;
 import hudson.model.Action;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
+import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
@@ -54,7 +55,7 @@ public class MultiJobResumeBuild implements RunAction2 {
     }
 
     private List<Action> copyBuildCauses() {
-        List<Action> actions = new ArrayList<Action>(run.getCauses().size());
+        List<Action> actions = new ArrayList<Action>();
         boolean hasUserIdCause = false;
         for (Object cause : run.getCauses()) {
             if (cause instanceof Cause.UserIdCause) {
@@ -67,6 +68,7 @@ public class MultiJobResumeBuild implements RunAction2 {
         if (!hasUserIdCause) {
             actions.add(new CauseAction(new Cause.UserIdCause()));
         }
+        actions.addAll(run.getActions(ParametersAction.class));
         return actions;
     }
 }
