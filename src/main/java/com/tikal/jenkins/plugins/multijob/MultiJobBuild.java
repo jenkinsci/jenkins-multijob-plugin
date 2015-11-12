@@ -1,17 +1,5 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.ParameterValue;
-import hudson.model.Result;
-import hudson.model.AbstractProject;
-import hudson.model.ParametersAction;
-import hudson.model.Run;
-import hudson.model.StringParameterValue;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -22,12 +10,24 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.servlet.ServletException;
 
-import jenkins.model.Jenkins;
-
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
+
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Build;
+import hudson.model.BuildListener;
+import hudson.model.ParameterValue;
+import hudson.model.ParametersAction;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.StringParameterValue;
+import hudson.scm.ChangeLogSet;
+import hudson.scm.ChangeLogSet.Entry;
+import jenkins.model.Jenkins;
 
 @ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
@@ -188,10 +188,12 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final String url;
         private final boolean retry;
         private final boolean aborted;
+        private final AbstractBuild<?, ?> build;
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url) {
+                Result result, String icon, String duration, String url, 
+                AbstractBuild<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
@@ -203,12 +205,13 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = false;
             this.aborted = false;
+            this.build = build;
         }
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
-                boolean retry, boolean aborted) {
+                boolean retry, boolean aborted, AbstractBuild<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
@@ -220,6 +223,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = retry;
             this.aborted = aborted;
+			this.build = build;
         }
 
         @Exported
@@ -267,7 +271,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public String getJobName() {
             return jobName;
         }
-
+        
         @Exported
         public int getBuildNumber() {
             return buildNumber;
@@ -284,5 +288,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                     + ", parentBuildNumber=" + parentBuildNumber + ", jobName="
                     + jobName + ", buildNumber=" + buildNumber + "]";
         }
+
+		@Exported
+		public AbstractBuild<?,?> getBuild() {
+			return build;
+		}
     }
 }
