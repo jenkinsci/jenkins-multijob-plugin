@@ -12,6 +12,7 @@ import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Item;
+import hudson.model.Queue.QueueAction;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
@@ -235,7 +236,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
 
         List<SubTask> subTasks = new ArrayList<SubTask>();
+        int index = 0;
         for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
+            index++;
+
             AbstractProject subJob = phaseSubJob.job;
 
             // To be coherent with final results, we need to do this here.
@@ -282,11 +286,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
             }
 
-            prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions);
-
-            while (subJob.isInQueue()) {
-                TimeUnit.SECONDS.sleep(subJob.getQuietPeriod());
-            }
+            prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions, index);
 
             if ( jobStatus == StatusJob.IS_DISABLED_AT_PHASECONFIG ) {
                 phaseCounters.processSkipped();
@@ -795,13 +795,51 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @SuppressWarnings("rawtypes")
     private void prepareActions(AbstractBuild build, AbstractProject project,
             PhaseJobsConfig projectConfig, BuildListener listener,
-            List<Action> actions) throws IOException, InterruptedException {
+            List<Action> actions, int index) throws IOException, InterruptedException {
         List<Action> parametersActions = null;
         // if (projectConfig.hasProperties()) {
         parametersActions = (List<Action>) projectConfig.getActions(build, listener, project, projectConfig.isCurrParams());
         actions.addAll(parametersActions);
         // }
+        actions.add(new MultiJobAction(build, index));
 
+    }
+
+    private class MultiJobAction implements Action, QueueAction {
+        public AbstractBuild build;
+        public int index;
+
+        public MultiJobAction(AbstractBuild build, int index) {
+            this.build = build;
+            this.index = index;
+        }
+
+        public boolean shouldSchedule(List<Action> actions) {
+            boolean matches = true;
+
+            for (MultiJobAction action : Util.filter(actions, MultiJobAction.class)) {
+                if (action.index != index) {
+                    matches = false;
+                }
+                if (action.build.getNumber() != build.getNumber()) {
+                    matches = false;
+                }
+            }
+
+            return !matches;
+        }
+
+        public String getIconFileName() {
+            return null;
+        }
+
+        public String getDisplayName() {
+            return "this shouldn't be displayed";
+        }
+
+        public String getUrlName() {
+            return null;
+        }
     }
 
     public String getPhaseName() {
