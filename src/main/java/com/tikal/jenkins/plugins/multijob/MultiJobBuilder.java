@@ -20,15 +20,12 @@ import hudson.model.AbstractProject;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
-import hudson.scm.SCM;
-import hudson.scm.SCMRevisionState;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.model.Executor;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,7 +39,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import net.sf.json.JSONObject;
 import jenkins.model.Jenkins;
@@ -134,7 +130,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      *      <li>If job is disabled at phase configuration
      *          then returns <code>{@link StatusJob#IS_DISABLED_AT_PHASECONFIG}</code>.</li>
      *      <li>If BuildOnlyIfSCMChanges is disabled
-     *          then returns <code>{@link StatusJob#BUILD_ONLY_IF_SCM_CHANGES_DISABLED}</code>.</li>
+     *          then returns <code>{@link StatusJob#BUILD_ON_SCM_CHANGES_ONLY}</code>.</li>
      *      <li>If 'Build Always' feature is enabled
      *          then returns <code>{@link StatusJob#BUILD_ALWAYS_IS_ENABLED}</code>.</li>
      *      <li>If job doesn't contains lastbuild
@@ -157,8 +153,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if( phaseConfig.isDisableJob() ) {
             return StatusJob.IS_DISABLED_AT_PHASECONFIG;
         }
-        if ( !phaseConfig.isBuildOnlyIfSCMChanges() ){
-            return StatusJob.BUILD_ONLY_IF_SCM_CHANGES_DISABLED;
+        if ( phaseConfig.isBuildOnlyIfSCMChanges() ){
+            return StatusJob.BUILD_ON_SCM_CHANGES_ONLY;
         }
         final boolean buildAlways = Boolean.valueOf((String)(build.getBuildVariables().get(BUILD_ALWAYS_KEY)));
 
