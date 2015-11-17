@@ -261,7 +261,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
             // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
             // so we don't need to change our job configuration.
-            }else if ( ! jobStatus.isBuildable() ) {
+            }
+            if ( ! jobStatus.isBuildable() ) {
                 phaseCounters.processSkipped();
                 continue;
             }
