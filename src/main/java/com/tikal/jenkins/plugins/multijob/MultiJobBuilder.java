@@ -171,6 +171,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if ( !lastBuild.getWorkspace().exists() ) {
             return StatusJob.WORKSPACE_IS_EMPTY;
         }
+        if ( subjob.poll(listener).hasChanges() ) {
+            return StatusJob.CHANGED_SINCE_LAST_BUILD;
+        }
 
         return StatusJob.NOT_CHANGED_SINCE_LAST_BUILD;
     }
