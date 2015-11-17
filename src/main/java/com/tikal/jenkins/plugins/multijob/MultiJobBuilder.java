@@ -153,8 +153,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if( phaseConfig.isDisableJob() ) {
             return StatusJob.IS_DISABLED_AT_PHASECONFIG;
         }
-        if ( phaseConfig.isBuildOnlyIfSCMChanges() ){
-            return StatusJob.BUILD_ON_SCM_CHANGES_ONLY;
+        if ( !phaseConfig.isBuildOnlyIfSCMChanges() ){
+            return StatusJob.BUILD_ONLY_IF_SCM_CHANGES_DISABLED;
         }
         final boolean buildAlways = Boolean.valueOf((String)(build.getBuildVariables().get(BUILD_ALWAYS_KEY)));
 
@@ -171,9 +171,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if ( !lastBuild.getWorkspace().exists() ) {
             return StatusJob.WORKSPACE_IS_EMPTY;
         }
-        if ( subjob.poll(listener).hasChanges() ) {
-            return StatusJob.CHANGED_SINCE_LAST_BUILD;
-        }
+
         return StatusJob.NOT_CHANGED_SINCE_LAST_BUILD;
     }
 
@@ -263,7 +261,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
             // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
             // so we don't need to change our job configuration.
-            } else if ( ! jobStatus.isBuildable() ) {
+            }else if ( ! jobStatus.isBuildable() ) {
                 phaseCounters.processSkipped();
                 continue;
             }

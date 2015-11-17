@@ -40,7 +40,7 @@ public enum StatusJob {
     /**
      * The 'Build Only If Scm Changes' feature is disabled.
      */
-    BUILD_ON_SCM_CHANGES_ONLY("[%s] the 'build only if scm changes' feature is enabled.") {
+    BUILD_ONLY_IF_SCM_CHANGES_DISABLED("[%s] the 'build only if scm changes' feature is disabled.") {
         @Override
         public boolean isBuildable() {
             return true;
