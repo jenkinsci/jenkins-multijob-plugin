@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import com.tikal.jenkins.plugins.multijob.listeners.MultiJobListener;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -385,9 +386,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
 
                 int retry = 0;
+                boolean retryUsingListener = false;
                 boolean finish = false;
 
-                while (retry <= maxRetries && !finish) {
+                while ((retry <= maxRetries || retryUsingListener) && !finish) {
                     retry++;
                     QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
                     while (true) {
@@ -425,12 +427,17 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         result = jobBuild.getResult();
                         reportFinish(listener, jobBuild, result);
 
-                        if (result.isWorseOrEqualTo(Result.FAILURE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
+                        boolean isComplete = MultiJobListener.fireOnComplete(jobBuild, subTask.multiJobBuild);
+                        if (!isComplete) {
+                            retryUsingListener = true;
+                            listener.getLogger().println("Failure detected by job listener, retrying this build.");
+                            updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result, true);
+                            subTask.GenerateFuture();
+                        } else if (result.isWorseOrEqualTo(Result.FAILURE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
                             if (isKnownRandomFailure(jobBuild)) {
                                 if (retry <= maxRetries) {
                                     listener.getLogger().println("Known failure detected, retrying this build. Try " + retry + " of " + maxRetries + ".");
                                     updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result, true);
-
                                     subTask.GenerateFuture();
                                 } else {
                                     listener.getLogger().println("Known failure detected, max retries (" + maxRetries + ") exceeded.");
