@@ -15,7 +15,15 @@ import jenkins.model.Jenkins;
  */
 public abstract class MultiJobListener implements ExtensionPoint {
 
+	public abstract void onStart(AbstractBuild<?, ?> build, MultiJobBuild multiJobBuild);
+
 	public abstract boolean isComplete(AbstractBuild<?, ?> build, MultiJobBuild multiJobBuild);
+
+	public static void fireOnStart(AbstractBuild<?, ?> build, MultiJobBuild multiJobBuild) {
+		for (MultiJobListener l : all()) {
+			l.onStart(build, multiJobBuild);
+		}
+	}
 
 	public static boolean fireOnComplete(AbstractBuild<?, ?> build, MultiJobBuild multiJobBuild) {
 		for (MultiJobListener l : all()) {

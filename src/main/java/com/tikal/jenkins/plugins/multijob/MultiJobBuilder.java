@@ -392,6 +392,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 while ((retry <= maxRetries || retryUsingListener) && !finish) {
                     retry++;
                     QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
+                    MultiJobListener.fireOnStart(future.waitForStart(), subTask.multiJobBuild);
                     while (true) {
                         if (subTask.isCancelled()) {
                             if (jobBuild != null) {
