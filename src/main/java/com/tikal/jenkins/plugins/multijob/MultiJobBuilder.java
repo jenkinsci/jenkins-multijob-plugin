@@ -130,7 +130,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      *      <li>If job is disabled at phase configuration
      *          then returns <code>{@link StatusJob#IS_DISABLED_AT_PHASECONFIG}</code>.</li>
      *      <li>If BuildOnlyIfSCMChanges is disabled
-     *          then returns <code>{@link StatusJob#BUILD_ON_SCM_CHANGES_ONLY}</code>.</li>
+     *          then returns <code>{@link StatusJob#BUILD_ONLY_IF_SCM_CHANGES_DISABLED}</code>.</li>
      *      <li>If 'Build Always' feature is enabled
      *          then returns <code>{@link StatusJob#BUILD_ALWAYS_IS_ENABLED}</code>.</li>
      *      <li>If job doesn't contains lastbuild
@@ -261,41 +261,48 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             boolean conditionExistsAndEvaluatedToTrue = false;
 
             if (phaseConfig.getEnableCondition() && phaseConfig.getCondition() != null) {
-                // if SCM has changes or set to always build and condition should always be evaluated
-                if(jobStatus.isBuildable() && !phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
-                    if (evalCondition(phaseConfig.getCondition(), build, listener)) {
-                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
-                        conditionExistsAndEvaluatedToTrue = true;
-                    } else {
-                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                // we start by looking at if the SCM set to always build, if it is, the apply change only if there were no changes is irrelevant
+                if(phaseConfig.isBuildOnlyIfSCMChanges()) {
+                    // first build or changes were found and condition should be evaluated only if changes were found
+                    if(jobStatus.isBuildable() && phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
+                        if (evalCondition(phaseConfig.getCondition(), build, listener)) {
+                            listener.getLogger().println(String.format("Triggering [%s]. Condition was evaluated to true.", subJob.getName()));
+                            conditionExistsAndEvaluatedToTrue = true;
+                        } else {
+                            listener.getLogger().println(String.format("Skipping [%s]. Condition was evaluated to false.", subJob.getName()));
+                            phaseCounters.processSkipped();
+                            continue;
+                        }
+                    }
+                    // condition is set to be evaluated in any case
+                    else if((jobStatus.isBuildable() || !jobStatus.isBuildable()) && !phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
+                        if (evalCondition(phaseConfig.getCondition(), build, listener)) {
+                            listener.getLogger().println(String.format("Triggering [%s]. Condition was evaluated to true.", subJob.getName()));
+                            conditionExistsAndEvaluatedToTrue = true;
+                        } else {
+                            listener.getLogger().println(String.format("Skipping [%s]. Condition was evaluated to false.", subJob.getName()));
+                            phaseCounters.processSkipped();
+                            continue;
+                        }
+                    }
+                    // no SCM changes and no condition evaluation
+                    else if(!jobStatus.isBuildable() && phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
+                        listener.getLogger().println(String.format("Skipping [%s]. No SCM changes found so condition is skipped.", subJob.getName()));
                         phaseCounters.processSkipped();
                         continue;
                     }
-                }
-                // if SCM has no changes but condition is set to be evaluated in this case
-                else if(!jobStatus.isBuildable() && phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
-                    if (evalCondition(phaseConfig.getCondition(), build, listener)) {
-                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
-                        conditionExistsAndEvaluatedToTrue = true;
-                    } else {
-                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
-                        phaseCounters.processSkipped();
-                        continue;
-                    }
-                }
-                // no SCM changes and no condition evaluation
-                else if(!jobStatus.isBuildable() && !phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
-                    listener.getLogger().println(String.format("Skipping %s. No SCM changes found and condition is skipped.", subJob.getName()));
-                    phaseCounters.processSkipped();
-                    continue;
+
                 } else {
-                    if (!evalCondition(phaseConfig.getCondition(), build, listener)) {
-                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
-                        phaseCounters.processSkipped();
-                        continue;
-                    } else {
-                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
-                        conditionExistsAndEvaluatedToTrue = true;
+                    // SCM set to always build and condition should always be evaluated
+                    if(jobStatus.isBuildable()) {
+                        if (evalCondition(phaseConfig.getCondition(), build, listener)) {
+                            listener.getLogger().println(String.format("1 - Triggering %s. Condition was evaluated to true.", subJob.getName()));
+                            conditionExistsAndEvaluatedToTrue = true;
+                        } else {
+                            listener.getLogger().println(String.format("2 - Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                            phaseCounters.processSkipped();
+                            continue;
+                        }
                     }
                 }
             // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
