@@ -1,0 +1,101 @@
+table.treetable tr.collapsed span.indenter i:before {
+    content: "\f116";
+}
+
+table.treetable tr.expanded span.indenter i:before {
+    content: "\f117";
+}
+
+#multiJobTable thead tr th {
+    background-color: #EEEEEE;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    height: 30px;
+}
+
+#multiJobTable tbody tr td {
+    border-color: #ECF3FE;
+    font-size: 14px;
+    font-weight: 500;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#multiJobTable tbody tr:hover > td {
+
+}
+
+#multiJobTable th {
+    text-align: center;
+}
+
+#multiJobTable td {
+}
+
+.job-rowA {
+    background-color: #FFFFFF;
+}
+
+.job-rowB {
+    background-color: #FBFBFB;
+}
+
+.job-project {
+    text-align: left !important;
+    width: 200px;
+    padding-left: 5px;
+    font-weight: 800 !important;
+}
+
+.job-phase {
+    text-align: left !important;
+    width: 200px;
+    padding-left: 5px;
+    font-weight: 600 !important;
+    font-style: italic;
+}
+
+.job-status {
+    width: 80px;
+}
+
+.job-weather {
+    width: 80px;
+}
+
+.job-build {
+    padding-left: 5px;
+    font-weight: 800 !important;
+    width: 200px;
+}
+
+.job-last {
+    width: 120px;
+    text-align: center;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.job-console {
+    width: 80px;
+}
+
+.job-run {
+    width: 80px;
+}
+
+.smallIcon {
+    width: 16px;
+    height: 16px;
+}
+
+.middleIcon {
+    width: 24px;
+    height: 24px;
+}
+
+.largeIcon {
+    width: 32px;
+    height: 32px;
+}

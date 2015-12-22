@@ -4,8 +4,8 @@ import java.util.List;
 import java.io.IOException;
 import javax.servlet.ServletException;
 
-import hudson.model.AbstractBuild;
-import hudson.model.Cause;
+import com.tikal.jenkins.plugins.multijob.views.MultiJobItem;
+import com.tikal.jenkins.plugins.multijob.views.MultiView;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.DependencyGraph;
@@ -18,14 +18,13 @@ import hudson.model.AbstractProject;
 import hudson.model.Descriptor.FormException;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.scm.PollingResult;
-import hudson.scm.PollingResult.*;
 
-import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 import hudson.tasks.test.AbstractTestResultAction;
 
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
@@ -78,9 +77,16 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		return getUpstreamProjects().size() == 0;
 	}
 
-	public MultiJobView getView() {
-		return new MultiJobView("");
-	}
+    @JavaScriptMethod
+    public List<MultiJobItem> getHierarchy() {
+        MultiView view = new MultiView(this);
+        return view.getHierarchy();
+    }
+
+    @JavaScriptMethod
+    public boolean isBuilding() {
+        return null != this.getLastBuild() ? this.getLastBuild().isBuilding() : false;
+    }
 
 	public String getRootUrl() {
 		return Jenkins.getInstance().getRootUrl();
