@@ -38,7 +38,8 @@ jQuery(document).ready(function() {
                 if (v.project) {
                     Q(query + '.job-last-duration')[0].textContent = v.lastDuration;
                     if (v.build) {
-                        Q(query + '.job-build')[0].innerHTML = '<a href="' + v.buildUrl + '">' + v.buildName + '</a>';
+                        Q(query + '.job-build')[0].innerHTML = '<a href="' + rootURL + v.buildUrl + '">' + v.buildName + '</a>';
+                        Q(query + '.job-console a')[0].setAttribute('href', rootURL + v.buildUrl + 'console');
                     }
                     if (0 == count) {
                         Q(query + '.job-last-success')[0].textContent = v.lastSuccess;
@@ -51,3 +52,9 @@ jQuery(document).ready(function() {
 
     reloadStatus();
 });
+
+function scheduleBuild(a) {
+    new Ajax.Request(a.href);
+    hoverNotification('Build scheduled', a.parentNode);
+    return false;
+}

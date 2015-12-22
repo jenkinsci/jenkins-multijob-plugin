@@ -1,10 +1,9 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
+import hudson.model.AbstractBuild;
 import hudson.model.HealthReport;
 import hudson.model.Job;
 import hudson.model.Result;
-import hudson.model.Run;
-import jenkins.model.Jenkins;
 
 public class MultiJobItem {
 
@@ -43,16 +42,16 @@ public class MultiJobItem {
 		this.isBuild = 0 == this.buildNumber ? false : true;
 		this.name = project.getFullDisplayName();
 		if (0 != buildNumber) {
-			Run<?, ?> run = project.getBuildByNumber(buildNumber);
+			AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
 			this.buildName = name + " #" + buildNumber;
-			this.buildUrl = Jenkins.getInstance().getRootUrl() + run.getUrl();
-			this.result = run.getResult();
-			this.statusIconColor = run.getIconColor().getImage();
+			this.buildUrl = "/" + build.getUrl();
+			this.result = build.getResult();
+			this.statusIconColor = build.getIconColor().getImage();
 		} else {
 			this.result = Result.NOT_BUILT;
 			this.statusIconColor = "nobuilt.png";
 		}
-		this.url = Jenkins.getInstance().getRootUrl() + project.getUrl();
+		this.url = "/" + project.getUrl();
 		this.status = null != this.result ? this.result.toString() : "Not built yet";
 		this.healthReport = project.getBuildHealth();
 		this.weather = project.getBuildHealth().getDescription();

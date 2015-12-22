@@ -67,7 +67,7 @@ div(id: "statusTable") {
             tr('data-tt-id': v.getItemId(), 'data-tt-parent-id': v.getParentItemId(), class: jobRowClass) {
                 if (v.isProject()) {
                     td(class: "job-project") {
-                        a(href: v.getUrl()) {
+                        a(href: "${rootURL}" + v.getUrl()) {
                             text(v.getName())
                         }
                     }
@@ -86,11 +86,11 @@ div(id: "statusTable") {
                 td(class: "job-build") {
                     if (v.isProject()) {
                         if (v.isBuild()) {
-                            a(href: v.getBuildUrl()) {
+                            a(href: "${rootURL}" + v.getBuildUrl()) {
                                 text(v.getBuildName())
                             }
                         } else {
-                            a(href: v.getUrl()) {
+                            a(href: "${rootURL}" + v.getUrl()) {
                                 text(v.getName())
                             }
                         }
@@ -106,8 +106,8 @@ div(id: "statusTable") {
                     text(v.getLastDuration())
                 }
                 td(class: "job-console") {
-                    if (v.isProject()) {
-                        a(href: v.getUrl() + "/console") {
+                    if (v.isProject() && v.isBuild()) {
+                        a(href: "${rootURL}" + v.getBuildUrl() + "console") {
                             img(class: "largeIcon", src: "${imagesURL}/24x24/terminal.png",
                                     title: "Console output", alt: "Console output") {
                             }
@@ -116,7 +116,7 @@ div(id: "statusTable") {
                 }
                 td(class: "job-run") {
                     if (v.isProject()) {
-                        a(href: v.getUrl() + "/build?delay=0sec") {
+                        a(href: "${rootURL}/" + v.getUrl() + "build?delay=0sec", onclick: "return scheduleBuild(this)") {
                             img(src: "${imagesURL}/24x24/clock.png") {
                             }
                         }
