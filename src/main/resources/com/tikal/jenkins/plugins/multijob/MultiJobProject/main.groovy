@@ -109,7 +109,7 @@ div(id: "statusTable") {
                     if (v.isProject() && v.isBuild()) {
                         a(href: "${rootURL}" + v.getBuildUrl() + "console") {
                             img(class: "largeIcon", src: "${imagesURL}/24x24/terminal.png",
-                                    title: "Console output", alt: "Console output") {
+                                    title: "Console output") {
                             }
                         }
                     }

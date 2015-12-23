@@ -40,7 +40,7 @@ public class MultiJobItem {
 			this.buildNumber = null != project.getLastBuild() ? project.getLastBuild().getNumber() : 0;
 		}
 		this.isBuild = 0 == this.buildNumber ? false : true;
-		this.name = project.getFullDisplayName();
+		this.name = project.getDisplayName();
 		if (0 != buildNumber) {
 			AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
 			this.buildName = name + " #" + buildNumber;
@@ -116,6 +116,10 @@ public class MultiJobItem {
 
 	public String getBuildUrl() {
 		return buildUrl;
+	}
+
+	public int getBuildNumber() {
+		return buildNumber;
 	}
 
 	public Result getResult() {
