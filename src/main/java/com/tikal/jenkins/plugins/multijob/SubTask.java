@@ -1,6 +1,5 @@
 package com.tikal.jenkins.plugins.multijob;
 
-
 import hudson.model.Action;
 import hudson.model.Run;
 import hudson.model.Result;
