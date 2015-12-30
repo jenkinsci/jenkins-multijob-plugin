@@ -24,7 +24,7 @@ public class MultiJobResumeBuild implements RunAction2 {
     }
 
     public String getIconFileName() {
-		return "plugin/jenkins-multijob-plugin/tool32.png";
+		return "/plugin/jenkins-multijob-plugin/tool32.png";
 	}
 
     public String getDisplayName() {
