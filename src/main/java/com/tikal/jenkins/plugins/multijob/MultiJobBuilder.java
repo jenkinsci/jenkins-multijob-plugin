@@ -148,7 +148,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      *          then returns <code>{@link StatusJob#NOT_CHANGED_SINCE_LAST_BUILD}</code>.</li>
      * </ol>
      */
-    private StatusJob getScmChange(AbstractProject subjob,PhaseJobsConfig phaseConfig,AbstractBuild build, BuildListener listener,Launcher launcher)
+    private StatusJob getScmChange(AbstractProject subjob, PhaseJobsConfig phaseConfig,AbstractBuild build, BuildListener listener, Launcher launcher)
     throws IOException, InterruptedException {
         if ( subjob.isDisabled() ) {
             return StatusJob.IS_DISABLED;

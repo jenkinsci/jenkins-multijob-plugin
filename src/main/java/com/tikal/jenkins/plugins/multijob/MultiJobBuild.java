@@ -135,17 +135,23 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         @Override
         public Result run(BuildListener listener) throws Exception {
             Result result = super.run(listener);
-            MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
+            
+            if (!((MultiJobProject)this.getProject()).getDisableResumeBuild()) {
+                if (isAborted() || isFailure()) {
+                    MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
+                    super.getBuild().addAction(action);
+                }
+            }
+            
             if (isAborted()) {
-                super.getBuild().addAction(action);
                 return Result.ABORTED;
             }
             if (isFailure()) {
-                super.getBuild().addAction(action);
                 return Result.FAILURE;
             }
-            if (isUnstable())
+            if (isUnstable()) {
                 return Result.UNSTABLE;
+            }
             return result;
         }
 

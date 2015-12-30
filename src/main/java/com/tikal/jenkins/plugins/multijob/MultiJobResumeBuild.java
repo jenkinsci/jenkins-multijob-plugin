@@ -24,20 +24,20 @@ public class MultiJobResumeBuild implements RunAction2 {
     }
 
     public String getIconFileName() {
-		return "/plugin/jenkins-multijob-plugin/tool32.png";
-	}
+            return "/plugin/jenkins-multijob-plugin/tool32.png";
+    }
 
     public String getDisplayName() {
-		return Messages.MultiJobResumeBuild_DisplayName();
-	}
+            return Messages.MultiJobResumeBuild_DisplayName();
+    }
 
     public String getUrlName() {
-		return "resume";
-	}
+            return "resume";
+    }
 
     public String getInfo() {
-		return "Resume build";
-	}
+            return "Resume build";
+    }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
         final MultiJobResumeControl control = new MultiJobResumeControl(run);
