@@ -596,7 +596,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 return false;
             }
             if (killCondition.isKillPhase(subTask.result)) {
-                if (subTask.result != Result.ABORTED || subTask.phaseConfig.getAbortAllJob()) {
+                if (subTask.result != Result.ABORTED && subTask.phaseConfig.getAbortAllJob()) {
                     for (SubTask _subTask : subTasks) {
                         _subTask.cancelJob();
                     }
