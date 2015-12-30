@@ -2,6 +2,7 @@ package com.tikal.jenkins.plugins.multijob;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +82,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public String getBuildParams(SubBuild subBuild) {
         try {
             AbstractProject project = (AbstractProject) Jenkins.getInstance()
-            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);;
+            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
             Run build = project.getBuildByNumber(subBuild.getBuildNumber());
             ParametersAction action = build.getAction(ParametersAction.class);
             List<ParameterValue> parameters = action.getParameters();
@@ -178,8 +179,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public static class SubBuild {
 
         private final String parentJobName;
-        private final int parentBuildNumber;
         private final String jobName;
+        private final int parentBuildNumber;
         private final int buildNumber;
         private final String phaseName;
         private final Result result;
@@ -192,20 +193,28 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url, 
-                AbstractBuild<?, ?> build) {
-            this.parentJobName = parentJobName;
-            this.parentBuildNumber = parentBuildNumber;
-            this.jobName = jobName;
-            this.buildNumber = buildNumber;
-            this.phaseName = phaseName;
-            this.result = result;
-            this.icon = icon;
-            this.duration = duration;
-            this.url = url;
-            this.retry = false;
-            this.aborted = false;
-            this.build = build;
+                Result result, String icon, String duration, String url) {
+            this(parentJobName, parentBuildNumber, jobName, buildNumber,
+                    phaseName, result, icon, duration, url, false,
+                    false, null);
+        }
+
+        public SubBuild(String parentJobName, int parentBuildNumber,
+                String jobName, int buildNumber, String phaseName,
+                Result result, String icon, String duration, String url,
+                AbstractBuild<?, ?> jobBuild) {
+            this(parentJobName, parentBuildNumber, jobName, buildNumber,
+                    phaseName, result, icon, duration, url, false,
+                    false, jobBuild);
+        }
+
+        public SubBuild(String parentJobName, int parentBuildNumber,
+                String jobName, int buildNumber, String phaseName,
+                Result result, String icon, String duration, String url,
+                boolean retry, boolean aborted) {
+            this(parentJobName, parentBuildNumber, jobName, buildNumber,
+                    phaseName, result, icon, duration, url, retry,
+                    aborted, null);
         }
 
         public SubBuild(String parentJobName, int parentBuildNumber,
@@ -223,7 +232,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = retry;
             this.aborted = aborted;
-			this.build = build;
+            this.build = build;
         }
 
         @Exported
@@ -282,6 +291,22 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             return result;
         }
 
+        public List<String> getLog(int number) {
+            try {
+                return build.getLog(number);
+            } catch (IOException ex) {
+                // When there is a problem reading the log file.
+            }
+            return new ArrayList<String>();
+        }
+
+        public List<SubBuild> getSubBuilds() {
+            if (build instanceof MultiJobBuild) {
+                return ((MultiJobBuild) build).getSubBuilds();
+            }
+            return new ArrayList<SubBuild>();
+        }
+
         @Override
         public String toString() {
             return "SubBuild [parentJobName=" + parentJobName
@@ -289,9 +314,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                     + jobName + ", buildNumber=" + buildNumber + "]";
         }
 
-		@Exported
-		public AbstractBuild<?,?> getBuild() {
-			return build;
-		}
+        @Exported
+        public AbstractBuild<?,?> getBuild() {
+            return build;
+        }
     }
 }
