@@ -5,7 +5,7 @@
 	<td data="${lBuild.duration ?: '0'}">
 		<j:choose>
 			<j:when test="${lBuild!=null}">
-				<a href="${jobBaseUrl}${job.shortUrl}${lBuild.number}/console">
+				<a href="${job.absoluteUrl}${lBuild.number}/console">
 					<img src="${imagesURL}/${subIconSize}/terminal.gif" title="${%Console output}"
 						alt="${%Console output}" border="0" />
 				</a>
