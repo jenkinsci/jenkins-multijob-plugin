@@ -5,24 +5,14 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
-import hudson.model.Action;
-import hudson.model.BallColor;
-import hudson.model.BuildListener;
-import hudson.model.DependecyDeclarer;
-import hudson.model.DependencyGraph;
+import hudson.model.*;
 import hudson.model.DependencyGraph.Dependency;
-import hudson.model.Item;
 import hudson.model.Queue.QueueAction;
-import hudson.model.Result;
-import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.model.Executor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,6 +38,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 
+import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
@@ -101,6 +92,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      */
     public static final String JOB_IS_BUILDABLE = "JOB_IS_BUILDABLE";
 
+    /**
+     * A prefix for env vars which should be loaded in {@link #prebuild(Build, BuildListener)}.
+     * this will happen only when build was triggered by the {@link MultiJobResumeControl} action
+     *
+     * @since 1.0.0
+     */
+    public static final String PERSISTENT_VARS_PREFIX = "RESUMABLE_";
+
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
             ContinuationCondition continuationCondition) {
@@ -130,7 +129,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      *      <li>If job is disabled at phase configuration
      *          then returns <code>{@link StatusJob#IS_DISABLED_AT_PHASECONFIG}</code>.</li>
      *      <li>If BuildOnlyIfSCMChanges is disabled
-     *          then returns <code>{@link StatusJob#BUILD_ONLY_IF_SCM_CHANGES_DISABLED}</code>.</li>
+     *          then returns <code>{@link StatusJob#BUILD_ON_SCM_CHANGES_ONLY}</code>.</li>
      *      <li>If 'Build Always' feature is enabled
      *          then returns <code>{@link StatusJob#BUILD_ALWAYS_IS_ENABLED}</code>.</li>
      *      <li>If job doesn't contains lastbuild
@@ -261,54 +260,41 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             boolean conditionExistsAndEvaluatedToTrue = false;
 
             if (phaseConfig.getEnableCondition() && phaseConfig.getCondition() != null) {
-                // we start by looking at if the SCM set to always build, if it is, the "apply change only if there were no changes" is irrelevant
-                if(phaseConfig.isBuildOnlyIfSCMChanges()) {
-                    // first build or SCM changed
-                    if(jobStatus.isBuildable()) {
-                        // always check condition
-                        if(!phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
-                            if (evalCondition(phaseConfig.getCondition(), build, listener)) {
-                                listener.getLogger().println(String.format("Triggering [%s]. SCM has changes and condition evaluated to true.", subJob.getName()));
-                                conditionExistsAndEvaluatedToTrue = true;
-                            } else {
-                                listener.getLogger().println(String.format("Skipping [%s]. Condition was evaluated to false.", subJob.getName()));
-                                phaseCounters.processSkipped();
-                                continue;
-                            }
-                        } else {
-                            // no need to check condition
-                            listener.getLogger().println(String.format("Triggering [%s]. SCM has changes and condition is ignored.", subJob.getName()));
-                            conditionExistsAndEvaluatedToTrue = true;
-                        }
+                // if SCM has changes or set to always build and condition should always be evaluated
+                if(jobStatus.isBuildable() && !phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
+                    if (evalCondition(phaseConfig.getCondition(), build, listener)) {
+                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
+                        conditionExistsAndEvaluatedToTrue = true;
                     } else {
-                        // no SCM change, but condition is set to be evaluated
-                        if(phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
-                            if (evalCondition(phaseConfig.getCondition(), build, listener)) {
-                                listener.getLogger().println(String.format("Triggering [%s]. Condition was evaluated to true.", subJob.getName()));
-                                conditionExistsAndEvaluatedToTrue = true;
-                            } else {
-                                listener.getLogger().println(String.format("Skipping [%s]. Condition was evaluated to false.", subJob.getName()));
-                                phaseCounters.processSkipped();
-                                continue;
-                            }
-                        } else {
-                            // no SCM changes and no condition evaluation
-                            listener.getLogger().println(String.format("Skipping [%s]. No SCM changes found so condition is skipped.", subJob.getName()));
-                            phaseCounters.processSkipped();
-                            continue;
-                        }
+                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                        phaseCounters.processSkipped();
+                        continue;
                     }
+                }
+                // if SCM has no changes but condition is set to be evaluated in this case
+                else if(!jobStatus.isBuildable() && phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
+                    if (evalCondition(phaseConfig.getCondition(), build, listener)) {
+                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
+                        conditionExistsAndEvaluatedToTrue = true;
+                    } else {
+                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                        phaseCounters.processSkipped();
+                        continue;
+                    }
+                }
+                // no SCM changes and no condition evaluation
+                else if(!jobStatus.isBuildable() && !phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
+                    listener.getLogger().println(String.format("Skipping %s. No SCM changes found and condition is skipped.", subJob.getName()));
+                    phaseCounters.processSkipped();
+                    continue;
                 } else {
-                    // SCM set to always build and condition should always be evaluated
-                    if(jobStatus.isBuildable()) {
-                        if (evalCondition(phaseConfig.getCondition(), build, listener)) {
-                            listener.getLogger().println(String.format("1 - Triggering %s. Condition was evaluated to true.", subJob.getName()));
-                            conditionExistsAndEvaluatedToTrue = true;
-                        } else {
-                            listener.getLogger().println(String.format("2 - Skipping %s. Condition was evaluated to false.", subJob.getName()));
-                            phaseCounters.processSkipped();
-                            continue;
-                        }
+                    if (!evalCondition(phaseConfig.getCondition(), build, listener)) {
+                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                        phaseCounters.processSkipped();
+                        continue;
+                    } else {
+                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
+                        conditionExistsAndEvaluatedToTrue = true;
                     }
                 }
             // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
@@ -1050,5 +1036,46 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public void setContinuationCondition(
             ContinuationCondition continuationCondition) {
         this.continuationCondition = continuationCondition;
+    }
+
+    public boolean prebuild(Build build, BuildListener listener) {
+        boolean resume = false;
+        MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
+        if (null != control) {
+            MultiJobBuild prevBuild = (MultiJobBuild) control.getRun();
+            for (SubBuild subBuild : prevBuild.getSubBuilds()) {
+                Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
+                        AbstractProject.class);
+                if (item instanceof AbstractProject) {
+                    AbstractProject childProject = (AbstractProject) item;
+                    AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
+                    if (null != childBuild) {
+                        if (childBuild.getResult().equals(Result.FAILURE)) {
+                            resume = true;
+                        }
+                    }
+                }
+            }
+            if (resume) {
+                EnvInjectLogger logger = new EnvInjectLogger(listener);
+                EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
+                try {
+                    Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(prevBuild, logger);
+                    Map<String, String> persistentEnvVars = new HashMap<String, String>();
+                    for (String key : previousEnvVars.keySet()) {
+                        if(key.startsWith(PERSISTENT_VARS_PREFIX)) {
+                            persistentEnvVars.put(key, previousEnvVars.get(key));
+                        }
+                    }
+                    persistentEnvVars.put("RESUMED_BUILD", "true");
+                    injectEnvVars(build, listener, persistentEnvVars);
+                } catch (Throwable throwable) {
+                    listener.getLogger().println("[MultiJob] - [ERROR] - Problems occurs on injecting env vars in prebuild: "
+                                            + throwable.getMessage());
+                    throwable.printStackTrace();
+                }
+            }
+        }
+        return true;
     }
 }
