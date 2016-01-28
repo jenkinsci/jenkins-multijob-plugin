@@ -1,7 +1,7 @@
 package com.tikal.jenkins.plugins.multijob.test;
 
+import com.tikal.jenkins.plugins.multijob.views.MultiJobItem;
 import hudson.model.Result;
-import hudson.model.TopLevelItem;
 import hudson.model.Cause.UserCause;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStep;
@@ -14,7 +14,6 @@ import org.jenkins_ci.plugins.run_condition.BuildStepRunner;
 import org.jenkins_ci.plugins.run_condition.core.AlwaysRun;
 import org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -24,8 +23,6 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuilder.ContinuationCondition;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
-import com.tikal.jenkins.plugins.multijob.views.PhaseWrapper;
-import com.tikal.jenkins.plugins.multijob.views.ProjectWrapper;
 
 /**
  * @author Bartholdi Dominik (imod)
@@ -79,18 +76,19 @@ public class ConditionalPhaseTest {
         int numberOfPhases = 0;
         int numberOfConditionalPhases = 0;
         int numberOfProjects = 0;
-        for (TopLevelItem item : multi.getView().getRootItem(multi)) {
-            if(item instanceof ProjectWrapper) {
+
+        for (MultiJobItem item : multi.getHierarchy()) {
+            if (item.isProject()) {
                 ++numberOfProjects;
-            }else if (item instanceof PhaseWrapper) {
+            } else {
                 ++numberOfPhases;
-                if(((PhaseWrapper)item).isConditional()) {
+                if (item.isConditional()) {
                     ++numberOfConditionalPhases;
                 }
             }
         }
        
-        Assert.assertEquals("there should be two phases and three projects", 5, multi.getView().getRootItem(multi).size());
+        Assert.assertEquals("there should be two phases and three projects", 5, multi.getHierarchy().size());
         Assert.assertEquals("there should be two phases", 2, numberOfPhases);
         Assert.assertEquals("there should be three projects", 3, numberOfProjects);
         Assert.assertEquals("there should be 1 conditional phase", 1, numberOfConditionalPhases);

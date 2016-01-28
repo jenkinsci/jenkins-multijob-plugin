@@ -59,7 +59,8 @@
 		 			<td class="no-wrap" width="7%" >
 						<j:choose>
                             <j:when test="${builder.isRetry()}">
-                                <img src="${rootURL}/plugin/jenkins-multijob-plugin/retry.gif" title="Failure, retry this build." alt="Failure, retry this build."/>
+                                <img src="${rootURL}/plugin/jenkins-multijob-plugin/1" title="Failure, retry this
+                                build." alt="Failure, retry this build."/>
                             </j:when>
 						</j:choose>
 	 				</td>
