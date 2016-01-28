@@ -191,7 +191,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
         boolean resume = false;
         Map<String, SubBuild> successBuildMap = new HashMap<String, SubBuild>();
-        Map<String, SubBuild> failedBuildMap = new HashMap<String, SubBuild>();
+        Map<String, SubBuild> resumeBuildMap = new HashMap<String, SubBuild>();
         MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
         if (null != control) {
             MultiJobBuild prevBuild = (MultiJobBuild) control.getRun();
@@ -202,11 +202,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     AbstractProject childProject = (AbstractProject) item;
                     AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
                     if (null != childBuild) {
-                        if (childBuild.getResult().equals(Result.FAILURE)) {
-                            resume = true;
-                            failedBuildMap.put(childProject.getUrl(), subBuild);
-                        } else {
+                        if (Result.SUCCESS.equals(childBuild.getResult())) {
                             successBuildMap.put(childProject.getUrl(), subBuild);
+                        } else {
+                            resume = true;
+                            resumeBuildMap.put(childProject.getUrl(), subBuild);
                         }
                     }
                 }
@@ -309,7 +309,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             List<Action> actions = new ArrayList<Action>();
 
             if (resume) {
-                SubBuild subBuild = failedBuildMap.get(subJob.getUrl());
+                SubBuild subBuild = resumeBuildMap.get(subJob.getUrl());
                 if (null != subBuild) {
                     AbstractProject prj = Jenkins.getInstance().getItem(subBuild.getJobName(), multiJobBuild.getParent(),
                         AbstractProject.class);
