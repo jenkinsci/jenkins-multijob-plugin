@@ -712,7 +712,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     }
 
     @SuppressWarnings("rawtypes")
-    private void addBuildEnvironmentVariables(MultiJobBuild thisBuild,
+    private synchronized void addBuildEnvironmentVariables(MultiJobBuild thisBuild,
             AbstractBuild jobBuild, BuildListener listener) {
         // Env variables map
         Map<String, String> variables = new HashMap<String, String>();
