@@ -1,12 +1,2 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:s="/lib/samples">
-    <j:set var="currentCondition" value="${it.resumeCondition}" />
-    <f:resumeConditionList name="resumeCondition" title="Resume Condition">
-        <j:forEach var="descriptor" items="${it.resumeDescriptors}" varStatus="loop">
-            <j:set var="condition" value="${descriptor==currentCondition.descriptor?currentCondition:null}" />
-            <f:resumeConditionListBlock title="${descriptor.displayName}" value="${loop.index}"
-                selected="${condition!=null}" staplerClass="${descriptor.clazz.name}">
-                <st:include page="${descriptor.configPage" from="${descriptor}" />
-            </f:resumeConditionListBlock>
-        </j:forEach>
-    </f:resumeConditionList>
 </j:jelly>

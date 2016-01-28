@@ -80,6 +80,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
     private ResumeCondition resumeCondition = ResumeCondition.SKIP;
+    private String resumeExpression = "";
     //private String resumeExpression = "";
     //private JSONObject resumeType = new JSONObject(true);
     //private String type = "SKIP";
@@ -109,11 +110,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
-            ContinuationCondition continuationCondition, ResumeCondition resumeCondition) {
+            ContinuationCondition continuationCondition, ResumeCondition resumeCondition,
+                           String resumeExpression) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         this.resumeCondition = resumeCondition;
+        this.resumeExpression = resumeExpression;
     }
 
     public String expandToken(String toExpand, final AbstractBuild<?,?> build, final BuildListener listener) {
@@ -219,12 +222,17 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                 }
             }
+            boolean evalRes = true;
             //System.out.println("Resume condition = " + resumeCondition.isStart());
-            /*
-            if (!resume || resumeCondition.isStart()) {
+            if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
+                System.out.println("condition is expression");
+                System.out.println("exp = " + resumeExpression);
+                evalRes = evalCondition(resumeExpression, build, listener);
+                System.out.println("res = " + evalRes);
+            }
+            if (!resume || resumeCondition.isStart() || !evalRes) {
                 successBuildMap.clear();
             }
-            */
         }
 
         Jenkins jenkins = Jenkins.getInstance();
@@ -1081,5 +1089,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public void setResumeCondition(ResumeCondition resumeCondition) {
         this.resumeCondition = resumeCondition;
+    }
+
+    public String getResumeExpression() {
+        return resumeExpression;
+    }
+
+    public void setResumeExpression(String resumeExpression) {
+
     }
 }

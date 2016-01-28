@@ -68,6 +68,16 @@
         </f:repeatable>
       </f:entry>
 
+      <f:entry title="Resume skip condition" field="resumeCondition" help="/plugin/jenkins-multijob-plugin/help-resumeCondition.html">
+        <f:enum field="resumeCondition">
+            ${it.getLabel()}
+        </f:enum>
+      </f:entry>
+
+      <f:entry title="Condition" fiend="resumeExpression">
+        <f:textbox name="Condition" default="" />
+      </f:entry>
+
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
         field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">
         <f:enum field="continuationCondition">
