@@ -27,6 +27,7 @@ import hudson.model.Executor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -78,6 +79,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
+    private ResumeCondition resumeCondition = ResumeCondition.SKIP;
+    //private String resumeExpression = "";
+    //private JSONObject resumeType = new JSONObject(true);
+    //private String type = "SKIP";
 
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -104,10 +109,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
-            ContinuationCondition continuationCondition) {
+            ContinuationCondition continuationCondition, ResumeCondition resumeCondition) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
+        this.resumeCondition = resumeCondition;
     }
 
     public String expandToken(String toExpand, final AbstractBuild<?,?> build, final BuildListener listener) {
@@ -199,7 +205,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             MultiJobBuild prevBuild = (MultiJobBuild) control.getRun();
             for (SubBuild subBuild : prevBuild.getSubBuilds()) {
                 Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
-                    AbstractProject.class);
+                        AbstractProject.class);
                 if (item instanceof AbstractProject) {
                     AbstractProject childProject = (AbstractProject) item;
                     AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
@@ -213,9 +219,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                 }
             }
-            if (!resume) {
+            //System.out.println("Resume condition = " + resumeCondition.isStart());
+            /*
+            if (!resume || resumeCondition.isStart()) {
                 successBuildMap.clear();
             }
+            */
         }
 
         Jenkins jenkins = Jenkins.getInstance();
@@ -242,7 +251,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             // To be coherent with final results, we need to do this here.
             PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
-            StatusJob jobStatus = getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher );
+            StatusJob jobStatus = getScmChange(subJob, phaseConfig, multiJobBuild, listener, launcher);
             listener.getLogger().println(jobStatus.getMessage(subJob));
             // We are ready to inject vars about scm status. It is useful at condition level.
             Map<String, String> jobScmVars = new HashMap<String, String>();
@@ -263,10 +272,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     phaseCounters.processSkipped();
                     continue;
                 }
-            // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
-            // so we don't need to change our job configuration.
+                // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
+                // so we don't need to change our job configuration.
             }
-            if ( ! jobStatus.isBuildable() ) {
+            if (!jobStatus.isBuildable()) {
                 phaseCounters.processSkipped();
                 continue;
             }
@@ -278,7 +287,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 SubBuild subBuild = failedBuildMap.get(subJob.getUrl());
                 if (null != subBuild) {
                     AbstractProject prj = Jenkins.getInstance().getItem(subBuild.getJobName(), multiJobBuild.getParent(),
-                        AbstractProject.class);
+                            AbstractProject.class);
                     AbstractBuild childBuild = prj.getBuildByNumber(subBuild.getBuildNumber());
                     MultiJobResumeControl childControl = new MultiJobResumeControl(childBuild);
                     actions.add(childControl);
@@ -287,7 +296,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             prepareActions(multiJobBuild, subJob, phaseConfig, listener, actions, index);
 
-            if ( jobStatus == StatusJob.IS_DISABLED_AT_PHASECONFIG ) {
+            if (jobStatus == StatusJob.IS_DISABLED_AT_PHASECONFIG) {
                 phaseCounters.processSkipped();
                 continue;
             } else {
@@ -351,6 +360,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
         injectEnvVars(build, listener, phaseCounters.toMap());
 
+        return isContinue(jobResults);
+    }
+
+    private boolean isContinue(Set<Result> jobResults) {
         for (Result result : jobResults) {
             if (!continuationCondition.isContinue(result)) {
                 return false;
@@ -898,11 +911,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData)
                 throws FormException {
+            System.out.println("NEW INSTANCE");
+            System.out.println(formData.toString());
             return req.bindJSON(MultiJobBuilder.class, formData);
         }
 
         @Override
         public boolean configure(StaplerRequest req, JSONObject formData) {
+            System.out.println("CONFIGURE");
+            System.out.println(formData.toString());
+            //JSONObject selected = formData.getJSONObject("resumeCondition");
             save();
             return true;
         }
@@ -1009,5 +1027,71 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public void setContinuationCondition(
             ContinuationCondition continuationCondition) {
         this.continuationCondition = continuationCondition;
+    }
+
+    public enum ResumeCondition {
+
+        SKIP("Skip the phase is previous run was successful", "SKIP") {
+            @Override
+            public boolean isStart() {
+                return false;
+            }
+        },
+        NEVER("Always run this phase during resume", "NEVER") {
+            @Override
+            public boolean isStart() {
+                return true;
+            }
+        },
+        EXPRESSION("Skip phase expression", "EXPRESSION") {
+            @Override
+            public boolean isStart() {
+                return false;
+            }
+        };
+
+        abstract public boolean isStart();
+
+        final private String label;
+        final private String value;
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        ResumeCondition(String label, String value) {
+            this.label = label;
+            this.value = value;
+        }
+
+        public List<ResumeCondition> all() {
+            List<ResumeCondition> list = new ArrayList<ResumeCondition>();
+            Collections.addAll(list, getDeclaringClass().getEnumConstants());
+            return list;
+        }
+    }
+
+    public ResumeCondition getResumeCondition() {
+        return resumeCondition;
+    }
+
+    public void setResumeCondition(ResumeCondition resumeCondition) {
+        this.resumeCondition = resumeCondition;
+    }
+
+    public String getResumeExpression() {
+        return resumeExpression;
+    }
+
+    public void setResumeExpression(String resumeExpression) {
+        this.resumeExpression = resumeExpression;
+    }
+
+    public String getType() {
+        return type;
     }
 }
