@@ -1082,16 +1082,4 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public void setResumeCondition(ResumeCondition resumeCondition) {
         this.resumeCondition = resumeCondition;
     }
-
-    public String getResumeExpression() {
-        return resumeExpression;
-    }
-
-    public void setResumeExpression(String resumeExpression) {
-        this.resumeExpression = resumeExpression;
-    }
-
-    public String getType() {
-        return type;
-    }
 }

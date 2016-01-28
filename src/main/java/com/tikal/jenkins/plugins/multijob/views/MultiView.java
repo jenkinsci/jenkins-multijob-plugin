@@ -4,6 +4,7 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.HealthReport;
 import hudson.model.Item;
@@ -30,22 +31,37 @@ public class MultiView {
 		this.multiJobItems = new ArrayList<MultiJobItem>();
 		this.subBuilds = new HashMap<String, Map<String, MultiJobBuild.SubBuild>>();
 		MultiJobBuild build = multiJobProject.getLastBuild();
-		int buildNumber = 0;
+
+		int buildNumber = null == build ? 0 : build.getNumber();
+		addBuildsLevel(subBuilds, build);
+
+		addTopLevelProject(multiJobProject, buildNumber, multiJobItems);
+	}
+
+	private void addBuildsLevel(Map<String, Map<String, MultiJobBuild.SubBuild>> ret, MultiJobBuild build) {
 		if (null != build) {
-			buildNumber = build.getNumber();
 			for (MultiJobBuild.SubBuild subBuild : build.getBuilders()) {
 				String phaseName = subBuild.getPhaseName();
 				String jobName = subBuild.getJobName();
-				Map<String, MultiJobBuild.SubBuild> map = subBuilds.get(phaseName);
+				Map<String, MultiJobBuild.SubBuild> map = ret.get(phaseName);
 				if (null == map) {
 					map = new HashMap<String, MultiJobBuild.SubBuild>();
 				}
 				map.put(jobName, subBuild);
-				subBuilds.put(phaseName, map);
+				ret.put(phaseName, map);
+				Item it = Jenkins.getInstance().getItem(subBuild.getJobName(), build.getProject().getParent(), AbstractProject
+						.class);
+				if (null != it) {
+					if (it instanceof MultiJobProject) {
+						MultiJobProject prj = (MultiJobProject) it;
+						MultiJobBuild b = prj.getBuildByNumber(subBuild.getBuildNumber());
+						if (null != b) {
+							addBuildsLevel(ret, b);
+						}
+					}
+				}
 			}
 		}
-
-		addTopLevelProject(multiJobProject, buildNumber, multiJobItems);
 	}
 
 	public List<MultiJobItem> getHierarchy() {
@@ -91,10 +107,8 @@ public class MultiView {
 		Result result = Result.SUCCESS;
 		String iconColor = result.color.getImage();
 
-		System.out.println("PHASE = " + phaseName);
 		for (MultiJobItem item : childs) {
 			if (null != item.getResult()) {
-				System.out.println("child = " + item.getName() + " result = " + item.getResult().toString());
 				result = item.getResult().isWorseThan(result) ? item.getResult() : result;
 				iconColor = result.color.getImage();
 			} else {
