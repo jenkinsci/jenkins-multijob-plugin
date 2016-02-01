@@ -129,7 +129,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      *      <li>If job is disabled at phase configuration
      *          then returns <code>{@link StatusJob#IS_DISABLED_AT_PHASECONFIG}</code>.</li>
      *      <li>If BuildOnlyIfSCMChanges is disabled
-     *          then returns <code>{@link StatusJob#BUILD_ON_SCM_CHANGES_ONLY}</code>.</li>
+     *          then returns <code>{@link StatusJob#BUILD_ONLY_IF_SCM_CHANGES_DISABLED}</code>.</li>
      *      <li>If 'Build Always' feature is enabled
      *          then returns <code>{@link StatusJob#BUILD_ALWAYS_IS_ENABLED}</code>.</li>
      *      <li>If job doesn't contains lastbuild
@@ -179,7 +179,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public boolean evalCondition(final String condition, final AbstractBuild<?, ?> build, final BuildListener listener) {
         try {
-            return (Boolean) Eval.me(expandToken(condition, build, listener).toLowerCase().trim());
+            return (Boolean) Eval.me(expandToken(condition, build, listener).trim());
         } catch (Exception e) {
             listener.getLogger().println("Can't evaluate expression, false is assumed: " + e.toString());
         }
