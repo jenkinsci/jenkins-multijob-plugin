@@ -13,14 +13,23 @@
 	<name>Jenkins Multijob plugin</name>
 	<description>Enabling full hierarchy of Jenkins jobs</description>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin</url>
-
+	
 	<distributionManagement>
-		<repository>
-			<id>maven.jenkins-ci.org</id>
-			<url>http://maven.jenkins-ci.org/content/repositories/releases/</url>
-		</repository>
-	</distributionManagement>
-
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>xored</id>
+            <name>Corporate Repository</name>
+            <url>http://maven.xored.com/nexus/content/repositories/cisco-releases/</url>
+            <layout>default</layout>
+        </repository>
+        <snapshotRepository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>xored</id>
+            <name>Corporate Repository</name>
+            <url>http://maven.xored.com/nexus/content/repositories/cisco-snapshots/</url>
+            <layout>default</layout>
+        </snapshotRepository>
+    </distributionManagement>
 
 	<developers>
 		<developer>
