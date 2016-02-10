@@ -43,7 +43,7 @@ public class MultiJobItem {
 		this.name = project.getDisplayName();
 		if (0 != buildNumber) {
 			AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
-			this.buildName = name + " #" + buildNumber;
+			this.buildName = "#" + buildNumber;
 			this.buildUrl = "/" + build.getUrl();
 			this.result = build.getResult();
 			this.statusIconColor = build.getIconColor().getImage();

@@ -90,9 +90,7 @@ div(id: "statusTable") {
                                 text(v.getBuildName())
                             }
                         } else {
-                            a(href: "${rootURL}" + v.getUrl()) {
-                                text(v.getName())
-                            }
+                            text("N/A")
                         }
                     }
                 }
