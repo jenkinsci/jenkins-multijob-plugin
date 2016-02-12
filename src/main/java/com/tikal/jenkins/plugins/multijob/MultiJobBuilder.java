@@ -465,10 +465,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         Thread.sleep(2500);
                     }
                     if (jobBuild != null && !finish) {
-                        result = jobBuild.getResult();
-                        reportFinish(listener, jobBuild, result);
 
                         boolean isComplete = MultiJobListener.fireOnComplete(jobBuild, subTask.multiJobBuild);
+                        result = jobBuild.getResult();
+                        reportFinish(listener, jobBuild, result);
                         if (!isComplete) {
                             retryUsingListener = true;
                             listener.getLogger().println("Failure detected by job listener, retrying this build.");
