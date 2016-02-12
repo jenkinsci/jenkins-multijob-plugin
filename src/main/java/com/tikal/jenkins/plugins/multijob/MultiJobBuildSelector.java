@@ -57,7 +57,7 @@ public class MultiJobBuildSelector extends BuildSelector {
         // Get the run for our source Job in the current MultiJob Project's Build
         for (MultiJobBuild.SubBuild subBuild : multiJobBuild.getSubBuilds()) {
             // Find Job's specific build we want
-            if (subBuild.getJobName().equals(job.getFullDisplayName())) {
+            if (subBuild.getJobName().equals(job.getDisplayName())) {
                 Run run = job.getBuildByNumber(subBuild.getBuildNumber());
                 if (filter.isSelectable(run, env)) {
                     return run;
