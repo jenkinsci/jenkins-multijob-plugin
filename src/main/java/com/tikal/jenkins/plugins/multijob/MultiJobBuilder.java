@@ -19,13 +19,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
@@ -68,7 +74,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
-
+    private ExecutionType executionType = ExecutionType.PARALLEL;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
 
@@ -102,10 +108,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
-            ContinuationCondition continuationCondition) {
+            ContinuationCondition continuationCondition, ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
+        this.executionType = executionType;
     }
 
     public String expandToken(String toExpand, final AbstractBuild<?,?> build, final BuildListener listener) {
@@ -219,7 +226,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         Jenkins jenkins = Jenkins.getInstance();
         MultiJobBuild multiJobBuild = (MultiJobBuild) build;
         MultiJobProject thisProject = multiJobBuild.getProject();
-        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
+        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new LinkedHashMap<PhaseSubJob, PhaseJobsConfig>(
                 phaseJobs.size());
         final CounterManager phaseCounters = new CounterManager();
 
@@ -336,14 +343,27 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             return true;
         }
 
-        ExecutorService executor = Executors.newFixedThreadPool(subTasks.size());
+        int poolSize = executionType.isParallel() ? subTasks.size() : 1;
+        ExecutorService executor = Executors.newFixedThreadPool(poolSize);
         Set<Result> jobResults = new HashSet<Result>();
         BlockingQueue<SubTask> queue = new ArrayBlockingQueue<SubTask>(subTasks.size());
         for (SubTask subTask : subTasks) {
             SubBuild subBuild = successBuildMap.get(subTask.subJob.getUrl());
             if (null == subBuild) {
-                Runnable worker = new SubJobWorker(thisProject, listener, subTask, queue);
-                executor.execute(worker);
+                CompletionService<Boolean> completion = new ExecutorCompletionService<Boolean>(executor);
+                Callable worker = new SubJobWorker(thisProject, listener, subTask, queue);
+                completion.submit(worker);
+                if (!executionType.isParallel()) {
+                    Future<Boolean> future = completion.take();
+                    try {
+                        future.get();
+                        if (checkPhaseTermination(subTask, subTasks, listener)) {
+                            break;
+                        }
+                    } catch (ExecutionException e) {
+                        listener.getLogger().println("Error while execution subtask " + subTask.subJob.getDisplayName());
+                    }
+                }
             } else {
                 AbstractBuild jobBuild = subTask.subJob.getBuildByNumber(subBuild.getBuildNumber());
                 updateSubBuild(multiJobBuild, thisProject, jobBuild, subBuild.getResult());
@@ -393,7 +413,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         return true;
     }
 
-    public final class SubJobWorker extends Thread {
+    public final class SubJobWorker implements Callable {
         final private MultiJobProject multiJobProject;
         final private BuildListener listener;
         private SubTask subTask;
@@ -410,7 +430,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             this.queue = queue;
         }
 
-        public void run() {
+        public Object call() {
             Result result = null;
             AbstractBuild jobBuild = null;
             try {
@@ -424,6 +444,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
                 while (retry <= maxRetries && !finish) {
                     retry++;
+                    if (subTask.isShouldTrigger()) {
+                        subTask.GenerateFuture();
+                    }
                     QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
                     while (true) {
                         if (subTask.isCancelled()) {
@@ -503,6 +526,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 updateSubBuild(subTask.multiJobBuild, multiJobProject, subTask.phaseConfig);
             }
             queue.add(subTask);
+
+            return Boolean.TRUE;
         }
 
         private List<Pattern> getCompiledPattern() throws FileNotFoundException, InterruptedException {
@@ -1035,6 +1060,42 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public void setContinuationCondition(
             ContinuationCondition continuationCondition) {
         this.continuationCondition = continuationCondition;
+    }
+
+    public enum ExecutionType {
+
+        PARALLEL("Running multijob jobs in parallel") {
+            @Override
+            public boolean isParallel() {
+                return true;
+            }
+        },
+        SEQUENTIALLY("Running multiple jobs sequentially") {
+            @Override
+            public boolean isParallel() {
+                return false;
+            }
+        };
+
+        final private String label;
+
+        ExecutionType(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        abstract public boolean isParallel();
+    }
+
+    public void setExecutionType(ExecutionType executionType) {
+        this.executionType = executionType;
+    }
+
+    public ExecutionType getExecutionType() {
+        return executionType;
     }
 
     public boolean prebuild(Build build, BuildListener listener) {
