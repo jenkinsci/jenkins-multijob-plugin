@@ -1124,7 +1124,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 return true;
             }
         },
-        SEQUENTUAL("Running multiple jobs sequentially") {
+        SEQUENTIAL("Running multiple jobs sequentially") {
             @Override
             public boolean isParallel() {
                 return false;
