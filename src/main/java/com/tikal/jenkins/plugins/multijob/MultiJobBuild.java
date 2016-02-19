@@ -82,7 +82,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public String getBuildParams(SubBuild subBuild) {
         try {
             AbstractProject project = (AbstractProject) Jenkins.getInstance()
-            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);;
+                    .getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);;
             Run build = project.getBuildByNumber(subBuild.getBuildNumber());
             ParametersAction action = build.getAction(ParametersAction.class);
             List<ParameterValue> parameters = action.getParameters();
@@ -125,13 +125,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
     @Exported
     public List<SubBuild> getSubBuilds() {
-        if (subBuilds == null)
+        if (subBuilds == null) {
             subBuilds = new CopyOnWriteArrayList<SubBuild>();
+        }
         return subBuilds;
     }
 
     protected class MultiJobRunnerImpl extends
             Build<MultiJobProject, MultiJobBuild>.BuildExecution {
+
         @Override
         public Result run(BuildListener listener) throws Exception {
             Result result = super.run(listener);
@@ -234,7 +236,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = retry;
             this.aborted = aborted;
-			this.build = build;
+            this.build = build;
         }
 
         @Exported
@@ -246,7 +248,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public boolean isRetry() {
             return retry;
         }
-
 
         @Exported
         public boolean isAbort() {
@@ -282,7 +283,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public String getJobName() {
             return jobName;
         }
-        
+
         @Exported
         public int getBuildNumber() {
             return buildNumber;
@@ -316,9 +317,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                     + jobName + ", buildNumber=" + buildNumber + "]";
         }
 
-		@Exported
-		public AbstractBuild<?,?> getBuild() {
-			return build;
-		}
+        @Exported
+        public AbstractBuild<?, ?> getBuild() {
+            return build;
+        }
     }
 }
