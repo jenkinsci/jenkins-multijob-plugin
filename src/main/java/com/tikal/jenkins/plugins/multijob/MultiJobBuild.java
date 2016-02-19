@@ -82,7 +82,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public String getBuildParams(SubBuild subBuild) {
         try {
             AbstractProject project = (AbstractProject) Jenkins.getInstance()
-            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
+            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);;
             Run build = project.getBuildByNumber(subBuild.getBuildNumber());
             ParametersAction action = build.getAction(ParametersAction.class);
             List<ParameterValue> parameters = action.getParameters();
@@ -135,23 +135,19 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         @Override
         public Result run(BuildListener listener) throws Exception {
             Result result = super.run(listener);
-            
-            if (!((MultiJobProject)this.getProject()).getDisableResumeBuild()) {
-                if (isAborted() || isFailure()) {
-                    MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
-                    super.getBuild().addAction(action);
-                }
-            }
-            
             if (isAborted()) {
-                return Result.ABORTED;
+                result = Result.ABORTED;
+            } else if (isFailure()) {
+                result = Result.FAILURE;
+            } else if (isUnstable()) {
+                result = Result.UNSTABLE;
             }
-            if (isFailure()) {
-                return Result.FAILURE;
+
+            if (!Result.SUCCESS.equals(result)) {
+                MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
+                super.getBuild().addAction(action);
             }
-            if (isUnstable()) {
-                return Result.UNSTABLE;
-            }
+
             return result;
         }
 
@@ -185,8 +181,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public static class SubBuild {
 
         private final String parentJobName;
-        private final String jobName;
         private final int parentBuildNumber;
+        private final String jobName;
         private final int buildNumber;
         private final String phaseName;
         private final Result result;
@@ -238,7 +234,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = retry;
             this.aborted = aborted;
-            this.build = build;
+			this.build = build;
         }
 
         @Exported
@@ -320,9 +316,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                     + jobName + ", buildNumber=" + buildNumber + "]";
         }
 
-        @Exported
-        public AbstractBuild<?,?> getBuild() {
-            return build;
-        }
+		@Exported
+		public AbstractBuild<?,?> getBuild() {
+			return build;
+		}
     }
 }

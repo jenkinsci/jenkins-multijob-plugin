@@ -59,6 +59,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private List<AbstractBuildParameters> configs;
 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 	private boolean buildOnlyIfSCMChanges = false;
+	private boolean applyConditionOnlyIfNoSCMChanges = false;
 
 	public boolean isBuildOnlyIfSCMChanges() {
 		return this.buildOnlyIfSCMChanges;
@@ -66,6 +67,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	public void setBuildOnlyIfSCMChanges(boolean triggerOnlyIfSCMChanges) {
 		this.buildOnlyIfSCMChanges = triggerOnlyIfSCMChanges;
+	}
+
+	public boolean isApplyConditionOnlyIfNoSCMChanges() {
+		return this.applyConditionOnlyIfNoSCMChanges;
+	}
+
+	public void setApplyConditionOnlyIfNoSCMChanges(boolean applyConditionOnlyIfNoSCMChanges) {
+		this.applyConditionOnlyIfNoSCMChanges = applyConditionOnlyIfNoSCMChanges;
 	}
 
 	public void setParsingRulesPath(String parsingRulesPath) {
@@ -179,7 +188,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
-			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges) {
+			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges, boolean applyConditionOnlyIfNoSCMChanges) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
@@ -196,6 +205,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.abortAllJob = abortAllJob;
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
+		this.applyConditionOnlyIfNoSCMChanges = applyConditionOnlyIfNoSCMChanges;
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {

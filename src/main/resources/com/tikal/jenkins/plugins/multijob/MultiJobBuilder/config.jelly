@@ -48,6 +48,10 @@
                         <f:entry title="Condition" field="condition">
                             <f:textbox name="condition" default="" />
                         </f:entry>
+                        <f:entry help="/plugin/jenkins-multijob-plugin/help-applyCondition.html">
+                            <f:checkbox field="applyConditionOnlyIfNoSCMChanges" name="applyConditionOnlyIfNoSCMChanges" checked="${instance.applyConditionOnlyIfNoSCMChanges}" default="false"/>
+                            <label class="attach-previous">Apply condition only if no SCM changes were found</label>
+                        </f:entry>
                     </f:block>
                 </f:optionalBlock>
                 <f:block>
