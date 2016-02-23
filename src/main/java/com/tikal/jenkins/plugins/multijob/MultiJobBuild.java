@@ -136,6 +136,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             Result result = super.run(listener);
             if (isAborted()) {
                 result = Result.ABORTED;
+            } else if (isNotBuilt()) {
+                result = Result.NOT_BUILT;
             } else if (isFailure()) {
                 result = Result.FAILURE;
             } else if (isUnstable()) {
@@ -151,6 +153,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         }
 
         private boolean isAborted() {
+            return evaluateResult(Result.NOT_BUILT);
+        }
+
+        private boolean isNotBuilt() {
             return evaluateResult(Result.FAILURE);
         }
 
@@ -194,7 +200,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url, 
+                Result result, String icon, String duration, String url,
                 AbstractBuild<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
@@ -273,7 +279,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public String getJobName() {
             return jobName;
         }
-        
+
         @Exported
         public int getBuildNumber() {
             return buildNumber;
