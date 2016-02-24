@@ -124,7 +124,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.continuationCondition = continuationCondition;
         this.resumeCondition = resumeCondition;
         this.resumeExpression = resumeExpression;
-        this.executionType = executionType;
+        if (null == executionType) {
+            this.executionType = ExecutionType.PARALLEL;
+        } else {
+            this.executionType = executionType;
+        }
     }
 
     public String expandToken(String toExpand, final AbstractBuild<?,?> build, final BuildListener listener) {
@@ -208,6 +212,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
+        if (null == executionType) {
+            executionType = ExecutionType.PARALLEL;
+        }
         boolean resume = false;
         Map<String, SubBuild> successBuildMap = new HashMap<String, SubBuild>();
         Map<String, SubBuild> failedBuildMap = new HashMap<String, SubBuild>();
