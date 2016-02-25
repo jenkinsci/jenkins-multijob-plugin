@@ -50,9 +50,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git://github.com:sshelomentsev/tikal-multijob-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:sshelomentsev/tikal-multijob-plugin.git</developerConnection>
-		<url>https://github.com/sshelomentsev/tikal-multijob-plugin.git</url>
+		<connection>scm:git:git://github.com:xored/tikal-multijob-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:xored/tikal-multijob-plugin.git</developerConnection>
+		<url>https://github.com/xored/tikal-multijob-plugin.git</url>
 		<tag>HEAD</tag>
 	</scm>
 
