@@ -855,13 +855,28 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     }
 
-    private class MultiJobAction implements Action, QueueAction {
-        public AbstractBuild build;
+    private static class MultiJobAction implements Action, QueueAction {
+
+        /**
+         * @deprecated Kept here for backward compatibility. For new builds will be {@code null}
+         */
+        @Deprecated
+        public transient AbstractBuild build;
+
         public int index;
+        private int buildNumber;
 
         public MultiJobAction(AbstractBuild build, int index) {
-            this.build = build;
             this.index = index;
+            this.buildNumber = build.getNumber();
+        }
+
+        protected Object readResolve() {
+            if (0 == buildNumber && null != build) {
+                buildNumber = build.getNumber();
+            }
+            build = null;
+            return this;
         }
 
         public boolean shouldSchedule(List<Action> actions) {
@@ -871,7 +886,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 if (action.index != index) {
                     matches = false;
                 }
-                if (action.build.getNumber() != build.getNumber()) {
+                if (action.buildNumber != buildNumber) {
                     matches = false;
                 }
             }
