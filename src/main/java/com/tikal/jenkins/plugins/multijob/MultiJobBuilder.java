@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import com.cisco.jenkins.plugins.script.ScriptRunner;
 import com.tikal.jenkins.plugins.multijob.listeners.MultiJobListener;
 import hudson.Extension;
 import hudson.FilePath;
@@ -86,7 +87,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
     private ResumeCondition resumeCondition = ResumeCondition.SKIP;
-    private String resumeExpression = "";
+    private String script;
     private ExecutionType executionType = ExecutionType.PARALLEL;
     //private String resumeExpression = "";
     //private JSONObject resumeType = new JSONObject(true);
@@ -118,12 +119,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
             ContinuationCondition continuationCondition, ResumeCondition resumeCondition,
-                           String resumeExpression, ExecutionType executionType) {
+                           String script, ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         this.resumeCondition = resumeCondition;
-        this.resumeExpression = resumeExpression;
+        this.script = script;
         if (null == executionType) {
             this.executionType = ExecutionType.PARALLEL;
         } else {
@@ -239,7 +240,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
             boolean evalRes = true;
             if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
-                evalRes = evalCondition(resumeExpression, build, listener);
+                ScriptRunner runner = new ScriptRunner();
+                runner.addEnvVars(build, listener);
+                evalRes = runner.evaluate(script);
             }
             if (!resume || resumeCondition.isStart() || !evalRes) {
                 successBuildMap.clear();
@@ -1131,11 +1134,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.resumeCondition = resumeCondition;
     }
 
-    public String getResumeExpression() {
-        return resumeExpression;
+    public String getScript() {
+        return script;
     }
 
-    public void setResumeExpression(String resumeExpression) {
+    public void setScript(String script) {
+        this.script = script;
     }
 
     public enum ExecutionType {

@@ -80,8 +80,9 @@
         </f:enum>
       </f:entry>
 
-      <f:entry title="Condition" fiend="resumeExpression">
-        <f:textbox name="Condition" default="" />
+      <f:entry title="Groovy script" field="script">
+        <f:textarea codemirror-mode="clike"
+        codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
       </f:entry>
 
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
