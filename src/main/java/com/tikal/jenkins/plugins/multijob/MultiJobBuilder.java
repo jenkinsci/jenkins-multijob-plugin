@@ -89,10 +89,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private ResumeCondition resumeCondition = ResumeCondition.SKIP;
     private String script;
     private ExecutionType executionType = ExecutionType.PARALLEL;
-    //private String resumeExpression = "";
-    //private JSONObject resumeType = new JSONObject(true);
-    //private String type = "SKIP";
-
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
 
@@ -239,7 +235,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
             }
             boolean evalRes = true;
-            if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
+            if (resumeCondition.equals(ResumeCondition.SCRIPT)) {
                 ScriptRunner runner = new ScriptRunner();
                 runner.addEnvVars(build, listener);
                 evalRes = runner.evaluate(script);
@@ -1094,7 +1090,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 return true;
             }
         },
-        EXPRESSION("Skip phase expression", "EXPRESSION") {
+        SCRIPT("Skip phase expression", "EXPRESSION") {
             @Override
             public boolean isStart() {
                 return false;
