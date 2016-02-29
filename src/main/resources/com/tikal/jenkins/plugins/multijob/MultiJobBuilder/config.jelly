@@ -10,7 +10,7 @@
                      help="/plugin/jenkins-multijob-plugin/help-jobName.html">
                 <f:textbox />
             </f:entry>
-        
+
             <f:advanced>
                 <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
                     <f:enum field="killPhaseOnJobResultCondition">
@@ -80,10 +80,13 @@
         </f:enum>
       </f:entry>
 
-      <f:entry title="Groovy script" field="script">
-        <f:textarea codemirror-mode="clike"
-        codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
-      </f:entry>
+      <f:optionalBlock title="Execute groovy script after phase execution" name="enableScript" inline="true"
+                       checked="${instance.enableScript}">
+          <f:entry title="Groovy script" field="script">
+              <f:textarea codemirror-mode="clike"
+                          codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
+          </f:entry>
+      </f:optionalBlock>
 
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
         field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">

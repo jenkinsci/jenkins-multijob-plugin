@@ -87,7 +87,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
     private ResumeCondition resumeCondition = ResumeCondition.SKIP;
+    private boolean enableScript;
     private String script;
+    private String expression;
     private ExecutionType executionType = ExecutionType.PARALLEL;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -115,11 +117,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
             ContinuationCondition continuationCondition, ResumeCondition resumeCondition,
-                           String script, ExecutionType executionType) {
+                           String expression, boolean enableScript, String script, ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         this.resumeCondition = resumeCondition;
+        this.expression = expression;
+        this.enableScript = enableScript;
         this.script = script;
         if (null == executionType) {
             this.executionType = ExecutionType.PARALLEL;
@@ -212,6 +216,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if (null == executionType) {
             executionType = ExecutionType.PARALLEL;
         }
+
+        boolean evalRes = true;
+        if (enableScript) {
+            ScriptRunner runner = new ScriptRunner();
+            runner.addEnvVars(build, listener);
+            evalRes = runner.evaluate(script);
+        }
+
         boolean resume = false;
         Map<String, SubBuild> successBuildMap = new HashMap<String, SubBuild>();
         Map<String, SubBuild> failedBuildMap = new HashMap<String, SubBuild>();
@@ -235,10 +247,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
             }
             boolean evalRes = true;
-            if (resumeCondition.equals(ResumeCondition.SCRIPT)) {
-                ScriptRunner runner = new ScriptRunner();
-                runner.addEnvVars(build, listener);
-                evalRes = runner.evaluate(script);
+            if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
+                evalRes = evalCondition(expression, build, listener);
             }
             if (!resume || resumeCondition.isStart() || !evalRes) {
                 successBuildMap.clear();
@@ -1090,7 +1100,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 return true;
             }
         },
-        SCRIPT("Skip phase expression", "EXPRESSION") {
+        EXPRESSION("Skip phase expression", "EXPRESSION") {
             @Override
             public boolean isStart() {
                 return false;
@@ -1136,6 +1146,22 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public void setScript(String script) {
         this.script = script;
+    }
+
+    public boolean isScriptEnabled() {
+        return enableScript;
+    }
+
+    public void setEnableScript(boolean enableScript) {
+        this.enableScript = enableScript;
+    }
+
+    public String getExpression() {
+        return expression;
+    }
+
+    public void setExpression(String expression) {
+        this.expression = expression;
     }
 
     public enum ExecutionType {
