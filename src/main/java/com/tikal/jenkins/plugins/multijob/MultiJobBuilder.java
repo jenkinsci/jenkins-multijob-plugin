@@ -89,7 +89,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private ResumeCondition resumeCondition = ResumeCondition.SKIP;
     private boolean enableScript;
     private String script;
-    private String expression;
+    private String resumeExpression;
     private ExecutionType executionType = ExecutionType.PARALLEL;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -117,12 +117,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
             ContinuationCondition continuationCondition, ResumeCondition resumeCondition,
-                           String expression, boolean enableScript, String script, ExecutionType executionType) {
+                           String resumeExpression, boolean enableScript, String script, ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         this.resumeCondition = resumeCondition;
-        this.expression = expression;
+        this.resumeExpression = resumeExpression;
         this.enableScript = enableScript;
         this.script = script;
         if (null == executionType) {
@@ -248,7 +248,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
             boolean resumeEval = true;
             if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
-                resumeEval = evalCondition(expression, build, listener);
+                resumeEval = evalCondition(resumeExpression, build, listener);
             }
             if (!resume || resumeCondition.isStart() || !resumeEval) {
                 successBuildMap.clear();
@@ -1156,12 +1156,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.enableScript = enableScript;
     }
 
-    public String getExpression() {
-        return expression;
+    public String getResumeExpression() {
+        return resumeExpression;
     }
 
-    public void setExpression(String expression) {
-        this.expression = expression;
+    public void setResumeExpression(String resumeExpression) {
+        this.resumeExpression = resumeExpression;
     }
 
     public enum ExecutionType {
