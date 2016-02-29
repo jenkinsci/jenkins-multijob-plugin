@@ -80,6 +80,10 @@
         </f:enum>
       </f:entry>
 
+      <f:entry title="Resume groovy expression" field="expression" >
+          <f:textbox name="expression" default="" />
+      </f:entry>
+
       <f:optionalBlock title="Execute groovy script after phase execution" name="enableScript" inline="true"
                        checked="${instance.enableScript}">
           <f:entry title="Groovy script" field="script">

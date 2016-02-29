@@ -246,11 +246,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                 }
             }
-            boolean evalRes = true;
+            boolean resumeEval = true;
             if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
-                evalRes = evalCondition(expression, build, listener);
+                resumeEval = evalCondition(expression, build, listener);
             }
-            if (!resume || resumeCondition.isStart() || !evalRes) {
+            if (!resume || resumeCondition.isStart() || !resumeEval) {
                 successBuildMap.clear();
             }
         }
