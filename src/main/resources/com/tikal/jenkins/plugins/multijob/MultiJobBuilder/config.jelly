@@ -84,7 +84,7 @@
           <f:textbox name="resumeExpression" default="" />
       </f:entry>
 
-      <f:optionalBlock title="Execute groovy script after phase execution" name="enableScript" inline="true"
+      <f:optionalBlock title="Execute groovy script before phase execution" name="enableScript" inline="true"
                        checked="${instance.enableScript}">
           <f:entry title="Groovy script" field="script">
               <f:textarea codemirror-mode="clike"
