@@ -145,9 +145,11 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                 result = Result.UNSTABLE;
             }
 
-            if (!Result.SUCCESS.equals(result)) {
-                MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
-                super.getBuild().addAction(action);
+            if (!((MultiJobProject)this.getProject()).getDisableResumeBuild()) {
+                if (!Result.SUCCESS.equals(result)) {
+                    MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
+                    super.getBuild().addAction(action);
+                }
             }
 
             return result;
