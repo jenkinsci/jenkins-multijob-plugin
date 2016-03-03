@@ -43,12 +43,25 @@
                         </f:entry>
                     </f:block>
                 </f:optionalBlock>
+                <f:entry title="Resume skip condition" field="resumeCondition"
+                         help="/plugin/jenkins-multijob-plugin/help-resumeCondition.html">
+                    <f:enum field="resumeCondition">
+                        ${it.getLabel()}
+                    </f:enum>
+                </f:entry>
                 <f:optionalBlock title="Enable condition" name="enableCondition" inline="true" checked="${instance.enableCondition}" help="/plugin/jenkins-multijob-plugin/help-condition.html">
                     <f:block>
                         <f:entry title="Condition" field="condition">
                             <f:textbox name="condition" default="" />
                         </f:entry>
                     </f:block>
+                </f:optionalBlock>
+                <f:optionalBlock title="Execute groovy script before job execution" name="enableScript" inline="true"
+                                 checked="${instance.enableScript}">
+                    <f:entry title="Groovy script" field="script">
+                        <f:textarea>
+                        </f:textarea>
+                    </f:entry>
                 </f:optionalBlock>
                 <f:block>
                     <f:hetero-list name="configs" hasHeader="true"
@@ -74,6 +87,7 @@
         </f:enum>
       </f:entry>
 
+      <!--
       <f:entry title="Resume skip condition" field="resumeCondition" help="/plugin/jenkins-multijob-plugin/help-resumeCondition.html">
         <f:enum field="resumeCondition">
             ${it.getLabel()}
@@ -83,10 +97,11 @@
       <f:entry title="Resume groovy expression" field="resumeExpression" >
           <f:textbox name="resumeExpression" default="" />
       </f:entry>
+      -->
 
-      <f:optionalBlock title="Execute groovy script before phase execution" name="enableScript" inline="true"
-                       checked="${instance.enableScript}">
-          <f:entry title="Groovy script" field="script">
+      <f:optionalBlock title="Execute groovy script before phase execution" name="enableGroovyScript" inline="true"
+                       checked="${instance.enableGroovyScript}">
+          <f:entry title="Groovy script" field="groovyScript">
               <f:textarea codemirror-mode="clike"
                           codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
           </f:entry>

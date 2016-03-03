@@ -86,10 +86,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
-    private ResumeCondition resumeCondition = ResumeCondition.SKIP;
-    private boolean enableScript;
-    private String script;
-    private String resumeExpression;
+    private boolean enableGroovyScript;
+    private String groovyScript;
     private ExecutionType executionType = ExecutionType.PARALLEL;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -116,15 +114,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
-            ContinuationCondition continuationCondition, ResumeCondition resumeCondition,
-                           String resumeExpression, boolean enableScript, String script, ExecutionType executionType) {
+            ContinuationCondition continuationCondition, boolean enableGroovyScript, String groovyScript,
+                           ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
-        this.resumeCondition = resumeCondition;
-        this.resumeExpression = resumeExpression;
-        this.enableScript = enableScript;
-        this.script = script;
+        //this.resumeCondition = resumeCondition;
+        //this.resumeExpression = resumeExpression;
+        this.enableGroovyScript = enableGroovyScript;
+        this.groovyScript = groovyScript;
         if (null == executionType) {
             this.executionType = ExecutionType.PARALLEL;
         } else {
@@ -218,10 +216,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
 
         boolean evalRes = true;
-        if (enableScript) {
+        if (enableGroovyScript) {
             ScriptRunner runner = new ScriptRunner();
             runner.addEnvVars(build, listener);
-            evalRes = runner.evaluate(script);
+            evalRes = runner.evaluate(groovyScript);
         }
 
         boolean resume = false;
@@ -246,11 +244,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                 }
             }
-            boolean resumeEval = true;
-            if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
-                resumeEval = evalCondition(resumeExpression, build, listener);
-            }
-            if (!resume || resumeCondition.isStart() || !resumeEval) {
+            if (!resume) {
                 successBuildMap.clear();
             }
         }
@@ -302,10 +296,25 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
                 // so we don't need to change our job configuration.
             }
+            if (phaseConfig.getEnableScript() && null != phaseConfig.getScript()) {
+                ScriptRunner runner = new ScriptRunner();
+                runner.addEnvVars(build, listener);
+                boolean jobScriptEvalRes = runner.evaluate(phaseConfig.getScript());
+                if (!jobScriptEvalRes) {
+                    listener.getLogger().println(String.format("Skipping %s. Script is evaluate to false.", subJob
+                            .getName()));
+                    phaseCounters.processSkipped();
+                    continue;
+                }
+            }
             if (!jobStatus.isBuildable()) {
                 phaseCounters.processSkipped();
                 continue;
             }
+            if (phaseConfig.getResumeCondition().isStart() && successBuildMap.containsKey(subJob.getUrl())) {
+                successBuildMap.remove(subJob.getUrl());
+            }
+
 
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
@@ -1086,82 +1095,20 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.continuationCondition = continuationCondition;
     }
 
-    public enum ResumeCondition {
-
-        SKIP("Skip the phase is previous run was successful", "SKIP") {
-            @Override
-            public boolean isStart() {
-                return false;
-            }
-        },
-        NEVER("Always run this phase during resume", "NEVER") {
-            @Override
-            public boolean isStart() {
-                return true;
-            }
-        },
-        EXPRESSION("Skip phase expression", "EXPRESSION") {
-            @Override
-            public boolean isStart() {
-                return false;
-            }
-        };
-
-        abstract public boolean isStart();
-
-        final private String label;
-        final private String value;
-
-        public String getLabel() {
-            return label;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        ResumeCondition(String label, String value) {
-            this.label = label;
-            this.value = value;
-        }
-
-        public List<ResumeCondition> all() {
-            List<ResumeCondition> list = new ArrayList<ResumeCondition>();
-            Collections.addAll(list, getDeclaringClass().getEnumConstants());
-            return list;
-        }
+    public String getGroovyScript() {
+        return groovyScript;
     }
 
-    public ResumeCondition getResumeCondition() {
-        return resumeCondition;
+    public void setGroovyScript(String groovyScript) {
+        this.groovyScript = groovyScript;
     }
 
-    public void setResumeCondition(ResumeCondition resumeCondition) {
-        this.resumeCondition = resumeCondition;
+    public boolean isEnableGroovyScript() {
+        return enableGroovyScript;
     }
 
-    public String getScript() {
-        return script;
-    }
-
-    public void setScript(String script) {
-        this.script = script;
-    }
-
-    public boolean isScriptEnabled() {
-        return enableScript;
-    }
-
-    public void setEnableScript(boolean enableScript) {
-        this.enableScript = enableScript;
-    }
-
-    public String getResumeExpression() {
-        return resumeExpression;
-    }
-
-    public void setResumeExpression(String resumeExpression) {
-        this.resumeExpression = resumeExpression;
+    public void setEnableGroovyScript(boolean enableGroovyScript) {
+        this.enableGroovyScript = enableGroovyScript;
     }
 
     public enum ExecutionType {

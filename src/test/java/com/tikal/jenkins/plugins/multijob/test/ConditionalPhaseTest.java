@@ -1,16 +1,16 @@
 package com.tikal.jenkins.plugins.multijob.test;
 
-import com.tikal.jenkins.plugins.multijob.ui.ResumeConditionList;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuilder.ContinuationCondition;
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
+import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 import com.tikal.jenkins.plugins.multijob.views.MultiJobItem;
-import hudson.model.Result;
 import hudson.model.Cause.UserCause;
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Shell;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jenkins_ci.plugins.run_condition.BuildStepRunner;
 import org.jenkins_ci.plugins.run_condition.core.AlwaysRun;
 import org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder;
@@ -19,11 +19,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
-import com.tikal.jenkins.plugins.multijob.MultiJobBuilder.ContinuationCondition;
-import com.tikal.jenkins.plugins.multijob.MultiJobProject;
-import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
-import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Bartholdi Dominik (imod)
@@ -50,20 +47,21 @@ public class ConditionalPhaseTest {
         final MultiJobProject multi = j.jenkins.createProject(MultiJobProject.class, "MultiTop");
 
         // create 'FirstPhase' containing job 'free'
-        PhaseJobsConfig firstPhase = new PhaseJobsConfig("free", null, true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false);
+        PhaseJobsConfig firstPhase = new PhaseJobsConfig("free", null, true, null, KillPhaseOnJobResultCondition
+                .NEVER, false, false, "", 0, false, false, "", false, false, "", PhaseJobsConfig.ResumeCondition.SKIP);
         List<PhaseJobsConfig> configTopList = new ArrayList<PhaseJobsConfig>();
         configTopList.add(firstPhase);
         MultiJobBuilder firstPhaseBuilder = new MultiJobBuilder("FirstPhase", configTopList, ContinuationCondition
-                .SUCCESSFUL, MultiJobBuilder.ResumeCondition.SKIP, "", false, "", MultiJobBuilder.ExecutionType
-                .PARALLEL);
+                .SUCCESSFUL,false, "", MultiJobBuilder.ExecutionType.PARALLEL);
 
 
         // create 'SecondPhase' containing job 'free2'
-        PhaseJobsConfig secondPhase = new PhaseJobsConfig("free2", null, true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false);
+        PhaseJobsConfig secondPhase = new PhaseJobsConfig("free2", null, true, null, KillPhaseOnJobResultCondition
+                .NEVER, false, false, "", 0, false, false, "",false, false, "", PhaseJobsConfig.ResumeCondition.SKIP);
         List<PhaseJobsConfig> configTopList2 = new ArrayList<PhaseJobsConfig>();
         configTopList.add(secondPhase);
         MultiJobBuilder secondPhaseBuilder = new MultiJobBuilder("SecondPhase", configTopList2, ContinuationCondition
-                .SUCCESSFUL, MultiJobBuilder.ResumeCondition.SKIP, "", false, "", MultiJobBuilder.ExecutionType.PARALLEL);
+                .SUCCESSFUL, false, "", MultiJobBuilder.ExecutionType.PARALLEL);
 
 
         multi.getBuildersList().add(firstPhaseBuilder);

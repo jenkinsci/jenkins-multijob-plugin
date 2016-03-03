@@ -2,45 +2,44 @@ package com.tikal.jenkins.plugins.multijob;
 
 import hudson.Extension;
 import hudson.Util;
-import hudson.model.Action;
-import hudson.model.AutoCompletionCandidates;
-import hudson.model.Describable;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
-import hudson.model.ParameterValue;
-import hudson.model.Result;
-import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.AutoCompletionCandidates;
 import hudson.model.BooleanParameterDefinition;
 import hudson.model.ChoiceParameterDefinition;
+import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.FileParameterValue;
 import hudson.model.Hudson;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
 import hudson.model.ParameterDefinition;
+import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Result;
 import hudson.model.StringParameterDefinition;
+import hudson.model.TaskListener;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
 import hudson.plugins.parameterizedtrigger.FileBuildParameters;
 import hudson.plugins.parameterizedtrigger.PredefinedBuildParameters;
 import hudson.tasks.Builder;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
@@ -59,6 +58,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private List<AbstractBuildParameters> configs;
 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 	private boolean buildOnlyIfSCMChanges = false;
+	private boolean enableScript;
+	private String script;
+	private ResumeCondition resumeCondition = ResumeCondition.SKIP;
 
 	public boolean isBuildOnlyIfSCMChanges() {
 		return this.buildOnlyIfSCMChanges;
@@ -165,6 +167,30 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.jobName = jobName;
 	}
 
+	public boolean getEnableScript() {
+		return enableScript;
+	}
+
+	public void setEnableScript(boolean enableScript) {
+		this.enableScript = enableScript;
+	}
+
+	public String getScript() {
+		return script;
+	}
+
+	public void setScript(String script) {
+		this.script = script;
+	}
+
+	public ResumeCondition getResumeCondition() {
+		return resumeCondition;
+	}
+
+	public void setResumeCondition(ResumeCondition resumeCondition) {
+		this.resumeCondition = resumeCondition;
+	}
+
 	public Descriptor<PhaseJobsConfig> getDescriptor() {
 		return Hudson.getInstance().getDescriptorOrDie(getClass());
 	}
@@ -179,7 +205,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
-			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges) {
+			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
+			boolean enableScript, String script,
+			ResumeCondition resumeCondition) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
@@ -196,6 +224,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.abortAllJob = abortAllJob;
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
+		this.enableScript = enableScript;
+		this.script = Util.fixNull(script);
+		this.resumeCondition = resumeCondition;
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {
@@ -520,6 +551,52 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 		public String getLabel() {
 			return label;
+		}
+	}
+
+	public enum ResumeCondition {
+
+		SKIP("Skip the phase is previous run was successful", "SKIP") {
+			@Override
+			public boolean isStart() {
+				return false;
+			}
+		},
+		NEVER("Always run this phase during resume", "NEVER") {
+			@Override
+			public boolean isStart() {
+				return true;
+			}
+		},
+		EXPRESSION("Skip phase expression", "EXPRESSION") {
+			@Override
+			public boolean isStart() {
+				return false;
+			}
+		};
+
+		abstract public boolean isStart();
+
+		final private String label;
+		final private String value;
+
+		public String getLabel() {
+			return label;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		ResumeCondition(String label, String value) {
+			this.label = label;
+			this.value = value;
+		}
+
+		public List<ResumeCondition> all() {
+			List<ResumeCondition> list = new ArrayList<ResumeCondition>();
+			Collections.addAll(list, getDeclaringClass().getEnumConstants());
+			return list;
 		}
 	}
 }
