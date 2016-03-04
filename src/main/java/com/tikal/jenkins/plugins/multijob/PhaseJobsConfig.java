@@ -577,7 +577,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 				return false;
 			}
 		},
-		NEVER("Always run this job during resume", "NEVER") {
+		ALWAYS("Always run this job during resume", "ALWAYS") {
 			@Override
 			public boolean isStart() {
 				return true;
