@@ -234,7 +234,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
 		this.enableScript = enableScript;
-		this.script = Util.fixNull(script);
+		this.script = script;
 		this.resumeCondition = resumeCondition;
 		this.resumeExpression = resumeExpression;
 	}
