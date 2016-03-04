@@ -60,10 +60,10 @@
                         </f:entry>
                     </f:block>
                 </f:optionalBlock>
-                <f:optionalBlock title="Execute groovy script before job execution" name="enableScript" inline="true"
-                                 checked="${instance.enableScript}"
+                <f:optionalBlock title="Execute groovy script before job execution" name="enableJobScript" inline="true"
+                                 checked="${instance.enableJobScript}"
                                  help="/plugin/jenkins-multijob-plugin/help-groovyScript.html">
-                    <f:entry title="Groovy script" field="script">
+                    <f:entry title="Groovy script" field="jobScript">
                         <f:textarea>
                         </f:textarea>
                     </f:entry>

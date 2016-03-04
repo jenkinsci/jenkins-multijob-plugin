@@ -58,8 +58,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private List<AbstractBuildParameters> configs;
 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 	private boolean buildOnlyIfSCMChanges = false;
-	private boolean enableScript;
-	private String script;
+	private boolean enableJobScript;
+	private String jobScript;
 	private ResumeCondition resumeCondition = ResumeCondition.SKIP;
 	private String resumeExpression;
 
@@ -168,20 +168,20 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.jobName = jobName;
 	}
 
-	public boolean getEnableScript() {
-		return enableScript;
+	public boolean getEnableJobScript() {
+		return enableJobScript;
 	}
 
-	public void setEnableScript(boolean enableScript) {
-		this.enableScript = enableScript;
+	public void setEnableJobScript(boolean enableJobScript) {
+		this.enableJobScript = enableJobScript;
 	}
 
-	public String getScript() {
-		return script;
+	public String getJobScript() {
+		return jobScript;
 	}
 
-	public void setScript(String script) {
-		this.script = script;
+	public void setJobScript(String jobScript) {
+		this.jobScript = jobScript;
 	}
 
 	public ResumeCondition getResumeCondition() {
@@ -215,7 +215,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
-			boolean enableScript, String script,
+			boolean enableJobScript, String jobScript,
 			ResumeCondition resumeCondition, String resumeExpression) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
@@ -233,8 +233,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.abortAllJob = abortAllJob;
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
-		this.enableScript = enableScript;
-		this.script = script;
+		this.enableJobScript = enableJobScript;
+		this.jobScript = jobScript;
 		this.resumeCondition = resumeCondition;
 		this.resumeExpression = resumeExpression;
 	}

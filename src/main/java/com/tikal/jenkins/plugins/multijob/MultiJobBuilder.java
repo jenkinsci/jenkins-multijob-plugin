@@ -296,10 +296,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
                 // so we don't need to change our job configuration.
             }
-            if (phaseConfig.getEnableScript() && null != phaseConfig.getScript()) {
+            if (phaseConfig.getEnableJobScript() && null != phaseConfig.getJobScript()) {
                 ScriptRunner runner = new ScriptRunner();
                 runner.addEnvVars(build, listener);
-                boolean jobScriptEvalRes = runner.evaluate(phaseConfig.getScript());
+                boolean jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
                 if (!jobScriptEvalRes) {
                     listener.getLogger().println(String.format("Skipping %s. Script is evaluate to false.", subJob
                             .getName()));
