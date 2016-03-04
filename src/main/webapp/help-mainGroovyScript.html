@@ -1,0 +1,22 @@
+<div>
+    Execute a groovy script. Script is executing before run a phase.
+    The script is always run on the master, but solution to run closure on slave node is provided.
+    <br><br>
+    Pre-imported packages:<br>
+    jenkins.model.*, hudson.model.*, <br>
+    hudson.util.*, hudson.remoting.*, <br>
+    groovyx.net.http.*, net.sf.json.* <br>
+    <br>
+    Predefined variables:<br>
+    <b>build</b> The current MultiJob build.<br>
+    <b>listener</b> A BuildListener.<br>
+    <b>out</b> A PrintStream (listener.getLogger()).<br>
+    Also, environment variables of build are injected.
+    <br><br>
+    Predefined methods:
+    <i>net.sf.json.JSON getJson(String url)</i> //get JSON for specified URL. If case of non OK response code or
+    parse exception empty JSON will be returned.<br>
+    <i>runScriptOnNode(String node, String script</i> //run groovy script on the specified node (by node name).
+    Packages and variables aren't imported but can be constants can be injected to the script source.<br>
+    <i>runScriptOnCurrentNode(String script)</i> //run script on the current node.<br>
+</div>

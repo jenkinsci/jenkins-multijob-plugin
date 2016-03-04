@@ -61,6 +61,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private boolean enableScript;
 	private String script;
 	private ResumeCondition resumeCondition = ResumeCondition.SKIP;
+	private String resumeExpression;
 
 	public boolean isBuildOnlyIfSCMChanges() {
 		return this.buildOnlyIfSCMChanges;
@@ -191,6 +192,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.resumeCondition = resumeCondition;
 	}
 
+	public String getResumeExpression() {
+		return resumeExpression;
+	}
+
+	public void setResumeExpression(String resumeExpression) {
+		this.resumeExpression = resumeExpression;
+	}
+
 	public Descriptor<PhaseJobsConfig> getDescriptor() {
 		return Hudson.getInstance().getDescriptorOrDie(getClass());
 	}
@@ -207,7 +216,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
 			boolean enableScript, String script,
-			ResumeCondition resumeCondition) {
+			ResumeCondition resumeCondition, String resumeExpression) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
@@ -227,6 +236,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.enableScript = enableScript;
 		this.script = Util.fixNull(script);
 		this.resumeCondition = resumeCondition;
+		this.resumeExpression = resumeExpression;
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {
@@ -556,16 +566,26 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	public enum ResumeCondition {
 
-		SKIP("Skip the phase is previous run was successful", "SKIP") {
+		SKIP("Skip the job is previous run was successful", "SKIP") {
 			@Override
 			public boolean isStart() {
 				return false;
 			}
+
+			@Override
+			public boolean isEvaluate() {
+				return false;
+			}
 		},
-		NEVER("Always run this phase during resume", "NEVER") {
+		NEVER("Always run this job during resume", "NEVER") {
 			@Override
 			public boolean isStart() {
 				return true;
+			}
+
+			@Override
+			public boolean isEvaluate() {
+				return false;
 			}
 		},
 		EXPRESSION("Skip phase expression", "EXPRESSION") {
@@ -573,9 +593,16 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			public boolean isStart() {
 				return false;
 			}
+
+			@Override
+			public boolean isEvaluate() {
+				return true;
+			}
 		};
 
 		abstract public boolean isStart();
+
+		abstract public boolean isEvaluate();
 
 		final private String label;
 		final private String value;

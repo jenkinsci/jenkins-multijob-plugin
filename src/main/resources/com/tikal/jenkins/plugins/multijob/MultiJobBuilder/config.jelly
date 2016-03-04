@@ -49,6 +49,10 @@
                         ${it.getLabel()}
                     </f:enum>
                 </f:entry>
+                <f:entry title="Resume skip expression" field="resumeExpression"
+                         help="/plugin/jenkins-multijob-plugin/help-resumeExpression.html">
+                    <f:textbox name="resumeExpression" default="" />
+                </f:entry>
                 <f:optionalBlock title="Enable condition" name="enableCondition" inline="true" checked="${instance.enableCondition}" help="/plugin/jenkins-multijob-plugin/help-condition.html">
                     <f:block>
                         <f:entry title="Condition" field="condition">
@@ -57,7 +61,8 @@
                     </f:block>
                 </f:optionalBlock>
                 <f:optionalBlock title="Execute groovy script before job execution" name="enableScript" inline="true"
-                                 checked="${instance.enableScript}">
+                                 checked="${instance.enableScript}"
+                                 help="/plugin/jenkins-multijob-plugin/help-groovyScript.html">
                     <f:entry title="Groovy script" field="script">
                         <f:textarea>
                         </f:textarea>
@@ -87,20 +92,9 @@
         </f:enum>
       </f:entry>
 
-      <!--
-      <f:entry title="Resume skip condition" field="resumeCondition" help="/plugin/jenkins-multijob-plugin/help-resumeCondition.html">
-        <f:enum field="resumeCondition">
-            ${it.getLabel()}
-        </f:enum>
-      </f:entry>
-
-      <f:entry title="Resume groovy expression" field="resumeExpression" >
-          <f:textbox name="resumeExpression" default="" />
-      </f:entry>
-      -->
-
       <f:optionalBlock title="Execute groovy script before phase execution" name="enableGroovyScript" inline="true"
-                       checked="${instance.enableGroovyScript}">
+                       checked="${instance.enableGroovyScript}"
+                       help="/plugin/jenkins-multijob-plugin/help-mainGroovyScript.html">
           <f:entry title="Groovy script" field="groovyScript">
               <f:textarea codemirror-mode="clike"
                           codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
