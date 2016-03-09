@@ -272,6 +272,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             // To be coherent with final results, we need to do this here.
             PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
+            if (null == phaseConfig.getResumeCondition()) {
+                phaseConfig.setResumeCondition(PhaseJobsConfig.ResumeCondition.SKIP);
+            }
             StatusJob jobStatus = getScmChange(subJob, phaseConfig, multiJobBuild, listener, launcher);
             listener.getLogger().println(jobStatus.getMessage(subJob));
             // We are ready to inject vars about scm status. It is useful at condition level.

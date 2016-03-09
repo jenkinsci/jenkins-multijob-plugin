@@ -4,7 +4,6 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.HealthReport;
 import hudson.model.Item;
@@ -19,17 +18,18 @@ import org.jenkinsci.plugins.conditionalbuildstep.singlestep.SingleConditionalBu
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class MultiView {
 
 	private List<MultiJobItem> multiJobItems;
-	private Map<String, Map<String, MultiJobBuild.SubBuild>> subBuilds;
+	private HashMap<String, Map<String, List<MultiJobBuild.SubBuild>>> subBuilds;
 
 	public MultiView(MultiJobProject multiJobProject) {
 		this.multiJobItems = new ArrayList<MultiJobItem>();
-		this.subBuilds = new HashMap<String, Map<String, MultiJobBuild.SubBuild>>();
+		this.subBuilds = new HashMap<String, Map<String, List<MultiJobBuild.SubBuild>>>();
 		MultiJobBuild build = multiJobProject.getLastBuild();
 
 		int buildNumber = null == build ? 0 : build.getNumber();
@@ -38,19 +38,24 @@ public class MultiView {
 		addTopLevelProject(multiJobProject, buildNumber, multiJobItems);
 	}
 
-	private void addBuildsLevel(Map<String, Map<String, MultiJobBuild.SubBuild>> ret, MultiJobBuild build) {
+	private void addBuildsLevel(Map<String, Map<String, List<MultiJobBuild.SubBuild>>> ret, MultiJobBuild build) {
 		if (null != build) {
 			for (MultiJobBuild.SubBuild subBuild : build.getBuilders()) {
 				String phaseName = subBuild.getPhaseName();
 				String jobName = subBuild.getJobName();
-				Map<String, MultiJobBuild.SubBuild> map = ret.get(phaseName);
+				Map<String, List<MultiJobBuild.SubBuild>> map = ret.get(phaseName);
 				if (null == map) {
-					map = new HashMap<String, MultiJobBuild.SubBuild>();
+					map = new HashMap<String, List<MultiJobBuild.SubBuild>>();
 				}
-				map.put(jobName, subBuild);
+				List<MultiJobBuild.SubBuild> subList = map.get(jobName);
+				if (null == subList) {
+					subList = new LinkedList<MultiJobBuild.SubBuild>();
+				}
+				subList.add(subBuild);
+				map.put(jobName, subList);
 				ret.put(phaseName, map);
-				Item it = Jenkins.getInstance().getItem(subBuild.getJobName(), build.getProject().getParent(), AbstractProject
-						.class);
+				Item it = Jenkins.getInstance().getItem(subBuild.getJobName(), build.getProject().getParent(),
+														AbstractProject.class);
 				if (null != it) {
 					if (it instanceof MultiJobProject) {
 						MultiJobProject prj = (MultiJobProject) it;
@@ -81,16 +86,21 @@ public class MultiView {
 		List<PhaseJobsConfig> subProjects = reactorBuilder.getPhaseJobs();
 		String phaseName = reactorBuilder.getPhaseName();
 
-		Map<String, MultiJobBuild.SubBuild> phaseProjects = subBuilds.get(phaseName);
+		Map<String, List<MultiJobBuild.SubBuild>> phaseProjects = subBuilds.get(phaseName);
 		if (null == phaseProjects) {
-			phaseProjects = new HashMap<String, MultiJobBuild.SubBuild>();
+			phaseProjects = new HashMap<String, List<MultiJobBuild.SubBuild>>();
 		}
 
 		List<MultiJobItem> childs = new ArrayList<MultiJobItem>();
 		for (PhaseJobsConfig projectConfig : subProjects) {
 			Item it = Jenkins.getInstance().getItem(projectConfig.getJobName(), project.getParent(), AbstractProject
 				.class);
-			MultiJobBuild.SubBuild subBuild = phaseProjects.get(it.getName());
+			MultiJobBuild.SubBuild subBuild = null;
+			List<MultiJobBuild.SubBuild> subBuilds = phaseProjects.get(it.getName());
+			if (null != subBuilds && !subBuilds.isEmpty()) {
+				subBuild = subBuilds.remove(0);
+			}
+			phaseProjects.put(it.getName(), subBuilds);
 			int buildNumber = null != subBuild ? subBuild.getBuildNumber() : 0;
 			if (it instanceof MultiJobProject) {
 				MultiJobProject subProject = (MultiJobProject) it;
