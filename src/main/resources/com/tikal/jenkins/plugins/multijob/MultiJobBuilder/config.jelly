@@ -95,10 +95,19 @@
       <f:optionalBlock title="Execute groovy script before phase execution" name="enableGroovyScript" inline="true"
                        checked="${instance.enableGroovyScript}"
                        help="/plugin/jenkins-multijob-plugin/help-mainGroovyScript.html">
-          <f:entry title="Groovy script" field="groovyScript">
-              <f:textarea codemirror-mode="clike"
-                          codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
-          </f:entry>
+          <f:radioBlock name="isUseScriptFile" value="true" title="Load from file"
+                        checked="!${instance.isUseScriptFile()}">
+              <f:entry title="Script file source" field="scriptFileSource">
+                  <f:textbox default="" />
+              </f:entry>
+          </f:radioBlock>
+          <f:radioBlock name="isUseScriptFile" value="false" title="Use the provided script"
+                        checked="${instance.isUseScriptFile()}">
+              <f:entry title="Groovy script" field="groovyScript">
+                  <f:textarea codemirror-mode="clike"
+                              codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
+              </f:entry>
+          </f:radioBlock>
       </f:optionalBlock>
 
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"

@@ -53,7 +53,7 @@ public class ConditionalPhaseTest {
         List<PhaseJobsConfig> configTopList = new ArrayList<PhaseJobsConfig>();
         configTopList.add(firstPhase);
         MultiJobBuilder firstPhaseBuilder = new MultiJobBuilder("FirstPhase", configTopList, ContinuationCondition
-                .SUCCESSFUL,false, "", MultiJobBuilder.ExecutionType.PARALLEL);
+                .SUCCESSFUL,false, "", false, "", MultiJobBuilder.ExecutionType.PARALLEL);
 
 
         // create 'SecondPhase' containing job 'free2'
@@ -62,7 +62,7 @@ public class ConditionalPhaseTest {
         List<PhaseJobsConfig> configTopList2 = new ArrayList<PhaseJobsConfig>();
         configTopList.add(secondPhase);
         MultiJobBuilder secondPhaseBuilder = new MultiJobBuilder("SecondPhase", configTopList2, ContinuationCondition
-                .SUCCESSFUL, false, "", MultiJobBuilder.ExecutionType.PARALLEL);
+                .SUCCESSFUL, false, "", false, "", MultiJobBuilder.ExecutionType.PARALLEL);
 
 
         multi.getBuildersList().add(firstPhaseBuilder);
