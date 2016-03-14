@@ -223,10 +223,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if (enableGroovyScript) {
             ScriptRunner runner = new ScriptRunner();
             runner.addEnvVars(build, listener);
-            if (isUseScriptFile) {
+            if (isUseScriptFile && null != scriptFileSource) {
                 File file = new File(scriptFileSource);
                 evalRes = runner.evaluate(file);
-            } else {
+            } else if (null != groovyScript) {
                 evalRes = runner.evaluate(groovyScript);
             }
         }
@@ -1013,6 +1013,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 }
             } else {
                 data.put("isUseScriptFile", false);
+                data.put("groovyScript", "");
+                data.put("scriptFileSource", "");
             }
             return req.bindJSON(MultiJobBuilder.class, formData);
         }
