@@ -53,8 +53,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		@DataBoundConstructor
 		public ScriptLocation(String value, String scriptText, String scriptPath) {
 			this.isUseFile = null == value ? false : Boolean.parseBoolean(value);
-			this.scriptText = scriptText;
-			this.scriptPath = scriptPath;
+			this.scriptText = Util.fixNull(scriptText);
+			this.scriptPath = Util.fixNull(scriptPath);
 		}
 	}
 
@@ -248,8 +248,6 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
 			boolean enableJobScript, ScriptLocation scriptLocation,
-						   //String jobScript,
-			//boolean isUseScriptFile, String scriptPath,
 			ResumeCondition resumeCondition, String resumeExpression) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
@@ -271,11 +269,6 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.jobScript = scriptLocation.scriptText;
 		this.scriptPath = scriptLocation.scriptPath;
 		this.isUseScriptFile = scriptLocation.isUseFile;
-		/*
-		this.jobScript = jobScript;
-		this.isUseScriptFile = isUseScriptFile;
-		this.scriptPath = scriptPath;
-		*/
 		this.resumeCondition = null == resumeCondition ? ResumeCondition.SKIP : resumeCondition;
 		this.resumeCondition = resumeCondition;
 		this.resumeExpression = resumeExpression;

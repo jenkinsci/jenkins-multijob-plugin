@@ -28,7 +28,6 @@ import hudson.model.Executor;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -136,8 +135,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
-        //this.resumeCondition = resumeCondition;
-        //this.resumeExpression = resumeExpression;
         this.enableGroovyScript = enableGroovyScript;
         this.scriptText = scriptLocation.scriptText;
         this.isUseScriptFile = scriptLocation.isUseFile;
