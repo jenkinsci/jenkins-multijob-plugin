@@ -1021,28 +1021,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData)
                 throws FormException {
-            System.out.println("DATA");
-            System.out.println(formData.toString());
-            /*
-            JSONObject data = formData;
-            JSONObject obj = (JSONObject) data.remove("isUseScriptFile");
-            if (null != obj) {
-                boolean isUse = Boolean.valueOf(obj.getString("value"));
-                data.put("isUseScriptFile", isUse);
-                if (isUse) {
-                    data.put("scriptFileSource", obj.getString("scriptFileSource"));
-                    data.put("groovyScript", "");
-                } else {
-                    data.put("groovyScript", obj.getString("groovyScript"));
-                    data.put("scriptFileSource", "");
-                }
-            } else {
-                data.put("isUseScriptFile", false);
-                data.put("groovyScript", "");
-                data.put("scriptFileSource", "");
-            }
-            */
-            return req.bindJSON(MultiJobBuilder.class, formData);
+           return req.bindJSON(MultiJobBuilder.class, formData);
         }
 
         @Override
