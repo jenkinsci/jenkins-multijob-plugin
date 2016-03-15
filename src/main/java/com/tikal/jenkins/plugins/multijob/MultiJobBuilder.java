@@ -83,13 +83,28 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      */
     public static final String BUILD_ALWAYS_KEY = "hudson.scm.multijob.build.always";
 
+    public static class ScriptLocation {
+
+        private boolean isUseFile;
+        private String scriptText;
+        private String scriptPath;
+
+        @DataBoundConstructor
+        public ScriptLocation(String value, String scriptText, String scriptPath) {
+            this.isUseFile = null == value ? false : Boolean.parseBoolean(value);
+            this.scriptText = scriptText;
+            this.scriptPath = scriptPath;
+        }
+
+    }
+
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
     private boolean enableGroovyScript;
     private boolean isUseScriptFile;
-    private String scriptFileSource;
-    private String groovyScript;
+    private String scriptPath;
+    private String scriptText;
     private ExecutionType executionType = ExecutionType.PARALLEL;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -116,17 +131,17 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
-            ContinuationCondition continuationCondition, boolean enableGroovyScript, String groovyScript,
-                           boolean isUseScriptFile, String scriptFileSource, ExecutionType executionType) {
+            ContinuationCondition continuationCondition, boolean enableGroovyScript, ScriptLocation scriptLocation,
+                           ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         //this.resumeCondition = resumeCondition;
         //this.resumeExpression = resumeExpression;
         this.enableGroovyScript = enableGroovyScript;
-        this.groovyScript = groovyScript;
-        this.isUseScriptFile = isUseScriptFile;
-        this.scriptFileSource = scriptFileSource;
+        this.scriptText = scriptLocation.scriptText;
+        this.isUseScriptFile = scriptLocation.isUseFile;
+        this.scriptPath = scriptLocation.scriptPath;
         if (null == executionType) {
             this.executionType = ExecutionType.PARALLEL;
         } else {
@@ -219,15 +234,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             executionType = ExecutionType.PARALLEL;
         }
 
-        boolean evalRes = true;
         if (enableGroovyScript) {
             ScriptRunner runner = new ScriptRunner();
             runner.addEnvVars(build, listener);
-            if (isUseScriptFile && null != scriptFileSource) {
-                File file = new File(scriptFileSource);
-                evalRes = runner.evaluate(file);
-            } else if (null != groovyScript) {
-                evalRes = runner.evaluate(groovyScript);
+            if (isUseScriptFile && null != scriptPath) {
+                File file = new File(scriptPath);
+                runner.evaluate(file);
+            } else if (null != scriptText) {
+                runner.evaluate(scriptText);
             }
         }
 
@@ -308,10 +322,17 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 // This is needed because if no condition to eval, the legacy buildOnlyIfSCMChanges feature is still available,
                 // so we don't need to change our job configuration.
             }
-            if (phaseConfig.getEnableJobScript() && null != phaseConfig.getJobScript()) {
+
+            if (phaseConfig.getEnableJobScript()) {
                 ScriptRunner runner = new ScriptRunner();
                 runner.addEnvVars(build, listener);
-                boolean jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
+                boolean jobScriptEvalRes = true;
+                if (phaseConfig.isUseScriptFile() && null != phaseConfig.getScriptPath()) {
+                    File file = new File(phaseConfig.getScriptPath());
+                    jobScriptEvalRes = runner.evaluate(file);
+                } else if (null != phaseConfig.getJobScript()) {
+                    jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
+                }
                 if (!jobScriptEvalRes) {
                     listener.getLogger().println(String.format("Skipping %s. Script is evaluate to false.", subJob
                             .getName()));
@@ -319,6 +340,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     continue;
                 }
             }
+
             if (!jobStatus.isBuildable()) {
                 phaseCounters.processSkipped();
                 continue;
@@ -999,6 +1021,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         @Override
         public Builder newInstance(StaplerRequest req, JSONObject formData)
                 throws FormException {
+            System.out.println("DATA");
+            System.out.println(formData.toString());
+            /*
             JSONObject data = formData;
             JSONObject obj = (JSONObject) data.remove("isUseScriptFile");
             if (null != obj) {
@@ -1016,6 +1041,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 data.put("groovyScript", "");
                 data.put("scriptFileSource", "");
             }
+            */
             return req.bindJSON(MultiJobBuilder.class, formData);
         }
 
@@ -1129,13 +1155,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.continuationCondition = continuationCondition;
     }
 
-    public String getGroovyScript() {
-        return groovyScript;
+    public String getScriptText() {
+        return scriptText;
     }
 
-    public void setGroovyScript(String groovyScript) {
-        this.groovyScript = groovyScript;
+    public void setScriptText(String scriptText) {
+        this.scriptText = scriptText;
     }
+
 
     public boolean isEnableGroovyScript() {
         return enableGroovyScript;
@@ -1153,12 +1180,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.isUseScriptFile = isUseScriptFile;
     }
 
-    public String getScriptFileSource() {
-        return scriptFileSource;
+    public String getScriptPath() {
+        return scriptPath;
     }
 
-    public void setScriptFileSource(String scriptFileSource) {
-        this.scriptFileSource = scriptFileSource;
+    public void setScriptPath(String scriptPath) {
+        this.scriptPath = scriptPath;
     }
 
     public enum ExecutionType {
@@ -1196,4 +1223,5 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public ExecutionType getExecutionType() {
         return executionType;
     }
+
 }

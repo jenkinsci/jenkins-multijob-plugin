@@ -44,6 +44,20 @@ import java.util.Map;
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
+	public static class ScriptLocation {
+
+		private boolean isUseFile;
+		private String scriptText;
+		private String scriptPath;
+
+		@DataBoundConstructor
+		public ScriptLocation(String value, String scriptText, String scriptPath) {
+			this.isUseFile = null == value ? false : Boolean.parseBoolean(value);
+			this.scriptText = scriptText;
+			this.scriptPath = scriptPath;
+		}
+	}
+
 	private String jobName;
 	private String jobProperties;
 	private boolean currParams;
@@ -59,7 +73,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 	private boolean buildOnlyIfSCMChanges = false;
 	private boolean enableJobScript;
+	private boolean isUseScriptFile;
 	private String jobScript;
+	private String scriptPath;
 	private ResumeCondition resumeCondition = ResumeCondition.SKIP;
 	private String resumeExpression;
 
@@ -184,6 +200,22 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.jobScript = jobScript;
 	}
 
+	public boolean isUseScriptFile() {
+		return isUseScriptFile;
+	}
+
+	public void setUseScriptFile(boolean isUseScriptFile) {
+		this.isUseScriptFile = isUseScriptFile;
+	}
+
+	public String getScriptPath() {
+		return scriptPath;
+	}
+
+	public void setScriptPath(String scriptPath) {
+		this.scriptPath = scriptPath;
+	}
+
 	public ResumeCondition getResumeCondition() {
 		return resumeCondition;
 	}
@@ -215,7 +247,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
-			boolean enableJobScript, String jobScript,
+			boolean enableJobScript, ScriptLocation scriptLocation,
+						   //String jobScript,
+			//boolean isUseScriptFile, String scriptPath,
 			ResumeCondition resumeCondition, String resumeExpression) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
@@ -234,7 +268,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
 		this.enableJobScript = enableJobScript;
+		this.jobScript = scriptLocation.scriptText;
+		this.scriptPath = scriptLocation.scriptPath;
+		this.isUseScriptFile = scriptLocation.isUseFile;
+		/*
 		this.jobScript = jobScript;
+		this.isUseScriptFile = isUseScriptFile;
+		this.scriptPath = scriptPath;
+		*/
 		this.resumeCondition = null == resumeCondition ? ResumeCondition.SKIP : resumeCondition;
 		this.resumeCondition = resumeCondition;
 		this.resumeExpression = resumeExpression;
