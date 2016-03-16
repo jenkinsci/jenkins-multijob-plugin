@@ -231,12 +231,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             executionType = ExecutionType.PARALLEL;
         }
 
+        ScriptRunner runner = new ScriptRunner(build, listener);
         if (enableGroovyScript) {
-            ScriptRunner runner = new ScriptRunner();
-            runner.addEnvVars(build, listener);
             if (isUseScriptFile && null != scriptPath) {
-                File file = new File(scriptPath);
-                runner.evaluate(file);
+                runner.evaluateFromWorkspace(scriptPath);
             } else if (null != scriptText) {
                 runner.evaluate(scriptText);
             }
@@ -321,12 +319,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
 
             if (phaseConfig.getEnableJobScript()) {
-                ScriptRunner runner = new ScriptRunner();
-                runner.addEnvVars(build, listener);
                 boolean jobScriptEvalRes = true;
                 if (phaseConfig.isUseScriptFile() && null != phaseConfig.getScriptPath()) {
-                    File file = new File(phaseConfig.getScriptPath());
-                    jobScriptEvalRes = runner.evaluate(file);
+                    jobScriptEvalRes = runner.evaluateFromWorkspace(phaseConfig.getScriptPath());
                 } else if (null != phaseConfig.getJobScript()) {
                     jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
                 }
