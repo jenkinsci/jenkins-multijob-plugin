@@ -349,19 +349,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 listener.getLogger().println(String.format("Job %s will be executed. Script or condition is evaluate " +
                                                                    "to true.", subJob.getName()));
             }
-
-            /*
-            boolean isStart;
-            if (phaseConfig.getResumeCondition().isEvaluate()) {
-                isStart = evalCondition(phaseConfig.getResumeExpression(), build, listener);
-            } else {
-                isStart = phaseConfig.getResumeCondition().isStart();
-            }
-            if (isStart && successBuildMap.containsKey(subJob.getUrl())) {
-                successBuildMap.remove(subJob.getUrl());
-            }
-            */
-
+            
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
 
