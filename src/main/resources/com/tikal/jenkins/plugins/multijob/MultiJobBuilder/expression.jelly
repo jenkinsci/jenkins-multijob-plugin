@@ -3,19 +3,19 @@
     <f:radioBlock name="resumeScriptLocation" value="true" title="Load from file"
                   checked="${instance.isUseResumeScriptFile()==true}">
         <f:entry title="Script file source" field="scriptPath">
-            <f:textbox value="${instance.getScriptPath()}" />
+            <f:textbox value="${instance.getResumeScriptPath()}" />
         </f:entry>
     </f:radioBlock>
-    <f:radioBlock name="resumeScriptLocation" value="true" title="Use the provided script"
+    <f:radioBlock name="resumeScriptLocation" value="false" title="Use the provided script"
                   checked="${instance.isUseResumeScriptFile()==false}">
         <f:entry title="Groovy script" field="scriptText">
-            <f:textarea value="${instance.getJobScript()}" />
+            <f:textarea value="${instance.getResumeScriptText()}" />
         </f:entry>
     </f:radioBlock>
     <f:advanced>
         <f:entry title="Variable bindings" help="/plugin/jenkins-multijob-plugin/help-variableBindings.html"
                  field="resumeBindings">
-            <f:textarea />
+            <f:textarea value="${instance.getResumeBindings()}"/>
         </f:entry>
     </f:advanced>
 

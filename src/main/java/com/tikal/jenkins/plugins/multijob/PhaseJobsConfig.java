@@ -280,7 +280,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
 			boolean enableJobScript, ScriptLocation scriptLocation,
 			String jobBindings, String resumeBindings,
-			JSONObject resumeConditions) {
+			JSONObject resumeConditions,
+			ResumeCondition resumeCondition, String resumeScriptPath, String resumeScriptText,
+			boolean isUseResumeScriptFile) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
@@ -307,32 +309,26 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			this.scriptPath = "";
 			this.isUseScriptFile = false;
 		}
-		this.resumeBindings = Util.fixNull(resumeBindings);
 		this.jobBindings = Util.fixNull(jobBindings);
-		this.resumeConditions = resumeConditions;
-		if (resumeConditions.has("resumeCondition")) {
-			this.resumeCondition = ResumeCondition.valueOf(resumeConditions.getString("resumeCondition"));
+
+		if (null != resumeConditions) {
+			this.resumeCondition = resumeConditions.has("resumeCondition") ?
+					ResumeCondition.valueOf(resumeConditions.getString("resumeCondition")) : ResumeCondition.SKIP;
+			if (this.resumeCondition.equals(ResumeCondition.EXPRESSION)) {
+				JSONObject resLoc = resumeConditions.getJSONObject("resumeScriptLocation");
+				String value = resLoc.getString("value");
+				this.isUseResumeScriptFile = null == value || value.trim().isEmpty() ? false : Boolean.parseBoolean(value);
+				this.resumeScriptPath = resLoc.has("scriptPath") ? Util.fixNull(resLoc.getString("scriptPath")) : "";
+				this.resumeScriptText = resLoc.has("scriptText") ? Util.fixNull(resLoc.getString("scriptText")) : "";
+				this.resumeBindings = resumeConditions.has("resumeBindings") ?
+						Util.fixNull(resumeConditions.getString("resumeBindings")) : "";
+			}
 		} else {
-			this.resumeCondition = ResumeCondition.SKIP;
-		}
-		if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
-			JSONObject resumeScriptLocation = resumeConditions.getJSONObject("resumeScriptLocation");
-			if (resumeScriptLocation.has("scriptText")) {
-				this.resumeScriptText = Util.fixNull(resumeScriptLocation.getString("scriptText"));
-			} else {
-				this.resumeScriptText = "";
-			}
-			if (resumeScriptLocation.has("scriptPath")) {
-				this.resumeScriptPath = Util.fixNull(resumeScriptLocation.getString("scriptPath"));
-			} else {
-				this.resumeScriptPath = "";
-			}
-			String value = resumeScriptLocation.getString("value");
-			if (null == value || value.trim().isEmpty()) {
-				this.isUseResumeScriptFile = false;
-			} else {
-				this.isUseResumeScriptFile = Boolean.parseBoolean(value);
-			}
+			this.resumeCondition = null != resumeCondition ? resumeCondition : ResumeCondition.SKIP;
+			this.resumeScriptPath = Util.fixNull(resumeScriptPath);
+			this.resumeScriptText = Util.fixNull(resumeScriptText);
+			this.isUseResumeScriptFile = isUseResumeScriptFile;
+			this.resumeBindings = Util.fixNull(resumeBindings);
 		}
 	}
 

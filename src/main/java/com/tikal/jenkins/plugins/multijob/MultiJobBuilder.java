@@ -334,7 +334,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             if (phaseConfig.getResumeCondition().isEvaluate()) {
                 ScriptRunner runner = new ScriptRunner(build, listener);
                 Map<Object, Object> binding = new HashMap<Object, Object>();
-                binding.putAll(Utils.parseProperties(bindings));
+                binding.putAll(Utils.parseProperties(phaseConfig.getResumeBindings()));
                 runner.bindVariablesMap(binding);
                 if (phaseConfig.isUseResumeScriptFile()) {
                     isStart = runner.evaluateFromWorkspace(phaseConfig.getResumeScriptPath());
@@ -349,7 +349,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 listener.getLogger().println(String.format("Job %s will be executed. Script or condition is evaluate " +
                                                                    "to true.", subJob.getName()));
             }
-            
+
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
 
