@@ -43,16 +43,25 @@
                         </f:entry>
                     </f:block>
                 </f:optionalBlock>
-                <f:entry title="Resume skip condition" field="resumeCondition"
-                         help="/plugin/jenkins-multijob-plugin/help-resumeCondition.html">
-                    <f:enum field="resumeCondition">
-                        ${it.getLabel()}
-                    </f:enum>
-                </f:entry>
-                <f:entry title="Resume skip expression" field="resumeExpression"
-                         help="/plugin/jenkins-multijob-plugin/help-resumeExpression.html">
-                    <f:textbox name="resumeExpression" default="" />
-                </f:entry>
+
+                <!--Resume skip condition-->
+                <f:dropdownList name="resumeConditions" title="Resume skip condition">
+                    <f:dropdownListBlock title="Skip the job is previous run was successful" value="SKIP"
+                                         selected="${instance.resumeCondition.value == 'SKIP'}">
+                        <st:include page="skip.jelly" class="com.tikal.jenkins.plugins.multijob.MultiJobBuilder" />
+                    </f:dropdownListBlock>
+                    <f:dropdownListBlock title="Always run this job during resume" value="ALWAYS"
+                                         selected="${instance.resumeCondition.value == 'ALWAYS'}">
+                        <st:include page="always.jelly" class="com.tikal.jenkins.plugins.multijob.MultiJobBuilder" />
+                    </f:dropdownListBlock>
+                    <f:dropdownListBlock title="Skip phase expression" value="EXPRESSION"
+                                         selected="${instance.resumeCondition.value == 'EXPRESSION'}">
+                        <st:include page="expression.jelly"
+                                    class="com.tikal.jenkins.plugins.multijob.MultiJobBuilder" />
+                    </f:dropdownListBlock>
+                </f:dropdownList>
+
+                <!--Groovy script evaluation to make a decision about resume the job-->
                 <f:optionalBlock title="Enable condition" name="enableCondition" inline="true" checked="${instance.enableCondition}" help="/plugin/jenkins-multijob-plugin/help-condition.html">
                     <f:block>
                         <f:entry title="Condition" field="condition">
@@ -60,6 +69,8 @@
                         </f:entry>
                     </f:block>
                 </f:optionalBlock>
+
+                <!--Groovy script evaluation before job execution-->
                 <f:optionalBlock title="Execute groovy script before job execution" name="enableJobScript"
                                  inline="true"
                                  checked="${instance.enableJobScript}"
@@ -73,9 +84,15 @@
                     <f:radioBlock name="scriptLocation" value="false" title="Use the provided script"
                                   checked="${instance.isUseScriptFile()==false}">
                         <f:entry title="Groovy script" field="scriptText">
-                            <f:textbox value="${instance.getJobScript()}" />
+                            <f:textarea value="${instance.getJobScript()}" />
                         </f:entry>
                     </f:radioBlock>
+                    <f:advanced>
+                        <f:entry title="Variable bindings" help="/plugin/jenkins-multijob-plugin/help-variableBindings.html"
+                                 field="jobBindings">
+                            <f:textarea />
+                        </f:entry>
+                    </f:advanced>
                 </f:optionalBlock>
                 <f:block>
                     <f:hetero-list name="configs" hasHeader="true"
@@ -115,6 +132,12 @@
                               codemirror-config="mode: 'text/x-groovy', lineNumbers: true, matchBrackets: true, onBlur: function(editor){editor.save()}"/>
               </f:entry>
           </f:radioBlock>
+          <f:advanced>
+              <f:entry title="Variable bindings" help="/plugin/jenkins-multijob-plugin/help-variableBindings.html"
+                       field="bindings">
+                  <f:textarea />
+              </f:entry>
+          </f:advanced>
       </f:optionalBlock>
 
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"

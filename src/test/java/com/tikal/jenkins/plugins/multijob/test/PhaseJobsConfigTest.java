@@ -27,6 +27,7 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
+import com.tikal.jenkins.plugins.multijob.ScriptLocation;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -42,6 +43,7 @@ import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
+import net.sf.json.JSONObject;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 
@@ -80,9 +82,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		MultiJobBuild mjb =createTriggeringBuild(null);
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "" , true, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "" , true, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 		// check single ParametersAction created
@@ -95,9 +96,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		MultiJobBuild mjb = createTriggeringBuild(null);
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "",false, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "",false, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
 		// check single ParametersAction created
@@ -118,9 +118,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		MultiJobBuild mjb = createTriggeringBuild(createParametersAction(CURRENT_KEY_VALUES));
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "" , false, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "" , false, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
@@ -144,9 +143,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		MultiJobBuild mjb = createTriggeringBuild(createParametersAction(OVERRIDES_KEY_VALUES));
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "",false, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "",false, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
@@ -169,9 +167,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		MultiJobBuild mjb = createTriggeringBuild(createParametersAction(OVERRIDES_KEY_VALUES));
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, null, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "",false, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "", false, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);
 
 		// check single ParametersAction created
@@ -195,9 +192,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		configs.add(new TestParametersConfig(OVERRIDES_KEY_VALUES));
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "",false, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "",false, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
@@ -227,9 +223,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		configs.add(new TestParametersConfig(CONFIG_OVERRIDES_KEY_VALUES));
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "",false, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "",false, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
@@ -259,9 +254,8 @@ public class PhaseJobsConfigTest extends HudsonTestCase{
 		configs.add(new TestParametersConfig(CONFIG_OVERRIDES_KEY_VALUES));
 
 		PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "", true, configs, KillPhaseOnJobResultCondition.NEVER,
-												  false, false, "", 0, false, false, "",false, false, new PhaseJobsConfig.ScriptLocation
-														  (null, null, null),
-												  PhaseJobsConfig.ResumeCondition.SKIP, "");
+												  false, false, "", 0, false, false, "",false, false, new ScriptLocation
+														  (null, null, null), null, null, new JSONObject());
 
 
 		List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);

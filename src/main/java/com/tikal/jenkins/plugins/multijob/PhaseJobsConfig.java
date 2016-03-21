@@ -44,20 +44,6 @@ import java.util.Map;
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
-	public static class ScriptLocation {
-
-		private boolean isUseFile;
-		private String scriptText;
-		private String scriptPath;
-
-		@DataBoundConstructor
-		public ScriptLocation(String value, String scriptText, String scriptPath) {
-			this.isUseFile = null == value ? false : Boolean.parseBoolean(value);
-			this.scriptText = Util.fixNull(scriptText);
-			this.scriptPath = Util.fixNull(scriptPath);
-		}
-	}
-
 	private String jobName;
 	private String jobProperties;
 	private boolean currParams;
@@ -77,7 +63,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private String jobScript;
 	private String scriptPath;
 	private ResumeCondition resumeCondition = ResumeCondition.SKIP;
-	private String resumeExpression;
+	private String resumeBindings;
+	private String jobBindings;
+	private boolean isUseResumeScriptFile;
+	private String resumeScriptPath;
+	private String resumeScriptText;
+	private JSONObject resumeConditions;
 
 	public boolean isBuildOnlyIfSCMChanges() {
 		return this.buildOnlyIfSCMChanges;
@@ -224,12 +215,52 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.resumeCondition = resumeCondition;
 	}
 
-	public String getResumeExpression() {
-		return resumeExpression;
+	public String getResumeBindings() {
+		return resumeBindings;
 	}
 
-	public void setResumeExpression(String resumeExpression) {
-		this.resumeExpression = resumeExpression;
+	public void setResumeBindings(String resumeBindings) {
+		this.resumeBindings = resumeBindings;
+	}
+
+	public String getJobBindings() {
+		return jobBindings;
+	}
+
+	public void setJobBindings(String jobBindings) {
+		this.jobBindings = jobBindings;
+	}
+
+	public boolean isUseResumeScriptFile() {
+		return isUseResumeScriptFile;
+	}
+
+	public void setUseResumeScriptFile(boolean isUseResumeScriptFile) {
+		this.isUseResumeScriptFile = isUseResumeScriptFile;
+	}
+
+	public String getResumeScriptPath() {
+		return resumeScriptPath;
+	}
+
+	public void setResumeScriptPath(String resumeScriptPath) {
+		this.resumeScriptPath = resumeScriptPath;
+	}
+
+	public String getResumeScriptText() {
+		return resumeScriptText;
+	}
+
+	public void setResumeScriptText(String resumeScriptText) {
+		this.resumeScriptText = resumeScriptText;
+	}
+
+	public JSONObject getResumeConditions() {
+		return resumeConditions;
+	}
+
+	public void setResumeConditions(JSONObject resumeConditions) {
+		this.resumeConditions = resumeConditions;
 	}
 
 	public Descriptor<PhaseJobsConfig> getDescriptor() {
@@ -248,7 +279,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
 			boolean enableJobScript, ScriptLocation scriptLocation,
-			ResumeCondition resumeCondition, String resumeExpression) {
+			String jobBindings, String resumeBindings,
+			JSONObject resumeConditions) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
@@ -266,12 +298,42 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
 		this.enableJobScript = enableJobScript;
-		this.jobScript = scriptLocation.scriptText;
-		this.scriptPath = scriptLocation.scriptPath;
-		this.isUseScriptFile = scriptLocation.isUseFile;
-		this.resumeCondition = null == resumeCondition ? ResumeCondition.SKIP : resumeCondition;
-		this.resumeCondition = resumeCondition;
-		this.resumeExpression = resumeExpression;
+		if (enableJobScript && null != scriptLocation) {
+			this.jobScript = scriptLocation.getScriptText();
+			this.scriptPath = scriptLocation.getScriptPath();
+			this.isUseScriptFile = scriptLocation.isUseFile();
+		} else {
+			this.jobScript = "";
+			this.scriptPath = "";
+			this.isUseScriptFile = false;
+		}
+		this.resumeBindings = Util.fixNull(resumeBindings);
+		this.jobBindings = Util.fixNull(jobBindings);
+		this.resumeConditions = resumeConditions;
+		if (resumeConditions.has("resumeCondition")) {
+			this.resumeCondition = ResumeCondition.valueOf(resumeConditions.getString("resumeCondition"));
+		} else {
+			this.resumeCondition = ResumeCondition.SKIP;
+		}
+		if (resumeCondition.equals(ResumeCondition.EXPRESSION)) {
+			JSONObject resumeScriptLocation = resumeConditions.getJSONObject("resumeScriptLocation");
+			if (resumeScriptLocation.has("scriptText")) {
+				this.resumeScriptText = Util.fixNull(resumeScriptLocation.getString("scriptText"));
+			} else {
+				this.resumeScriptText = "";
+			}
+			if (resumeScriptLocation.has("scriptPath")) {
+				this.resumeScriptPath = Util.fixNull(resumeScriptLocation.getString("scriptPath"));
+			} else {
+				this.resumeScriptPath = "";
+			}
+			String value = resumeScriptLocation.getString("value");
+			if (null == value || value.trim().isEmpty()) {
+				this.isUseResumeScriptFile = false;
+			} else {
+				this.isUseResumeScriptFile = Boolean.parseBoolean(value);
+			}
+		}
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {
@@ -654,6 +716,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			this.label = label;
 			this.value = value;
 		}
+
+
 
 		public List<ResumeCondition> all() {
 			List<ResumeCondition> list = new ArrayList<ResumeCondition>();

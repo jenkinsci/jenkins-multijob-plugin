@@ -1,31 +1,51 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import com.cisco.jenkins.plugins.script.ScriptRunner;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
+import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
+import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
+import com.tikal.jenkins.plugins.multijob.counters.CounterManager;
 import com.tikal.jenkins.plugins.multijob.listeners.MultiJobListener;
+import groovy.util.Eval;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.BuildListener;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
+import hudson.model.Executor;
 import hudson.model.Item;
 import hudson.model.Queue.QueueAction;
 import hudson.model.Result;
 import hudson.model.TaskListener;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.model.Executor;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
+import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
+import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,54 +68,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
-import net.sf.json.JSONObject;
-import jenkins.model.Jenkins;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
-
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
-import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
-import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
-import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
-import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
-import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
-import com.tikal.jenkins.plugins.multijob.counters.CounterManager;
-
-
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-
-import groovy.util.*;
-
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     /**
      * The name of the parameter in the build.getBuildVariables() to enable the job build, regardless
      * of scm changes.
      */
     public static final String BUILD_ALWAYS_KEY = "hudson.scm.multijob.build.always";
-
-    public static class ScriptLocation {
-
-        private boolean isUseFile;
-        private String scriptText;
-        private String scriptPath;
-
-        @DataBoundConstructor
-        public ScriptLocation(String value, String scriptText, String scriptPath) {
-            this.isUseFile = null == value ? false : Boolean.parseBoolean(value);
-            this.scriptText = scriptText;
-            this.scriptPath = scriptPath;
-        }
-
-    }
 
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
@@ -104,6 +82,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private boolean isUseScriptFile;
     private String scriptPath;
     private String scriptText;
+    private String bindings;
     private ExecutionType executionType = ExecutionType.PARALLEL;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -131,14 +110,20 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
             ContinuationCondition continuationCondition, boolean enableGroovyScript, ScriptLocation scriptLocation,
+                           String bindings,
                            ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         this.enableGroovyScript = enableGroovyScript;
-        this.scriptText = scriptLocation.scriptText;
-        this.isUseScriptFile = scriptLocation.isUseFile;
-        this.scriptPath = scriptLocation.scriptPath;
+        this.scriptText = scriptLocation.getScriptText();
+        this.isUseScriptFile = scriptLocation.isUseFile();
+        this.scriptPath = scriptLocation.getScriptPath();
+        if (null == bindings || bindings.trim().isEmpty()) {
+            this.bindings = "";
+        } else {
+            this.bindings = bindings;
+        }
         if (null == executionType) {
             this.executionType = ExecutionType.PARALLEL;
         } else {
@@ -231,8 +216,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             executionType = ExecutionType.PARALLEL;
         }
 
-        ScriptRunner runner = new ScriptRunner(build, listener);
         if (enableGroovyScript) {
+            ScriptRunner runner = new ScriptRunner(build, listener);
+            Map<Object, Object> binding = new HashMap<Object, Object>();
+            binding.putAll(Utils.parseProperties(bindings));
+            runner.bindVariablesMap(binding);
             if (isUseScriptFile && null != scriptPath) {
                 runner.evaluateFromWorkspace(scriptPath);
             } else if (null != scriptText) {
@@ -320,6 +308,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             if (phaseConfig.getEnableJobScript()) {
                 boolean jobScriptEvalRes = true;
+                ScriptRunner runner = new ScriptRunner(build, listener);
+                Map<Object, Object> binding = new HashMap<Object, Object>();
+                binding.putAll(Utils.parseProperties(phaseConfig.getJobBindings()));
+                runner.bindVariablesMap(binding);
                 if (phaseConfig.isUseScriptFile() && null != phaseConfig.getScriptPath()) {
                     jobScriptEvalRes = runner.evaluateFromWorkspace(phaseConfig.getScriptPath());
                 } else if (null != phaseConfig.getJobScript()) {
@@ -337,6 +329,28 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 phaseCounters.processSkipped();
                 continue;
             }
+
+            boolean isStart;
+            if (phaseConfig.getResumeCondition().isEvaluate()) {
+                ScriptRunner runner = new ScriptRunner(build, listener);
+                Map<Object, Object> binding = new HashMap<Object, Object>();
+                binding.putAll(Utils.parseProperties(bindings));
+                runner.bindVariablesMap(binding);
+                if (phaseConfig.isUseResumeScriptFile()) {
+                    isStart = runner.evaluateFromWorkspace(phaseConfig.getResumeScriptPath());
+                } else {
+                    isStart = runner.evaluate(phaseConfig.getResumeScriptText());
+                }
+            } else {
+                isStart = phaseConfig.getResumeCondition().isStart();
+            }
+            if (isStart && successBuildMap.containsKey(subJob.getUrl())) {
+                successBuildMap.remove(subJob.getUrl());
+                listener.getLogger().println(String.format("Job %s will be executed. Script or condition is evaluate " +
+                                                                   "to true.", subJob.getName()));
+            }
+
+            /*
             boolean isStart;
             if (phaseConfig.getResumeCondition().isEvaluate()) {
                 isStart = evalCondition(phaseConfig.getResumeExpression(), build, listener);
@@ -346,6 +360,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             if (isStart && successBuildMap.containsKey(subJob.getUrl())) {
                 successBuildMap.remove(subJob.getUrl());
             }
+            */
 
             reportStart(listener, subJob);
             List<Action> actions = new ArrayList<Action>();
@@ -1157,6 +1172,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public void setScriptPath(String scriptPath) {
         this.scriptPath = scriptPath;
+    }
+
+    public String getBindings() {
+        return bindings;
+    }
+
+    public void setBindings(String bindings) {
+        this.bindings = bindings;
     }
 
     public enum ExecutionType {
