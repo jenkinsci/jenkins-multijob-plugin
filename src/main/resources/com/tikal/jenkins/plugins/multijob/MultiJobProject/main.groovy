@@ -11,8 +11,10 @@ f = namespace("lib/form")
 st.bind(var: "it", value: my)
 
 script(type: "text/javascript", src: "${rootURL}/plugin/jenkins-multijob-plugin/engine.js")
+script(type: "text/javascript", src: "//code.jquery.com/ui/1.11.4/jquery-ui.js")
 script(type: "text/javascript", src: "${rootURL}/plugin/jenkins-multijob-plugin/jquery.treetable.js")
 link(rel: "stylesheet", type: "text/css", href: "${rootURL}/plugin/jenkins-multijob-plugin/jquery.treetable.css")
+link(rel: "stylesheet", type: "text/css", href: "//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css")
 link(rel: "stylesheet", type: "text/css", href: "${rootURL}/plugin/jenkins-multijob-plugin/style.css")
 link(rel: "stylesheet", type: "text/css", href:
         "${rootURL}/plugin/jenkins-multijob-plugin/font-awesome/css/font-awesome.min.css")
@@ -21,10 +23,18 @@ if (my.supportsMakeDisabled()) {
     st.include(page: "makeDisabled.jelly")
 }
 
-
+div(class: "link-panel", align: "right") {
+    a(id: "configureTable", href: "javascript:;", onclick: "Q('#tablePropertyDialog').dialog('open')", title:
+            "Configure table columns", style: "float: right") {
+        i(class: "fa fa-wrench") {
+        }
+        text("Configure table columns")
+    }
+}
 div(id: "statusTable") {
     table(id: "multiJobTable", class: "table") {
         thead {
+
             tr(class: "job-row") {
                 th(class: "job-job") {
                     i(class: "fa") {
@@ -40,13 +50,13 @@ div(id: "statusTable") {
                 th(class: "job-build") {
                     text("Build")
                 }
-                th(class: "job-last") {
+                th(class: "job-last job-last-success") {
                     text("Last Success")
                 }
-                th(class: "job-last") {
+                th(class: "job-last job-last-failure") {
                     text("Last Failure")
                 }
-                th(class: "job-last") {
+                th(class: "job-last job-last-duration") {
                     text("Last Duration")
                 }
                 th(class: "job-console") {
@@ -166,3 +176,46 @@ if (null != my.getTestResultAction()) {
 }
 
 st.include(page: "updownprojects.jelly")
+
+div(id: "tablePropertyDialog", title: "Configure table columnns") {
+    input(id: "is-job", type: "checkbox", name: "Job", checked: true) {
+        text("Job")
+    }
+    br()
+    input(id: "is-status", type: "checkbox", name: "S", checked: true) {
+        text("S")
+    }
+    br()
+    input(id: "is-weather", type: "checkbox", name: "W", checked: true) {
+        text("W")
+    }
+    br()
+    input(id: "is-build", type: "checkbox", name: "Build", checked: true) {
+        text("Build")
+    }
+    br()
+    input(id: "is-last-success", type: "checkbox", name: "lastSuccess", checked: true) {
+        text("Last Success")
+    }
+    br()
+    input(id: "is-last-failure", type: "checkbox", name: "lastFailure", checked: true) {
+        text("Last Failure")
+    }
+    br()
+    input(id: "is-last-duration", type: "checkbox", name: "lastDuration", checked: true) {
+        text("Last Duration")
+    }
+    br()
+    input(id: "is-console", type: "checkbox", name: "Console", checked: true) {
+        text("Console")
+    }
+    br()
+    input(id: "is-run", type: "checkbox", name: "Run", checked: true) {
+        text("Run")
+    }
+    br()
+    a(id: "submitTableProperty", href: "javascript:;", class: "submitButton", onclick: "configureColumns()",
+            style: "float: right") {
+        text("Submit")
+    }
+}

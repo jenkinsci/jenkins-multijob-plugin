@@ -10,12 +10,14 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Messages;
 import hudson.model.Result;
+import hudson.model.User;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder;
 import org.jenkinsci.plugins.conditionalbuildstep.singlestep.SingleConditionalBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -36,6 +38,21 @@ public class MultiView {
 		addBuildsLevel(subBuilds, build);
 
 		addTopLevelProject(multiJobProject, buildNumber, multiJobItems);
+
+		initUserProperty();
+	}
+
+	private void initUserProperty() {
+		User user = Jenkins.getInstance().getUser(Jenkins.getAuthentication().getName());
+		TableProperty property = user.getProperty(TableProperty.class);
+		if (null == property) {
+			property = TableProperty.DESCRIPTOR.newInstance(user);
+			try {
+				user.addProperty(property);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void addBuildsLevel(Map<String, Map<String, List<MultiJobBuild.SubBuild>>> ret, MultiJobBuild build) {

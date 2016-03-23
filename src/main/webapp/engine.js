@@ -55,6 +55,39 @@ var hoverNotification2 = (function() {
 })();
 
 
+function updateTableColumns() {
+    it.getColumnProps(function (t) {
+        var m = t.responseObject();
+        Object.keys(m).forEach(function (v) {
+            var key = '.job-' + v;
+            var value = m[v];
+            if (value) {
+                Q(key).show();
+            } else {
+                Q(key).hide();
+            }
+        })
+    });
+}
+
+function configureColumns() {
+    it.getColumnProps(function(t) {
+        var m = t.responseObject();
+        Object.keys(m).forEach(function(v) {
+            var key = '#is-' + v;
+            var klass = '.job-' + v;
+            var value = Q(key)[0].checked;
+            if (value) {
+                Q(klass).show();
+            } else {
+                Q(klass).hide();
+            }
+            it.setColumnState(v, value);
+        });
+    });
+    Q('#tablePropertyDialog').dialog('close');
+}
+
 jQuery(document).ready(function() {
     Q('#multiJobTable').treetable({
         expandable: true,
@@ -80,6 +113,7 @@ jQuery(document).ready(function() {
     statusIntervalTrigger();
 
     function reloadStatus() {
+        updateTableColumns();
         var isBuilding = false;
         it.isBuilding(function(t) {
             isBuilding = t.responseObject();
@@ -109,4 +143,24 @@ jQuery(document).ready(function() {
     }
 
     reloadStatus();
+});
+
+Q(function() {
+    var dialog = Q('#tablePropertyDialog').dialog({
+        height: 210,
+        width: 200,
+        modal: true,
+        resizable: false,
+        autoOpen: false,
+        dialogClass: 'no-close table-property-dialog',
+        open: function() {
+            it.getColumnProps(function(t) {
+                var m = t.responseObject();
+                Object.keys(m).forEach(function(v) {
+                    var key = '#is-' + v;
+                    Q(key)[0].checked = m[v];
+                });
+            });
+        }
+    });
 });

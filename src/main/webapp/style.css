@@ -12,6 +12,7 @@ table.treetable tr.expanded span.indenter i:before {
     font-weight: 600;
     color: #666;
     height: 30px;
+    width: 100%;
 }
 
 #multiJobTable tbody tr td {
@@ -31,6 +32,10 @@ table.treetable tr.expanded span.indenter i:before {
 }
 
 #multiJobTable td {
+}
+
+.job-job {
+    min-width: 200px;
 }
 
 .job-rowA {
@@ -57,32 +62,32 @@ table.treetable tr.expanded span.indenter i:before {
 }
 
 .job-status {
-    width: 80px;
+    min-width: 40px;
 }
 
 .job-weather {
-    width: 80px;
+    min-width: 40px;
 }
 
 .job-build {
     padding-left: 5px;
     font-weight: 800 !important;
-    width: 80px;
+    min-width: 80px;
 }
 
 .job-last {
-    width: 120px;
+    min-width: 80px;
     text-align: center;
     padding-left: 5px;
     padding-right: 5px;
 }
 
 .job-console {
-    width: 80px;
+    min-width: 50px;
 }
 
 .job-run {
-    width: 80px;
+    min-width: 50px;
 }
 
 .smallIcon {
@@ -98,4 +103,68 @@ table.treetable tr.expanded span.indenter i:before {
 .largeIcon {
     width: 32px;
     height: 32px;
+}
+
+a.submitButton {
+    font-family: Helvetica;
+    font-weight: bold;
+    #border: 2px solid;
+    #border-radius: 5px;
+    text-decoration: none;
+    margin: 5px;
+    padding: 4px 20px 4px 20px;
+    display: inline-block;
+    background-color: #cccccc;
+}
+
+a.submitButton:hover {
+    font-family: Helvetica;
+    font-weight: bold;
+    text-decoration: none;
+    border: 2px solid #999999;
+}
+
+.ui-widget.table-property-dialog {
+    font-family: Helvetica;
+    font-size: .8em;
+}
+
+.ui-widget-content.table-property-dialog {
+    background: #F9F9F9;
+    border: 1px solid #aaaaaa;
+    color: #222222;
+}
+
+.ui-dialog.table-property-dialog {
+    left: 0;
+    outline: 0 none;
+    padding: 0 !important;
+    position: absolute;
+    top: 0;
+}
+
+.ui-dialog.table-property-dialog .ui-dialog-content {
+    background: none repeat scroll 0 0 transparent;
+    border: 0 none;
+    overflow: auto;
+    position: relative;
+    padding: 5px !important;
+    margin: 0;
+}
+
+.ui-dialog.table-property-dialog .ui-widget-header {
+    background: #bbbbbb;
+    border: 0;
+    color: #fff;
+    font-weight: normal;
+}
+
+.ui-dialog.table-property-dialog .ui-dialog-titlebar {
+    padding: 0.5em .5em;
+    position: relative;
+    font-size: 1em;
+}
+
+.link-panel {
+    height: 20px;
 }

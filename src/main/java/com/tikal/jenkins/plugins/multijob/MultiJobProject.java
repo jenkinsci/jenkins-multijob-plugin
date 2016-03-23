@@ -1,30 +1,29 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import java.util.List;
-import java.io.IOException;
-import javax.servlet.ServletException;
-
 import com.tikal.jenkins.plugins.multijob.views.MultiJobItem;
 import com.tikal.jenkins.plugins.multijob.views.MultiView;
-import jenkins.model.Jenkins;
 import hudson.Extension;
+import hudson.model.AbstractProject;
 import hudson.model.DependencyGraph;
-import hudson.model.ItemGroup;
-import hudson.model.TopLevelItem;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Hudson;
+import hudson.model.ItemGroup;
 import hudson.model.Project;
 import hudson.model.TaskListener;
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor.FormException;
-import hudson.util.AlternativeUiTextProvider;
+import hudson.model.TopLevelItem;
 import hudson.scm.PollingResult;
-
 import hudson.tasks.test.AbstractTestResultAction;
-
+import hudson.util.AlternativeUiTextProvider;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
@@ -87,6 +86,23 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
     public boolean isBuilding() {
         return null != this.getLastBuild() ? this.getLastBuild().isBuilding() : false;
     }
+
+    @JavaScriptMethod
+    public boolean isColumnVisible(String key) throws IOException {
+        return Utils.getTableProperty().isShowColumn(key);
+    }
+
+    @JavaScriptMethod
+    public Map<String, Boolean> getColumnProps() throws IOException {
+        return Utils.getTableProperty().getColumnProps();
+    }
+
+    @JavaScriptMethod
+    public void setColumnState(String key, boolean value) throws IOException {
+        Utils.getTableProperty().setColumnVisible(key, value);
+    }
+
+
 
 	public String getRootUrl() {
 		return Jenkins.getInstance().getRootUrl();
