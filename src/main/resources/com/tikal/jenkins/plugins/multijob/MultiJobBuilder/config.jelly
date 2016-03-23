@@ -123,7 +123,9 @@
                        help="/plugin/jenkins-multijob-plugin/help-mainGroovyScript.html">
           <f:radioBlock name="scriptLocation" value="true" title="Load from file"
                         checked="${instance.isUseScriptFile()==true}">
-              <f:textbox value="${instance.getScriptPath()}" />
+              <f:entry title="Script file source" field="scriptPath">
+                  <f:textbox value="${instance.getScriptPath()}" />
+              </f:entry>
           </f:radioBlock>
           <f:radioBlock name="scriptLocation" value="false" title="Use the provided script"
                         checked="${instance.isUseScriptFile()==false}">
