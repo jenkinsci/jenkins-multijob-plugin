@@ -4,6 +4,7 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import com.tikal.jenkins.plugins.multijob.Plugin;
 import hudson.model.AbstractProject;
 import hudson.model.HealthReport;
 import hudson.model.Item;
@@ -52,6 +53,9 @@ public class MultiView {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		if (Plugin.getInstance().isUserPropertyTooOld(property.getTimestamp())) {
+			property.setColumnProps(Plugin.getInstance().getColumnMap());
 		}
 	}
 

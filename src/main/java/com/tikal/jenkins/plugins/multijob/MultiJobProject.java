@@ -11,6 +11,7 @@ import hudson.model.ItemGroup;
 import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
+import hudson.model.View;
 import hudson.scm.PollingResult;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AlternativeUiTextProvider;
@@ -77,7 +78,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 	}
 
     @JavaScriptMethod
-    public List<MultiJobItem> getHierarchy() {
+    public List<MultiJobItem> getHierarchy() throws IOException {
         MultiView view = new MultiView(this);
         return view.getHierarchy();
     }
@@ -98,11 +99,17 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
     }
 
     @JavaScriptMethod
-    public void setColumnState(String key, boolean value) throws IOException {
+    public void setColumnState(String key, boolean value, boolean isGlobal) throws IOException {
         Utils.getTableProperty().setColumnVisible(key, value);
+        if (isGlobal) {
+            Plugin.getInstance().setColumnState(key, value);
+        }
     }
 
-
+    @JavaScriptMethod
+    public boolean canUserManageView() {
+        return Jenkins.getInstance().getACL().hasPermission(View.CONFIGURE);
+    }
 
 	public String getRootUrl() {
 		return Jenkins.getInstance().getRootUrl();

@@ -12,6 +12,7 @@ import java.util.Map;
 public class TableProperty extends UserProperty {
 
     private Map<String, Boolean> columns;
+    private long timestamp;
 
     @Extension
     public static final TablePropertyDescriptor DESCRIPTOR = new TablePropertyDescriptor();
@@ -39,6 +40,11 @@ public class TableProperty extends UserProperty {
 
     public void setColumnVisible(String key, boolean isVisible) {
         columns.put(key, isVisible);
+        timestamp = System.nanoTime();
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 
     @Override

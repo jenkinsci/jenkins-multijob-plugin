@@ -178,6 +178,8 @@ if (null != my.getTestResultAction()) {
 st.include(page: "updownprojects.jelly")
 
 div(id: "tablePropertyDialog", title: "Configure table columnns") {
+    label("Table columns")
+    br()
     input(id: "is-job", type: "checkbox", name: "Job", checked: true) {
         text("Job")
     }
@@ -212,6 +214,11 @@ div(id: "tablePropertyDialog", title: "Configure table columnns") {
     br()
     input(id: "is-run", type: "checkbox", name: "Run", checked: true) {
         text("Run")
+    }
+    br()
+    hr()
+    input(id: "isGlobal", type: "checkbox", name: "isGlobal", checked: true, disabled: !my.canUserManageView()) {
+        text("Apply settings globally")
     }
     br()
     a(id: "submitTableProperty", href: "javascript:;", class: "submitButton", onclick: "configureColumns()",

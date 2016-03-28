@@ -71,6 +71,8 @@ function updateTableColumns() {
 }
 
 function configureColumns() {
+    var isGlobal = Q('#isGlobal')[0].checked;
+    console.log("is global = " + isGlobal);
     it.getColumnProps(function(t) {
         var m = t.responseObject();
         Object.keys(m).forEach(function(v) {
@@ -82,7 +84,7 @@ function configureColumns() {
             } else {
                 Q(klass).hide();
             }
-            it.setColumnState(v, value);
+            it.setColumnState(v, value, isGlobal);
         });
     });
     Q('#tablePropertyDialog').dialog('close');
@@ -97,8 +99,15 @@ jQuery(document).ready(function() {
     nodes.each(function(v) {
         v.expand();
     });
-
     var count = 0;
+
+    it.canUserManageView(function(t) {
+        var h = t.responseObject();
+        console.log("h = " + h);
+        if (h) {
+            Q('#isGlobal')[0].enable();
+        }
+    });
 
     function statusIntervalTrigger() {
         return window.setInterval(function () {
@@ -147,7 +156,7 @@ jQuery(document).ready(function() {
 
 Q(function() {
     var dialog = Q('#tablePropertyDialog').dialog({
-        height: 210,
+        height: 250,
         width: 200,
         modal: true,
         resizable: false,
