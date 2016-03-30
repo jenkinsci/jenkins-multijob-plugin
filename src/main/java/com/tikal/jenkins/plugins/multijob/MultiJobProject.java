@@ -4,8 +4,6 @@ import java.util.List;
 import java.io.IOException;
 import javax.servlet.ServletException;
 
-import hudson.model.AbstractBuild;
-import hudson.model.Cause;
 import jenkins.model.Jenkins;
 import hudson.Extension;
 import hudson.model.DependencyGraph;
@@ -30,97 +28,106 @@ import org.kohsuke.stapler.StaplerResponse;
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
 
-        private volatile boolean pollSubjobs = false;
+    private volatile boolean pollSubjobs = false;
+    private volatile boolean disableResumeBuild = false;
 
-	@SuppressWarnings("rawtypes")
-	private MultiJobProject(ItemGroup parent, String name) {
-		super(parent, name);
-	}
+    @SuppressWarnings("rawtypes")
+    private MultiJobProject(ItemGroup parent, String name) {
+            super(parent, name);
+    }
 
-	public MultiJobProject(Hudson parent, String name) {
-		super(parent, name);
-	}
+    public MultiJobProject(Hudson parent, String name) {
+            super(parent, name);
+    }
 
-	@Override
-	protected Class<MultiJobBuild> getBuildClass() {
-		return MultiJobBuild.class;
-	}
+    @Override
+    protected Class<MultiJobBuild> getBuildClass() {
+            return MultiJobBuild.class;
+    }
 
-	@Override
-	public String getPronoun() {
-		return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getDisplayName());
-	}
+    @Override
+    public String getPronoun() {
+            return AlternativeUiTextProvider.get(PRONOUN, this, getDescriptor().getDisplayName());
+    }
 
-	public DescriptorImpl getDescriptor() {
-		return DESCRIPTOR;
-	}
+    public DescriptorImpl getDescriptor() {
+            return DESCRIPTOR;
+    }
 
-	@Extension(ordinal = 1000)
-	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+    @Extension(ordinal = 1000)
+    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-	public static final class DescriptorImpl extends AbstractProjectDescriptor {
-		public String getDisplayName() {
-			return "MultiJob Project";
-		}
+    public static final class DescriptorImpl extends AbstractProjectDescriptor {
+        public String getDisplayName() {
+                return "MultiJob Project";
+        }
 
-		@SuppressWarnings("rawtypes")
-		public MultiJobProject newInstance(ItemGroup itemGroup, String name) {
-			return new MultiJobProject(itemGroup, name);
-		}
-	}
+        @SuppressWarnings("rawtypes")
+        public MultiJobProject newInstance(ItemGroup itemGroup, String name) {
+                return new MultiJobProject(itemGroup, name);
+        }
+    }
 
-	@Override
-	protected void buildDependencyGraph(DependencyGraph graph) {
-		super.buildDependencyGraph(graph);
-	}
+    @Override
+    protected void buildDependencyGraph(DependencyGraph graph) {
+            super.buildDependencyGraph(graph);
+    }
 
-	public boolean isTopMost() {
-		return getUpstreamProjects().size() == 0;
-	}
+    public boolean isTopMost() {
+            return getUpstreamProjects().size() == 0;
+    }
 
-	public MultiJobView getView() {
-		return new MultiJobView("");
-	}
+    public MultiJobView getView() {
+            return new MultiJobView("");
+    }
 
-	public String getRootUrl() {
-		return Jenkins.getInstance().getRootUrl();
-	}
+    public String getRootUrl() {
+            return Jenkins.getInstance().getRootUrl();
+    }
 
-        @Override
-        public PollingResult poll(TaskListener listener) {
-            //Preserve default behavior unless specified otherwise
-            if (!getPollSubjobs()) {
-                return super.poll(listener);
-            }
+    @Override
+    public PollingResult poll(TaskListener listener) {
+        //Preserve default behavior unless specified otherwise
+        if (!getPollSubjobs()) {
+            return super.poll(listener);
+        }
 
-            PollingResult result = super.poll(listener);
-            //If multijob has changes, save the effort of checking children
-            if (result.hasChanges()) {
-                return result;
-            }
-            List<AbstractProject> downProjs = getDownstreamProjects();
-            PollingResult tmpResult = new PollingResult(PollingResult.Change.NONE);
-            //return when we get changes to save resources
-            //If we don't get changes, return the most significant result
-            for (AbstractProject downProj : downProjs) {
-                tmpResult = downProj.poll(listener);
-                if (result.change.ordinal() < tmpResult.change.ordinal()) {
-                    result = tmpResult;
-                    if (result.hasChanges()) {
-                        return result;
-                    }
-                }
-            }
+        PollingResult result = super.poll(listener);
+        //If multijob has changes, save the effort of checking children
+        if (result.hasChanges()) {
             return result;
         }
-
-        public boolean getPollSubjobs() {
-            return pollSubjobs;
+        List<AbstractProject> downProjs = getDownstreamProjects();
+        PollingResult tmpResult = new PollingResult(PollingResult.Change.NONE);
+        //return when we get changes to save resources
+        //If we don't get changes, return the most significant result
+        for (AbstractProject downProj : downProjs) {
+            tmpResult = downProj.poll(listener);
+            if (result.change.ordinal() < tmpResult.change.ordinal()) {
+                result = tmpResult;
+                if (result.hasChanges()) {
+                    return result;
+                }
+            }
         }
+        return result;
+    }
 
-        public void setPollSubjobs(boolean poll) {
-            pollSubjobs = poll;
-        }
+    public boolean getPollSubjobs() {
+        return pollSubjobs;
+    }
+
+    public void setPollSubjobs(boolean poll) {
+        pollSubjobs = poll;
+    }
+
+    public boolean getDisableResumeBuild() {
+        return this.disableResumeBuild;
+    }
+
+    public void setDisableResumeBuild(boolean disableResumeBuild) {
+        this.disableResumeBuild = disableResumeBuild;
+    }
 
     public AbstractTestResultAction<?> getTestResultAction() {
         MultiJobBuild b = getLastCompletedBuild();
@@ -137,6 +144,11 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
             k = "pollSubjobs";
             if (json.has(k)) {
                 setPollSubjobs(json.getBoolean(k));
+            }
+            
+            k = "disableResumeBuild";
+            if (json.has(k)) {
+                setDisableResumeBuild(json.getBoolean(k));
             }
         }
     }
