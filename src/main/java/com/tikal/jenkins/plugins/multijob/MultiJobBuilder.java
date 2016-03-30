@@ -116,14 +116,16 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         this.enableGroovyScript = enableGroovyScript;
-        this.scriptText = Util.fixNull(scriptLocation.getScriptText());
-        this.isUseScriptFile = scriptLocation.isUseFile();
-        this.scriptPath = Util.fixNull(scriptLocation.getScriptPath());
-        if (null == bindings || bindings.trim().isEmpty()) {
-            this.bindings = "";
+        if (null != scriptLocation) {
+            this.scriptText = Util.fixNull(scriptLocation.getScriptText());
+            this.isUseScriptFile = scriptLocation.isUseFile();
+            this.scriptPath = Util.fixNull(scriptLocation.getScriptPath());
         } else {
-            this.bindings = bindings;
+            this.scriptText = "";
+            this.scriptPath = "";
+            this.isUseScriptFile = false;
         }
+        this.bindings = Util.fixNull(bindings);
         if (null == executionType) {
             this.executionType = ExecutionType.PARALLEL;
         } else {
