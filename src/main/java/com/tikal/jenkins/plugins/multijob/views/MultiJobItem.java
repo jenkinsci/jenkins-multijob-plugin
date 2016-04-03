@@ -44,14 +44,14 @@ public class MultiJobItem {
 		if (0 != buildNumber) {
 			AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
 			this.buildName = "#" + buildNumber;
-			this.buildUrl = "/" + build.getUrl();
+			this.buildUrl = "/" + project.getShortUrl() + buildNumber;
 			this.result = build.getResult();
 			this.statusIconColor = build.getIconColor().getImage();
 		} else {
 			this.result = Result.NOT_BUILT;
 			this.statusIconColor = "nobuilt.png";
 		}
-		this.url = "/" + project.getUrl();
+		this.url = "/" + project.getShortUrl();
 		this.status = null != this.result ? this.result.toString() : "Not built yet";
 		this.healthReport = project.getBuildHealth();
 		this.weather = project.getBuildHealth().getDescription();
