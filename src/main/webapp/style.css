@@ -168,3 +168,8 @@ a.submitButton:hover {
 .link-panel {
     height: 20px;
 }
+
+.not-active {
+    pointer-events: none;
+    cursor: default;
+}

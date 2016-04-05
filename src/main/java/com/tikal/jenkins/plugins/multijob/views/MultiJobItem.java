@@ -23,12 +23,12 @@ public class MultiJobItem {
 	private Result result;
 	private String status;
 	private String statusIconColor;
-	private HealthReport healthReport;
 	private String weather;
 	private String weatherIconUrl;
 	private String lastSuccess;
 	private String lastFailure;
 	private String lastDuration;
+	private int healthScore;
 
 	public MultiJobItem(Job<?, ?> project, int buildNumber, int itemId, int parentItemId) {
 		this.itemId = itemId;
@@ -41,21 +41,23 @@ public class MultiJobItem {
 		}
 		this.isBuild = 0 == this.buildNumber ? false : true;
 		this.name = project.getDisplayName();
+		this.url = "/".concat(project.getParent().getUrl()).concat(project.getShortUrl());
+		//this.url = "/" + project.getParent().getUrl() + project.getShortUrl();
 		if (0 != buildNumber) {
 			AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
-			this.buildName = "#" + buildNumber;
-			this.buildUrl = "/" + project.getShortUrl() + buildNumber;
+			this.buildName = "#".concat(String.valueOf(buildNumber));
+			this.buildUrl = url.concat(String.valueOf(buildNumber));
 			this.result = build.getResult();
 			this.statusIconColor = build.getIconColor().getImage();
 		} else {
 			this.result = Result.NOT_BUILT;
 			this.statusIconColor = "nobuilt.png";
 		}
-		this.url = "/" + project.getShortUrl();
 		this.status = null != this.result ? this.result.toString() : "Not built yet";
-		this.healthReport = project.getBuildHealth();
-		this.weather = project.getBuildHealth().getDescription();
-		this.weatherIconUrl = project.getBuildHealth().getIconUrl();
+		HealthReport health = project.getBuildHealth();
+		this.weather = health.getDescription();
+		this.weatherIconUrl = health.getIconUrl();
+		this.healthScore = health.getScore();
 		this.lastSuccess = null != project.getLastSuccessfulBuild() ? project.getLastSuccessfulBuild()
 			.getTimestampString() : "N/A";
 		this.lastFailure = null != project.getLastFailedBuild() ? project.getLastFailedBuild()
@@ -63,8 +65,8 @@ public class MultiJobItem {
 		this.lastDuration = null != project.getLastBuild() ? project.getLastBuild().getDurationString() : "N/A";
 	}
 
-	public MultiJobItem(String name, Result result, String statusIconColor, HealthReport healthReport,
-	                    boolean isConditional, int itemId, int
+	public MultiJobItem(String name, Result result, String statusIconColor, String weather, String weatherIconUrl,
+						int healthScore, boolean isConditional, int itemId, int
 		parentItemId) {
 		this.isConditional = isConditional;
 		this.itemId = itemId;
@@ -75,8 +77,9 @@ public class MultiJobItem {
 		this.result = result;
 		this.status = result.toString();
 		this.statusIconColor = statusIconColor;
-		this.weather = healthReport.getDescription();
-		this.weatherIconUrl = healthReport.getIconUrl();
+		this.weather = weather;
+		this.weatherIconUrl = weatherIconUrl;
+		this.healthScore = healthScore;
 		this.lastSuccess = "";
 		this.lastFailure = "";
 		this.lastDuration = "";
@@ -134,16 +137,16 @@ public class MultiJobItem {
 		return statusIconColor;
 	}
 
-	public HealthReport getHealthReport() {
-		return healthReport;
-	}
-
 	public String getWeather() {
 		return weather;
 	}
 
 	public String getWeatherIconUrl() {
 		return weatherIconUrl;
+	}
+
+	public int getHealthScore() {
+		return healthScore;
 	}
 
 	public String getLastSuccess() {

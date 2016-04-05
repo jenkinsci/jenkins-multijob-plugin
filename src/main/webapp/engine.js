@@ -72,7 +72,6 @@ function updateTableColumns() {
 
 function configureColumns() {
     var isGlobal = Q('#isGlobal')[0].checked;
-    console.log("is global = " + isGlobal);
     it.getColumnProps(function(t) {
         var m = t.responseObject();
         Object.keys(m).forEach(function(v) {
@@ -103,7 +102,6 @@ jQuery(document).ready(function() {
 
     it.canUserManageView(function(t) {
         var h = t.responseObject();
-        console.log("h = " + h);
         if (h) {
             Q('#isGlobal')[0].enable();
         }
@@ -116,7 +114,7 @@ jQuery(document).ready(function() {
             if (60 == count) {
                 count = 0;
             }
-        }, 1000);
+        }, 2000);
     }
 
     statusIntervalTrigger();
@@ -137,10 +135,15 @@ jQuery(document).ready(function() {
                     Q(query + '.job-last-duration')[0].textContent = v.lastDuration;
                     if (v.build) {
                         Q(query + '.job-build')[0].innerHTML = '<a href="' + rootURL + v.buildUrl + '">' + v.buildName + '</a>';
-                        Q(query + '.job-console a')[0].setAttribute('href', rootURL + v.buildUrl + 'console');
-                        Q(query + '.job-console a').mouseover(function() {
-                            hoverNotification2("#" + v.buildNumber, this, -36, 30);
-                        })
+                        if ("NOT_BUILT" == v.status) {
+                            Q(query + '.job-console a')[0].addClassName('not-active');
+                        } else {
+                            Q(query + '.job-console a')[0].removeClassName('not-active');
+                            Q(query + '.job-console a')[0].setAttribute('href', rootURL + v.buildUrl + '/console');
+                            Q(query + '.job-console a').mouseover(function() {
+                                hoverNotification2("#" + v.buildNumber, this, -36, 30);
+                            })
+                        }
                     }
                     if (0 == count) {
                         Q(query + '.job-last-success')[0].textContent = v.lastSuccess;

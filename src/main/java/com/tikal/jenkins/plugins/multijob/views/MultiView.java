@@ -147,10 +147,14 @@ public class MultiView {
 				iconColor = item.getStatusIconColor();
 			}
 
-			healthReport = HealthReport.min(healthReport, item.getHealthReport());
+			HealthReport itemHealth = new HealthReport(item.getHealthScore(), item.getWeatherIconUrl(), item
+					.getWeather());
+			healthReport = HealthReport.min(healthReport, itemHealth);
+
 		}
 
-		MultiJobItem item = new MultiJobItem(phaseName, result, iconColor, healthReport, isConditional,
+		MultiJobItem item = new MultiJobItem(phaseName, result, iconColor, healthReport.getDescription(),
+											 healthReport.getIconUrl(), healthReport.getScore(), isConditional,
 			phaseId, level);
 		ret.add(item);
 		ret.addAll(childs);

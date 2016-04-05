@@ -115,7 +115,7 @@ div(id: "statusTable") {
                 }
                 td(class: "job-console") {
                     if (v.isProject() && v.isBuild()) {
-                        a(href: "${rootURL}" + v.getBuildUrl() + "console") {
+                        a(href: "${rootURL}" + v.getBuildUrl() + '/console') {
                             img(class: "largeIcon", src: "${imagesURL}/24x24/terminal.png",
                                     title: "Console output") {
                             }
