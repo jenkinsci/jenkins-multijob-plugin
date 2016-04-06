@@ -23,6 +23,8 @@ import hudson.scm.PollingResult.*;
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 
 import net.sf.json.JSONObject;
+
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -30,6 +32,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
 
         private volatile boolean pollSubjobs = false;
+        private volatile String resumeEnvVars = null;
 
 	@SuppressWarnings("rawtypes")
 	private MultiJobProject(ItemGroup parent, String name) {
@@ -121,6 +124,18 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
             pollSubjobs = poll;
         }
 
+        public String getResumeEnvVars() {
+			return resumeEnvVars;
+		}
+
+        public void setResumeEnvVars(String resumeEnvVars) {
+			this.resumeEnvVars = resumeEnvVars;
+		}
+
+        public boolean getCheckResumeEnvVars() {
+        	return !StringUtils.isBlank(resumeEnvVars);
+        }
+
     @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
@@ -132,6 +147,15 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
             if (json.has(k)) {
                 setPollSubjobs(json.getBoolean(k));
             }
+            String resumeEnvVars = null;
+            k = "resumeEnvVars";
+            if (json.has(k)) {
+            	json = json.getJSONObject(k);
+                if (json.has(k)) {
+                	resumeEnvVars = json.getString(k);
+                }
+            }
+            setResumeEnvVars(resumeEnvVars);
         }
     }
 }
