@@ -80,6 +80,9 @@
                         <f:entry title="Script file source" field="scriptPath">
                             <f:textbox value="${instance.getScriptPath()}" />
                         </f:entry>
+                        <f:entry title="Script is located on the slave node" field="isScriptOnSlave">
+                            <f:checkbox name="isScriptOnSlave" checked="${instance.isJobScriptOnSlaveNode()}" default="false" />
+                        </f:entry>
                     </f:radioBlock>
                     <f:radioBlock name="scriptLocation" value="false" title="Use the provided script"
                                   checked="${instance.isUseScriptFile()==false}">
@@ -125,6 +128,9 @@
                         checked="${instance.isUseScriptFile()==true}">
               <f:entry title="Script file source" field="scriptPath">
                   <f:textbox value="${instance.getScriptPath()}" />
+              </f:entry>
+              <f:entry title="Script is located on the slave node" field="isScriptOnSlave">
+                  <f:checkbox name="isScriptOnSlave" checked="${instance.isScriptOnSlave()}" default="false" />
               </f:entry>
           </f:radioBlock>
           <f:radioBlock name="scriptLocation" value="false" title="Use the provided script"

@@ -8,12 +8,14 @@ public class ScriptLocation {
     private boolean isUseFile;
     private String scriptText;
     private String scriptPath;
+    private boolean isScriptOnSlave;
 
     @DataBoundConstructor
-    public ScriptLocation(String value, String scriptText, String scriptPath) {
+    public ScriptLocation(String value, String scriptText, String scriptPath, Boolean isScriptOnSlave) {
         this.isUseFile = null == value ? false : Boolean.parseBoolean(value);
         this.scriptText = Util.fixNull(scriptText);
         this.scriptPath = Util.fixNull(scriptPath);
+        this.isScriptOnSlave = null == isScriptOnSlave ? false : isScriptOnSlave;
     }
 
     public boolean isUseFile() {
@@ -42,6 +44,14 @@ public class ScriptLocation {
 
     public void setScriptPath(String scriptPath) {
         this.scriptPath = scriptPath;
+    }
+
+    public boolean isScriptOnSlave() {
+        return isScriptOnSlave;
+    }
+
+    public void setScriptOnSlave(boolean isScriptOnSlave) {
+        this.isScriptOnSlave = isScriptOnSlave;
     }
 
 }

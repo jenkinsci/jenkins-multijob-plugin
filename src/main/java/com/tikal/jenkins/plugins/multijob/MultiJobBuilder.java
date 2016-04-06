@@ -82,6 +82,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private boolean isUseScriptFile;
     private String scriptPath;
     private String scriptText;
+    private boolean isScriptOnSlave;
     private String bindings;
     private ExecutionType executionType = ExecutionType.PARALLEL;
 
@@ -120,10 +121,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             this.scriptText = Util.fixNull(scriptLocation.getScriptText());
             this.isUseScriptFile = scriptLocation.isUseFile();
             this.scriptPath = Util.fixNull(scriptLocation.getScriptPath());
+            this.isScriptOnSlave = scriptLocation.isScriptOnSlave();
         } else {
             this.scriptText = "";
             this.scriptPath = "";
             this.isUseScriptFile = false;
+            this.isScriptOnSlave = false;
         }
         this.bindings = Util.fixNull(bindings);
         if (null == executionType) {
@@ -223,9 +226,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             Map<Object, Object> binding = new HashMap<Object, Object>();
             binding.putAll(Utils.parseProperties(bindings));
             runner.bindVariablesMap(binding);
-            if (isUseScriptFile && null != scriptPath) {
-                runner.evaluateFromWorkspace(scriptPath);
-            } else if (null != scriptText) {
+            if (isUseScriptFile) {
+                if (isScriptOnSlave) {
+                    runner.evaluateOnSlaveFs(scriptPath);
+                } else {
+                    runner.evaluateFromWorkspace(scriptPath);
+                }
+            } else {
                 runner.evaluate(scriptText);
             }
         }
@@ -315,7 +322,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 binding.putAll(Utils.parseProperties(phaseConfig.getJobBindings()));
                 runner.bindVariablesMap(binding);
                 if (phaseConfig.isUseScriptFile() && null != phaseConfig.getScriptPath()) {
-                    jobScriptEvalRes = runner.evaluateFromWorkspace(phaseConfig.getScriptPath());
+                    if (phaseConfig.isJobScriptOnSlaveNode()) {
+                        jobScriptEvalRes = runner.evaluateOnSlaveFs(phaseConfig.getScriptPath());
+                    } else {
+                        jobScriptEvalRes = runner.evaluateFromWorkspace(phaseConfig.getScriptPath());
+                    }
                 } else if (null != phaseConfig.getJobScript()) {
                     jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
                 }
@@ -339,7 +350,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 binding.putAll(Utils.parseProperties(phaseConfig.getResumeBindings()));
                 runner.bindVariablesMap(binding);
                 if (phaseConfig.isUseResumeScriptFile()) {
-                    isStart = runner.evaluateFromWorkspace(phaseConfig.getResumeScriptPath());
+                    if (phaseConfig.isResumeScriptOnSlaveNode()) {
+                        isStart = runner.evaluateOnSlaveFs(phaseConfig.getResumeScriptPath());
+                    } else {
+                        isStart = runner.evaluateFromWorkspace(phaseConfig.getResumeScriptPath());
+                    }
                 } else {
                     isStart = runner.evaluate(phaseConfig.getResumeScriptText());
                 }
@@ -1170,6 +1185,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public void setBindings(String bindings) {
         this.bindings = bindings;
+    }
+
+    public boolean isScriptOnSlave() {
+        return isScriptOnSlave;
+    }
+
+    public void setScriptOnSlave(boolean isScriptOnSlave) {
+        this.isScriptOnSlave = isScriptOnSlave;
     }
 
     public enum ExecutionType {

@@ -50,12 +50,12 @@ public class ConditionalPhaseTest {
 
         // create 'FirstPhase' containing job 'free'
         PhaseJobsConfig firstPhase = new PhaseJobsConfig("free", null, true, null, KillPhaseOnJobResultCondition
-                .NEVER, false, false, "", 0, false, false, "", false, false, new ScriptLocation(null, null, null),
-                                                         null, null, new JSONObject(), PhaseJobsConfig.ResumeCondition.SKIP, null, null, false);
+                .NEVER, false, false, "", 0, false, false, "", false, false, new ScriptLocation(null, null, null, null),
+                                                         null, null, new JSONObject(), PhaseJobsConfig.ResumeCondition.SKIP, null, null, false, false, false);
         List<PhaseJobsConfig> configTopList = new ArrayList<PhaseJobsConfig>();
         configTopList.add(firstPhase);
         MultiJobBuilder firstPhaseBuilder = new MultiJobBuilder("FirstPhase", configTopList, ContinuationCondition
-                .SUCCESSFUL,false, new ScriptLocation(null, null, null), "", MultiJobBuilder
+                .SUCCESSFUL,false, new ScriptLocation(null, null, null, null), "", MultiJobBuilder
                 .ExecutionType
                 .PARALLEL);
 
@@ -63,11 +63,12 @@ public class ConditionalPhaseTest {
         // create 'SecondPhase' containing job 'free2'
         PhaseJobsConfig secondPhase = new PhaseJobsConfig("free2", null, true, null, KillPhaseOnJobResultCondition
                 .NEVER, false, false, "", 0, false, false, "",false, false, new ScriptLocation
-                (null, null, null), null, null, new JSONObject(),PhaseJobsConfig.ResumeCondition.SKIP, null, null, false);
+                (null, null, null, null), null, null, new JSONObject(),PhaseJobsConfig.ResumeCondition.SKIP, null,
+                                                          null, false, false, false);
         List<PhaseJobsConfig> configTopList2 = new ArrayList<PhaseJobsConfig>();
         configTopList.add(secondPhase);
         MultiJobBuilder secondPhaseBuilder = new MultiJobBuilder("SecondPhase", configTopList2, ContinuationCondition
-                .SUCCESSFUL, false, new ScriptLocation(null, null, null), "", MultiJobBuilder
+                .SUCCESSFUL, false, new ScriptLocation(null, null, null, null), "", MultiJobBuilder
                 .ExecutionType.PARALLEL);
 
 

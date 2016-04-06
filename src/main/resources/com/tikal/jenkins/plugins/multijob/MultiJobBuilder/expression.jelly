@@ -5,6 +5,9 @@
         <f:entry title="Script file source" field="scriptPath">
             <f:textbox value="${instance.getResumeScriptPath()}" />
         </f:entry>
+        <f:entry title="Script is located on the slave node" field="isScriptOnSlave">
+            <f:checkbox name="isScriptOnSlave" checked="${instance.isResumeScriptOnSlaveNode()}" default="false" />
+        </f:entry>
     </f:radioBlock>
     <f:radioBlock name="resumeScriptLocation" value="false" title="Use the provided script"
                   checked="${instance.isUseResumeScriptFile()==false}">
