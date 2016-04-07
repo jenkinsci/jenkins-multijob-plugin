@@ -20,6 +20,10 @@
                  field="resumeBindings">
             <f:textarea value="${instance.getResumeBindings()}"/>
         </f:entry>
+        <f:entry title="Run script on node that is running a build" field="isRunJobScriptOnSlave"
+                 help="/plugin/jenkins-multijob-plugin/help-runOnSlave.html">
+            <f:checkbox name="isRunJobScriptOnSlave" checked="${instance.isRunJobScriptOnSlave()}" default="false" />
+        </f:entry>
     </f:advanced>
 
     <f:invisibleEntry>

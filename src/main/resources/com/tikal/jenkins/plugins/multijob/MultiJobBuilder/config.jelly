@@ -95,6 +95,11 @@
                                  field="jobBindings">
                             <f:textarea />
                         </f:entry>
+                        <f:entry title="Run script on node that is running a build" field="isRunResumeScriptOnSlave"
+                                 help="/plugin/jenkins-multijob-plugin/help-runOnSlave.html">
+                            <f:checkbox name="isRunResumeScriptOnSlave"
+                                        checked="${instance.isRunResumeScriptOnSlave()}" default="false" />
+                        </f:entry>
                     </f:advanced>
                 </f:optionalBlock>
                 <f:block>
@@ -145,7 +150,7 @@
                        field="bindings">
                   <f:textarea />
               </f:entry>
-              <f:entry title="Run groovy shell on slave node" field="isRunOnSlave"
+              <f:entry title="Run script on node that is running a build" field="isRunOnSlave"
                        help="/plugin/jenkins-multijob-plugin/help-runOnSlave.html">
                   <f:checkbox name="isRunOnSlave" checked="${instance.isRunOnSlave()}" default="false" />
               </f:entry>

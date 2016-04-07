@@ -1,6 +1,9 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import com.tikal.jenkins.plugins.multijob.views.TableProperty;
+import hudson.EnvVars;
+import hudson.model.AbstractBuild;
+import hudson.model.BuildListener;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 
@@ -44,5 +47,15 @@ public final class Utils {
             user.addProperty(property);
         }
         return property;
+    }
+
+    public static Map<String, String> getEnvVars(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
+        Map<String, String> ret = new HashMap<String, String>();
+        EnvVars envVars = build.getEnvironment(listener);
+        envVars.overrideAll(build.getBuildVariables());
+        for (Map.Entry<String, String> entry : envVars.entrySet()) {
+            ret.put(entry.getKey(), entry.getValue());
+        }
+        return ret;
     }
 }

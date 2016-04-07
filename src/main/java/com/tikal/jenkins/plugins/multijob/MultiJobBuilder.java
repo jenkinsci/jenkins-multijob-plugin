@@ -231,7 +231,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
 
         boolean isMasterNode = Computer.currentComputer().getNode().getDescriptor() instanceof Jenkins.DescriptorImpl;
-        
+
         if (enableGroovyScript) {
             if (isRunOnSlave && !isMasterNode) {
                 ScriptConfig scriptConfig = ConfigFactory.getConfig(!isRunOnSlave, isScriptOnSlave, isUseScriptFile,
@@ -239,6 +239,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 Pipe pipe = Pipe.createRemoteToLocal();
                 PipingTask piping = new PipingTask(pipe, scriptConfig);
                 piping.addVarMap(Utils.getBindings(bindings));
+                piping.addPropMap(Utils.getEnvVars(build, listener));
                 launcher.getChannel().callAsync(piping);
                 String threadId = UUID.randomUUID().toString();
                 Thread t = new StreamCopyThread(threadId, pipe.getIn(), listener.getLogger());
@@ -337,20 +338,46 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 // so we don't need to change our job configuration.
             }
 
+
             if (phaseConfig.getEnableJobScript()) {
                 boolean jobScriptEvalRes = true;
-                ScriptRunner runner = new ScriptRunner(build, listener);
-                Map<Object, Object> binding = new HashMap<Object, Object>();
-                binding.putAll(Utils.parseProperties(phaseConfig.getJobBindings()));
-                runner.bindVariablesMap(binding);
-                if (phaseConfig.isUseScriptFile() && null != phaseConfig.getScriptPath()) {
-                    if (phaseConfig.isJobScriptOnSlaveNode()) {
-                        jobScriptEvalRes = runner.evaluateOnSlaveFs(phaseConfig.getScriptPath());
-                    } else {
-                        jobScriptEvalRes = runner.evaluateFromWorkspace(phaseConfig.getScriptPath());
+                if (phaseConfig.isRunJobScriptOnSlave() && !isMasterNode) {
+                    ScriptConfig scriptConfig = ConfigFactory.getConfig(!phaseConfig.isRunJobScriptOnSlave(),
+                                                                        phaseConfig.isJobScriptOnSlaveNode(),
+                                                                        phaseConfig.isUseScriptFile(),
+                                                                        phaseConfig.getScriptPath(),
+                                                                        phaseConfig.getJobScript());
+                    Pipe pipe = Pipe.createRemoteToLocal();
+                    PipingTask piping = new PipingTask(pipe, scriptConfig);
+                    piping.addVarMap(Utils.getBindings(phaseConfig.getJobBindings()));
+                    piping.addPropMap(Utils.getEnvVars(build, listener));
+                    Future<Boolean> task = launcher.getChannel().callAsync(piping);
+                    String threadId = UUID.randomUUID().toString();
+                    Thread t = new StreamCopyThread(threadId, pipe.getIn(), listener.getLogger());
+                    t.start();
+                    t.join();
+                    try {
+                        jobScriptEvalRes = task.get();
+                    } catch (ExecutionException e) {
+                        listener.getLogger().println(String.format("Skipping %s. Script evaluation is failed. ", subJob
+                                .getName()));
+                        phaseCounters.processSkipped();
+                        jobScriptEvalRes = false;
                     }
-                } else if (null != phaseConfig.getJobScript()) {
-                    jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
+                } else {
+                    ScriptRunner runner = new ScriptRunner(build, listener);
+                    Map<Object, Object> binding = new HashMap<Object, Object>();
+                    binding.putAll(Utils.parseProperties(phaseConfig.getJobBindings()));
+                    runner.bindVariablesMap(binding);
+                    if (phaseConfig.isUseScriptFile() && null != phaseConfig.getScriptPath()) {
+                        if (phaseConfig.isJobScriptOnSlaveNode()) {
+                            jobScriptEvalRes = runner.evaluateOnSlaveFs(phaseConfig.getScriptPath());
+                        } else {
+                            jobScriptEvalRes = runner.evaluateFromWorkspace(phaseConfig.getScriptPath());
+                        }
+                    } else if (null != phaseConfig.getJobScript()) {
+                        jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
+                    }
                 }
                 if (!jobScriptEvalRes) {
                     listener.getLogger().println(String.format("Skipping %s. Script is evaluate to false.", subJob
@@ -366,23 +393,50 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
 
             boolean isStart;
+
             if (phaseConfig.getResumeCondition().isEvaluate()) {
-                ScriptRunner runner = new ScriptRunner(build, listener);
-                Map<Object, Object> binding = new HashMap<Object, Object>();
-                binding.putAll(Utils.parseProperties(phaseConfig.getResumeBindings()));
-                runner.bindVariablesMap(binding);
-                if (phaseConfig.isUseResumeScriptFile()) {
-                    if (phaseConfig.isResumeScriptOnSlaveNode()) {
-                        isStart = runner.evaluateOnSlaveFs(phaseConfig.getResumeScriptPath());
-                    } else {
-                        isStart = runner.evaluateFromWorkspace(phaseConfig.getResumeScriptPath());
+                if (phaseConfig.isResumeScriptOnSlaveNode() && !isMasterNode) {
+                    ScriptConfig scriptConfig = ConfigFactory.getConfig(!phaseConfig.isResumeScriptOnSlaveNode(),
+                                                                        phaseConfig.isResumeScriptOnSlaveNode(),
+                                                                        phaseConfig.isUseResumeScriptFile(),
+                                                                        phaseConfig.getResumeScriptPath(),
+                                                                        phaseConfig.getResumeScriptText());
+                    Pipe pipe = Pipe.createRemoteToLocal();
+                    PipingTask piping = new PipingTask(pipe, scriptConfig);
+                    piping.addVarMap(Utils.getBindings(phaseConfig.getResumeBindings()));
+                    piping.addPropMap(Utils.getEnvVars(build, listener));
+                    Future<Boolean> task = launcher.getChannel().callAsync(piping);
+                    String threadId = UUID.randomUUID().toString();
+                    Thread t = new StreamCopyThread(threadId, pipe.getIn(), listener.getLogger());
+                    t.start();
+                    t.join();
+                    try {
+                        isStart = task.get();
+                    } catch (ExecutionException e) {
+                        listener.getLogger().println(String.format("Skipping %s. Script evaluation is failed. ", subJob
+                                .getName()));
+                        phaseCounters.processSkipped();
+                        isStart = true;
                     }
                 } else {
-                    isStart = runner.evaluate(phaseConfig.getResumeScriptText());
+                    ScriptRunner runner = new ScriptRunner(build, listener);
+                    Map<Object, Object> binding = new HashMap<Object, Object>();
+                    binding.putAll(Utils.parseProperties(phaseConfig.getResumeBindings()));
+                    runner.bindVariablesMap(binding);
+                    if (phaseConfig.isUseResumeScriptFile()) {
+                        if (phaseConfig.isResumeScriptOnSlaveNode()) {
+                            isStart = runner.evaluateOnSlaveFs(phaseConfig.getResumeScriptPath());
+                        } else {
+                            isStart = runner.evaluateFromWorkspace(phaseConfig.getResumeScriptPath());
+                        }
+                    } else {
+                        isStart = runner.evaluate(phaseConfig.getResumeScriptText());
+                    }
                 }
             } else {
                 isStart = phaseConfig.getResumeCondition().isStart();
             }
+
             if (isStart && successBuildMap.containsKey(subJob.getUrl())) {
                 successBuildMap.remove(subJob.getUrl());
                 listener.getLogger().println(String.format("Job %s will be executed. Script or condition is evaluate " +
