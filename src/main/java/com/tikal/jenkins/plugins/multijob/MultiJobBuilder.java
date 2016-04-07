@@ -1,6 +1,9 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import com.cisco.jenkins.plugins.script.PipingTask;
 import com.cisco.jenkins.plugins.script.ScriptRunner;
+import com.cisco.jenkins.plugins.script.config.ConfigFactory;
+import com.cisco.jenkins.plugins.script.config.ScriptConfig;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
@@ -17,6 +20,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.BuildListener;
+import hudson.model.Computer;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
@@ -26,10 +30,12 @@ import hudson.model.Queue.QueueAction;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.remoting.Pipe;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.StreamCopyThread;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
@@ -55,6 +61,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -84,6 +91,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private String scriptText;
     private boolean isScriptOnSlave;
     private String bindings;
+    private boolean isRunOnSlave;
     private ExecutionType executionType = ExecutionType.PARALLEL;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -111,7 +119,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
             ContinuationCondition continuationCondition, boolean enableGroovyScript, ScriptLocation scriptLocation,
-                           String bindings,
+                           String bindings, boolean isRunOnSlave,
                            ExecutionType executionType) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
@@ -134,6 +142,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         } else {
             this.executionType = executionType;
         }
+        this.isRunOnSlave = isRunOnSlave;
     }
 
     public String expandToken(String toExpand, final AbstractBuild<?,?> build, final BuildListener listener) {
@@ -221,19 +230,32 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             executionType = ExecutionType.PARALLEL;
         }
 
+        boolean isMasterNode = Computer.currentComputer().getNode().getDescriptor() instanceof Jenkins.DescriptorImpl;
+        
         if (enableGroovyScript) {
-            ScriptRunner runner = new ScriptRunner(build, listener);
-            Map<Object, Object> binding = new HashMap<Object, Object>();
-            binding.putAll(Utils.parseProperties(bindings));
-            runner.bindVariablesMap(binding);
-            if (isUseScriptFile) {
-                if (isScriptOnSlave) {
-                    runner.evaluateOnSlaveFs(scriptPath);
-                } else {
-                    runner.evaluateFromWorkspace(scriptPath);
-                }
+            if (isRunOnSlave && !isMasterNode) {
+                ScriptConfig scriptConfig = ConfigFactory.getConfig(!isRunOnSlave, isScriptOnSlave, isUseScriptFile,
+                                                                    scriptPath, scriptText);
+                Pipe pipe = Pipe.createRemoteToLocal();
+                PipingTask piping = new PipingTask(pipe, scriptConfig);
+                piping.addVarMap(Utils.getBindings(bindings));
+                launcher.getChannel().callAsync(piping);
+                String threadId = UUID.randomUUID().toString();
+                Thread t = new StreamCopyThread(threadId, pipe.getIn(), listener.getLogger());
+                t.start();
+                t.join();
             } else {
-                runner.evaluate(scriptText);
+                ScriptRunner runner = new ScriptRunner(build, listener);
+                runner.bindVariablesMap(Utils.getBindings(bindings));
+                if (isUseScriptFile) {
+                    if (isScriptOnSlave) {
+                        runner.evaluateOnSlaveFs(scriptPath);
+                    } else {
+                        runner.evaluateFromWorkspace(scriptPath);
+                    }
+                } else {
+                    runner.evaluate(scriptText);
+                }
             }
         }
 
@@ -1193,6 +1215,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public void setScriptOnSlave(boolean isScriptOnSlave) {
         this.isScriptOnSlave = isScriptOnSlave;
+    }
+
+    public boolean isRunOnSlave() {
+        return isRunOnSlave;
+    }
+
+    public void setRunOnSlave(boolean isRunOnSlave) {
+        this.isRunOnSlave = isRunOnSlave;
     }
 
     public enum ExecutionType {

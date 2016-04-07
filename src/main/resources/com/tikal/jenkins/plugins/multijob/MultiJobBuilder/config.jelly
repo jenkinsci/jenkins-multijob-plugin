@@ -145,6 +145,10 @@
                        field="bindings">
                   <f:textarea />
               </f:entry>
+              <f:entry title="Run groovy shell on slave node" field="isRunOnSlave"
+                       help="/plugin/jenkins-multijob-plugin/help-runOnSlave.html">
+                  <f:checkbox name="isRunOnSlave" checked="${instance.isRunOnSlave()}" default="false" />
+              </f:entry>
           </f:advanced>
       </f:optionalBlock>
 

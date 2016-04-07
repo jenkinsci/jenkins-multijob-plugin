@@ -8,11 +8,19 @@ import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public final class Utils {
 
     private Utils() {
+    }
+
+    public static Map<Object, Object> getBindings(String bindings) throws IOException {
+        Map<Object, Object> binding = new HashMap<Object, Object>();
+        binding.putAll(parseProperties(bindings));
+        return binding;
     }
 
     public static @Nonnull Properties parseProperties(final String properties) throws IOException {
