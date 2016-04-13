@@ -838,11 +838,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     }
 
     private class MultiJobAction implements Action, QueueAction {
-        public AbstractBuild build;
+        public int buildNumber;
         public int index;
 
         public MultiJobAction(AbstractBuild build, int index) {
-            this.build = build;
+            this.buildNumber = build.getNumber();
             this.index = index;
         }
 
@@ -853,7 +853,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 if (action.index != index) {
                     matches = false;
                 }
-                if (action.build.getNumber() != build.getNumber()) {
+                if (action.buildNumber != buildNumber) {
                     matches = false;
                 }
             }
