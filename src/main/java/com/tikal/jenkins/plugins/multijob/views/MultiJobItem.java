@@ -4,6 +4,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.HealthReport;
 import hudson.model.Job;
 import hudson.model.Result;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class MultiJobItem {
 
@@ -42,7 +43,6 @@ public class MultiJobItem {
 		this.isBuild = 0 == this.buildNumber ? false : true;
 		this.name = project.getDisplayName();
 		this.url = "/".concat(project.getParent().getUrl()).concat(project.getShortUrl());
-		//this.url = "/" + project.getParent().getUrl() + project.getShortUrl();
 		if (0 != buildNumber) {
 			AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
 			this.buildName = "#".concat(String.valueOf(buildNumber));
@@ -165,4 +165,17 @@ public class MultiJobItem {
 		return null;
 	}
 
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(getItemId() % 2 == 0 ? getItemId() + 1 : getItemId(), 31).toHashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (null == obj || obj.getClass() != this.getClass()) {
+			return false;
+		}
+		MultiJobItem item = (MultiJobItem) obj;
+		return item.getItemId() == this.getItemId();
+	}
 }

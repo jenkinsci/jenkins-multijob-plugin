@@ -127,27 +127,30 @@ jQuery(document).ready(function() {
         });
         it.getHierarchy(function(t) {
             var h = t.responseObject();
+            var imgBaseUrl = resURL + '/images/32x32/';
             h.each(function(v) {
                 var query = '.multi-job[data-tt-id=' + v.itemId + '] ';
-                Q(query + '.job-status img')[0].setAttribute('src', resURL + '/images/32x32/' + v.statusIconColor);
-                Q(query + '.job-weather img')[0].setAttribute('src', resURL + '/images/32x32/' + v.weatherIconUrl);
+                var obj = Q(query);
+                obj.find('.job-status img')[0].setAttribute('src', imgBaseUrl + v.statusIconColor);
+                obj.find('.job-weather img')[0].setAttribute('src', imgBaseUrl + v.weatherIconUrl);
                 if (v.project) {
-                    Q(query + '.job-last-duration')[0].textContent = v.lastDuration;
+                    obj.find('.job-last-duration')[0].textContent = v.lastDuration;
                     if (v.build) {
-                        Q(query + '.job-build')[0].innerHTML = '<a href="' + rootURL + v.buildUrl + '">' + v.buildName + '</a>';
+                        obj.find('.job-build')[0].innerHTML = '<a href="' + rootURL + v.buildUrl + '">' + v.buildName + '</a>';
                         if ("NOT_BUILT" == v.status) {
-                            Q(query + '.job-console a')[0].addClassName('not-active');
+                            obj.find('.job-console a')[0].addClassName('not-active');
                         } else {
-                            Q(query + '.job-console a')[0].removeClassName('not-active');
-                            Q(query + '.job-console a')[0].setAttribute('href', rootURL + v.buildUrl + '/console');
-                            Q(query + '.job-console a').mouseover(function() {
+                            var aobj = obj.find('.job-console a');
+                            aobj[0].removeClassName('not-active');
+                            aobj[0].setAttribute('href', rootURL + v.buildUrl + '/console');
+                            aobj.mouseover(function() {
                                 hoverNotification2("#" + v.buildNumber, this, -36, 30);
-                            })
+                            });
                         }
                     }
                     if (0 == count) {
-                        Q(query + '.job-last-success')[0].textContent = v.lastSuccess;
-                        Q(query + '.job-last-failure')[0].textContent = v.lastFailure;
+                        obj.find('.job-last-success')[0].textContent = v.lastSuccess;
+                        obj.find('.job-last-failure')[0].textContent = v.lastFailure;
                     }
                 }
             });

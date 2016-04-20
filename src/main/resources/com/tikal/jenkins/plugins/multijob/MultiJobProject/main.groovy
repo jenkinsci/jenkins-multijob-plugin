@@ -68,13 +68,8 @@ div(id: "statusTable") {
             }
         }
 
-        int count = 0;
-
         for (v in my.getHierarchy()) {
-            count++
-            String jobRowClass = count % 2 ? "job-rowA" : "job-rowB"
-            jobRowClass += " multi-job"
-            tr('data-tt-id': v.getItemId(), 'data-tt-parent-id': v.getParentItemId(), class: jobRowClass) {
+            tr('data-tt-id': v.getItemId(), 'data-tt-parent-id': v.getParentItemId(), class: 'multi-job') {
                 if (v.isProject()) {
                     td(class: "job-project") {
                         a(href: "${rootURL}" + v.getUrl()) {

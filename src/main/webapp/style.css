@@ -38,11 +38,11 @@ table.treetable tr.expanded span.indenter i:before {
     min-width: 200px;
 }
 
-.job-rowA {
+table.treetable tr:nth-child(even) {
     background-color: #FFFFFF;
 }
 
-.job-rowB {
+table.treetable tr:nth-child(odd) {
     background-color: #FBFBFB;
 }
 
