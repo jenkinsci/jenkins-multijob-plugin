@@ -1,20 +1,5 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.servlet.ServletException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -28,6 +13,19 @@ import hudson.model.StringParameterValue;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
+import javax.servlet.ServletException;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
@@ -192,7 +190,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url, 
+                Result result, String icon, String duration, String url,
                 AbstractBuild<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
@@ -271,7 +269,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public String getJobName() {
             return jobName;
         }
-        
+
         @Exported
         public int getBuildNumber() {
             return buildNumber;

@@ -29,6 +29,7 @@ public class MultiView {
 
 	private List<MultiJobItem> multiJobItems;
 	private HashMap<String, Map<String, List<MultiJobBuild.SubBuild>>> subBuilds;
+	private static Jenkins jenkins = Jenkins.getInstance();
 
 	public MultiView(MultiJobProject multiJobProject) {
 		this.multiJobItems = new ArrayList<MultiJobItem>();
@@ -100,11 +101,13 @@ public class MultiView {
 
 	@SuppressWarnings("rawtypes")
 	private int addProjectFromBuilder(MultiJobProject project, List<MultiJobItem> ret,
-	                                   BuildStep builder, int count, int level, boolean isConditional) {
+	                                   BuildStep builder, int count, int level, boolean isConditional, int
+												  mjBuildNumber) {
 		int currentCount = count + 1;
 		int phaseId = currentCount;
 		MultiJobBuilder reactorBuilder = (MultiJobBuilder) builder;
 		List<PhaseJobsConfig> subProjects = reactorBuilder.getPhaseJobs();
+		//Queue<PhaseJobsConfig> subProjects = new LinkedList<PhaseJobsConfig>(reactorBuilder.getPhaseJobs());
 		String phaseName = reactorBuilder.getPhaseName();
 
 		Map<String, List<MultiJobBuild.SubBuild>> phaseProjects = subBuilds.get(phaseName);
@@ -112,16 +115,28 @@ public class MultiView {
 			phaseProjects = new HashMap<String, List<MultiJobBuild.SubBuild>>();
 		}
 
+
 		List<MultiJobItem> childs = new ArrayList<MultiJobItem>();
-		for (PhaseJobsConfig projectConfig : subProjects) {
-			Item it = Jenkins.getInstance().getItem(projectConfig.getJobName(), project.getParent(), AbstractProject
-				.class);
+		for (PhaseJobsConfig config : subProjects) {
+			Item it = jenkins.getItem(config.getJobName(), project.getParent(), AbstractProject.class);
 			MultiJobBuild.SubBuild subBuild = null;
-			List<MultiJobBuild.SubBuild> subBuilds = phaseProjects.get(it.getName());
-			if (null != subBuilds && !subBuilds.isEmpty()) {
-				subBuild = subBuilds.remove(0);
+			List<MultiJobBuild.SubBuild> subs = phaseProjects.get(it.getName());
+			int curr = 0;
+			if (null != subs && !subs.isEmpty()) {
+				for (int i = 0; i < subs.size(); i++) {
+					MultiJobBuild.SubBuild sub = subs.get(i);
+					if (sub.getParentBuildNumber() == mjBuildNumber && sub.getBuildNumber() > curr) {
+						curr = sub.getBuildNumber();
+						subBuild = sub;
+						if (!sub.isRetry()) {
+							subs.remove(i);
+							break;
+						}
+					}
+				}
 			}
-			phaseProjects.put(it.getName(), subBuilds);
+
+			phaseProjects.put(it.getName(), subs);
 			int buildNumber = null != subBuild ? subBuild.getBuildNumber() : 0;
 			if (it instanceof MultiJobProject) {
 				MultiJobProject subProject = (MultiJobProject) it;
@@ -132,6 +147,47 @@ public class MultiView {
 				addSimpleProject(subProject, buildNumber, ++currentCount, phaseId, childs);
 			}
 		}
+
+
+		/*
+		while (!subProjects.isEmpty()) {
+			PhaseJobsConfig config = subProjects.poll();
+			Item it = Jenkins.getInstance().getItem(config.getJobName(), project.getParent(), AbstractProject.class);
+			for (MultiJobBuild.SubBuild sub : phaseProjects.get(it.getName())) {
+				if (sub.getParentBuildNumber() == mjBuildNumber)
+			}
+		}
+		*/
+
+		//System.out.println("MultiJob = " + project.getDisplayName());
+
+		/*
+
+		for (PhaseJobsConfig projectConfig : subProjects) {
+			System.out.println("dn = " + projectConfig.getDisplayName() + " " + projectConfig.getJobName());
+			Item it = Jenkins.getInstance().getItem(projectConfig.getJobName(), project.getParent(), AbstractProject
+				.class);
+
+			List<MultiJobBuild.SubBuild> subs = phaseProjects.get(it.getName());
+			if (null != subs && !subs.isEmpty()) {
+				int curr = 0;
+				for (MultiJobBuild.SubBuild sub : subs) {
+					if (sub.getParentBuildNumber() == mjBuildNumber && sub.getBuildNumber() > curr) {
+						curr = sub.getBuildNumber();
+						subBuild = sub;
+					}
+				}
+			}
+			*/
+			/*
+			if (null != subBuilds && !subBuilds.isEmpty()) {
+				subBuild = subBuilds.remove(0);
+				//System.out.println("sb = " + subBuild.getJobName() + " #" + subBuild.getBuildNumber());
+			}
+			*/
+		//	phaseProjects.put(it.getName(), subs);
+
+		//}
 
 		HealthReport healthReport = new HealthReport(0, "health-80plus.png",
 			Messages._HealthReport_EmptyString());
@@ -169,17 +225,17 @@ public class MultiView {
 
 		for (Builder builder : project.getBuilders()) {
 			if (builder instanceof MultiJobBuilder) {
-				currentCount = addProjectFromBuilder(project, ret, builder, currentCount, count + 1, false);
+				currentCount = addProjectFromBuilder(project, ret, builder, currentCount, count + 1, false, buildNumber);
 			} else if (builder instanceof ConditionalBuilder) {
 				final List<BuildStep> conditionalBuilders = ((ConditionalBuilder) builder).getConditionalbuilders();
 				for (BuildStep buildStep : conditionalBuilders) {
-					currentCount = addProjectFromBuilder(project, ret, buildStep, currentCount, count + 1, true);
+					currentCount = addProjectFromBuilder(project, ret, buildStep, currentCount, count + 1, true, buildNumber);
 				}
 			} else if (builder instanceof SingleConditionalBuilder) {
 				final BuildStep buildStep = ((SingleConditionalBuilder) builder).getBuildStep();
 				if (buildStep instanceof MultiJobBuilder) {
 					currentCount = addProjectFromBuilder(project, ret, buildStep, currentCount, count + 1,
-						true);
+						true, buildNumber);
 				}
 			}
 		}
