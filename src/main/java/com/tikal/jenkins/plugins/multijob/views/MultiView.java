@@ -148,47 +148,6 @@ public class MultiView {
 			}
 		}
 
-
-		/*
-		while (!subProjects.isEmpty()) {
-			PhaseJobsConfig config = subProjects.poll();
-			Item it = Jenkins.getInstance().getItem(config.getJobName(), project.getParent(), AbstractProject.class);
-			for (MultiJobBuild.SubBuild sub : phaseProjects.get(it.getName())) {
-				if (sub.getParentBuildNumber() == mjBuildNumber)
-			}
-		}
-		*/
-
-		//System.out.println("MultiJob = " + project.getDisplayName());
-
-		/*
-
-		for (PhaseJobsConfig projectConfig : subProjects) {
-			System.out.println("dn = " + projectConfig.getDisplayName() + " " + projectConfig.getJobName());
-			Item it = Jenkins.getInstance().getItem(projectConfig.getJobName(), project.getParent(), AbstractProject
-				.class);
-
-			List<MultiJobBuild.SubBuild> subs = phaseProjects.get(it.getName());
-			if (null != subs && !subs.isEmpty()) {
-				int curr = 0;
-				for (MultiJobBuild.SubBuild sub : subs) {
-					if (sub.getParentBuildNumber() == mjBuildNumber && sub.getBuildNumber() > curr) {
-						curr = sub.getBuildNumber();
-						subBuild = sub;
-					}
-				}
-			}
-			*/
-			/*
-			if (null != subBuilds && !subBuilds.isEmpty()) {
-				subBuild = subBuilds.remove(0);
-				//System.out.println("sb = " + subBuild.getJobName() + " #" + subBuild.getBuildNumber());
-			}
-			*/
-		//	phaseProjects.put(it.getName(), subs);
-
-		//}
-
 		HealthReport healthReport = new HealthReport(0, "health-80plus.png",
 			Messages._HealthReport_EmptyString());
 		Result result = Result.SUCCESS;

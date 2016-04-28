@@ -49,9 +49,11 @@ public class MultiJobItem {
 			this.buildUrl = url.concat(String.valueOf(buildNumber));
 			this.result = build.getResult();
 			this.statusIconColor = build.getIconColor().getImage();
+			this.lastDuration = build.getDurationString();
 		} else {
 			this.result = Result.NOT_BUILT;
 			this.statusIconColor = "nobuilt.png";
+			this.lastDuration = "N/A";
 		}
 		this.status = null != this.result ? this.result.toString() : "Not built yet";
 		HealthReport health = project.getBuildHealth();
@@ -62,7 +64,6 @@ public class MultiJobItem {
 			.getTimestampString() : "N/A";
 		this.lastFailure = null != project.getLastFailedBuild() ? project.getLastFailedBuild()
 			.getTimestampString() : "N/A";
-		this.lastDuration = null != project.getLastBuild() ? project.getLastBuild().getDurationString() : "N/A";
 	}
 
 	public MultiJobItem(String name, Result result, String statusIconColor, String weather, String weatherIconUrl,
