@@ -232,6 +232,18 @@
 			<id>repo.jenkins-ci.org</id>
 			<url>http://repo.jenkins-ci.org/public/</url>
 		</repository>
+		<repository>
+			<id>xored-cisco-snapshots</id>
+			<url>http://maven.xored.com/nexus/content/repositories/cisco-snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>xored-cisco-releases</id>
+			<url>http://maven.xored.com/nexus/content/repositories/cisco-releases/</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
