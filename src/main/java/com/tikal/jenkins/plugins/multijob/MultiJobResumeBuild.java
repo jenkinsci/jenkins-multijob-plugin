@@ -40,6 +40,13 @@ public class MultiJobResumeBuild implements RunAction2 {
 	}
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        // if rebuild plugin is available let it handle build resuming
+        if (Utils.rebuildPluginAvailable()) {
+            run.replaceAction(new WasResumedAction()); // add or replace existing one
+            rsp.sendRedirect2("../rebuild");
+            return;
+        }
+
         final MultiJobResumeControl control = new MultiJobResumeControl(run);
         List<Action> actions = copyBuildCauses();
         actions.add(control);
