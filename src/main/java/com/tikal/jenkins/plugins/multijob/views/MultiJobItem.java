@@ -97,28 +97,33 @@ public class MultiJobItem {
 		Cause.UpstreamCause cause = build.getCause(Cause.UpstreamCause.class);
 		if (null != cause) {
 			String prjStr = cause.getUpstreamProject();
-			int success = null != build.getResult() && build.getResult().equals(Result.SUCCESS) ? build.getNumber() : 0;
-			int failure = null != build.getResult() && build.getResult().equals(Result.FAILURE) ? build.getNumber() : 0;
-			boolean s = false;
-			boolean f = false;
-			for (Run run : project.getBuilds()) {
-				Cause.UpstreamCause c = (Cause.UpstreamCause) run.getCause(Cause.UpstreamCause.class);
-				if (null != c && c.getUpstreamProject().equals(prjStr)) {
-					if (run.getResult().equals(Result.SUCCESS) && run.getNumber() > success) {
-						success = run.getNumber();
-						s = true;
+			if (null != build.getResult()) {
+				int success = build.getResult().equals(Result.SUCCESS) ? build.getNumber() : 0;
+				int failure = build.getResult().equals(Result.FAILURE) ? build.getNumber() : 0;
+				boolean s = false;
+				boolean f = false;
+				for (Run run : project.getBuilds()) {
+					Cause.UpstreamCause c = (Cause.UpstreamCause) run.getCause(Cause.UpstreamCause.class);
+					if (null != c && c.getUpstreamProject().equals(prjStr)) {
+						if (run.getResult().equals(Result.SUCCESS) && run.getNumber() > success) {
+							success = run.getNumber();
+							s = true;
+						}
+						if (run.getResult().equals(Result.FAILURE) && run.getNumber() > failure) {
+							failure = run.getNumber();
+							f = true;
+						}
 					}
-					if (run.getResult().equals(Result.FAILURE) && run.getNumber() > failure) {
-						failure = run.getNumber();
-						f = true;
+					if (s && f) {
+						break;
 					}
 				}
-				if (s && f) {
-					break;
-				}
+				this.lastSuccess = 0 == success ? "N/A" : project.getBuildByNumber(success).getTimestampString();
+				this.lastFailure = 0 == failure ? "N/A" : project.getBuildByNumber(failure).getTimestampString();
+			} else {
+				this.lastSuccess = "N/A";
+				this.lastFailure = "N/A";
 			}
-			this.lastSuccess = 0 == success ? "N/A" : project.getBuildByNumber(success).getTimestampString();
-			this.lastFailure = 0 == failure ? "N/A" : project.getBuildByNumber(failure).getTimestampString();
 		} else {
 			this.lastSuccess = null != project.getLastSuccessfulBuild() ? project.getLastSuccessfulBuild()
 					.getTimestampString() : "N/A";
