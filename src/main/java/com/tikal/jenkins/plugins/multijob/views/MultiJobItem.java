@@ -97,8 +97,8 @@ public class MultiJobItem {
 		Cause.UpstreamCause cause = build.getCause(Cause.UpstreamCause.class);
 		if (null != cause) {
 			String prjStr = cause.getUpstreamProject();
-			int success = build.getResult().equals(Result.SUCCESS) ? build.getNumber() : 0;
-			int failure = build.getResult().equals(Result.FAILURE) ? build.getNumber() : 0;
+			int success = null != build.getResult() && build.getResult().equals(Result.SUCCESS) ? build.getNumber() : 0;
+			int failure = null != build.getResult() && build.getResult().equals(Result.FAILURE) ? build.getNumber() : 0;
 			boolean s = false;
 			boolean f = false;
 			for (Run run : project.getBuilds()) {
