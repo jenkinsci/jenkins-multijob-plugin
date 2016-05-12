@@ -1,9 +1,11 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.model.AbstractBuild;
+import hudson.model.Cause;
 import hudson.model.HealthReport;
 import hudson.model.Job;
 import hudson.model.Result;
+import hudson.model.Run;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class MultiJobItem {
@@ -84,6 +86,40 @@ public class MultiJobItem {
 		this.lastSuccess = "";
 		this.lastFailure = "";
 		this.lastDuration = "";
+	}
+
+	private void resolveLastCounts(Job<?, ?> project, AbstractBuild<?, ?> build) {
+		Cause.UpstreamCause cause = build.getCause(Cause.UpstreamCause.class);
+		String prjStr = cause.getUpstreamProject();
+		if (null != cause) {
+			int success = build.getResult().equals(Result.SUCCESS) ? build.getNumber() : 0;
+			int failure = build.getResult().equals(Result.FAILURE) ? build.getNumber() : 0;
+			boolean s = false;
+			boolean f = false;
+			for (Run run : project.getBuilds()) {
+				Cause.UpstreamCause c = (Cause.UpstreamCause) run.getCause(Cause.UpstreamCause.class);
+				if (c.getUpstreamProject().equals(prjStr)) {
+					if (run.getResult().equals(Result.SUCCESS) && run.getNumber() > success) {
+						success = run.getNumber();
+						s = true;
+					}
+					if (run.getResult().equals(Result.FAILURE) && run.getNumber() > failure) {
+						failure = run.getNumber();
+						f = true;
+					}
+				}
+				if (s && f) {
+					break;
+				}
+			}
+			this.lastSuccess = 0 == success ? "N/A" : project.getBuildByNumber(success).getDurationString();
+			this.lastFailure = 0 == failure ? "N/A" : project.getBuildByNumber(failure).getDurationString();
+		} else {
+			this.lastSuccess = null != project.getLastSuccessfulBuild() ? project.getLastSuccessfulBuild()
+					.getTimestampString() : "N/A";
+			this.lastFailure = null != project.getLastFailedBuild() ? project.getLastFailedBuild()
+					.getTimestampString() : "N/A";
+		}
 	}
 
 	public int getItemId() {
