@@ -119,7 +119,7 @@ div(id: "statusTable") {
                 }
                 td(class: "job-run") {
                     if (v.isProject()) {
-                        a(href: "${rootURL}/" + v.getUrl() + "build?delay=0sec", onclick: "return scheduleBuild(this)") {
+                        a(href: "${rootURL}" + v.getUrl() + "build?delay=0sec", onclick: "return buildNow(this)") {
                             img(src: "${imagesURL}/24x24/clock.png") {
                             }
                         }

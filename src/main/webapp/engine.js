@@ -13,7 +13,7 @@ var hoverNotification2 = (function() {
             }, 1500);
         });
         return o;
-    }
+    };
 
     function init() {
         if(msgBox!=null)  return;   // already initialized
@@ -72,9 +72,9 @@ function updateTableColumns() {
 
 function configureColumns() {
     var isGlobal = Q('#isGlobal')[0].checked;
-    it.getColumnProps(function(t) {
+    it.getColumnProps(function (t) {
         var m = t.responseObject();
-        Object.keys(m).forEach(function(v) {
+        Object.keys(m).forEach(function (v) {
             var key = '#is-' + v;
             var klass = '.job-' + v;
             var value = Q(key)[0].checked;
@@ -87,6 +87,12 @@ function configureColumns() {
         });
     });
     Q('#tablePropertyDialog').dialog('close');
+}
+
+function buildNow(a) {
+    new Ajax.Request(a.href);
+    hoverNotification2('Build scheduled', a.parentNode);
+    return false;
 }
 
 jQuery(document).ready(function() {
