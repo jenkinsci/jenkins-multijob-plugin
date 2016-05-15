@@ -267,12 +267,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             if (rebuildCause != null) {
                 MultiJobBuild prevBuild = (MultiJobBuild) rebuildCause.getUpstreamRun();
                 WasResumedAction wasResumedAction = prevBuild.getAction(WasResumedAction.class);
-                if (wasResumedAction != null && !wasResumedAction.isInactive()) {
+                if (wasResumedAction != null && wasResumedAction.isActive()) {
                     build.addAction(new MultiJobResumeControl(prevBuild));
                     build.addAction(new CauseAction(new ResumeCause(prevBuild)));
                     wasResumedAction.deactivate();
-                    build.save();
-                    build.reload();
                 } // else it's a plain rebuild
             }
         }

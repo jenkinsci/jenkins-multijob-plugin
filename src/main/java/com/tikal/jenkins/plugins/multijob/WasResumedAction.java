@@ -7,14 +7,14 @@ import hudson.model.Action;
  * The reason for this class is to handle build resuming correctly via rebuild plugin.
  */
 public final class WasResumedAction implements Action {
-    private boolean inactive = false;
+    private boolean active = true;
 
     public void deactivate() {
-        inactive = true;
+        active = false;
     }
 
-    public boolean isInactive() {
-        return inactive;
+    public boolean isActive() {
+        return active;
     }
 
     public String getIconFileName() {
@@ -32,7 +32,7 @@ public final class WasResumedAction implements Action {
     @Override
     public String toString() {
         return "WasResumedAction{" +
-                "inactive=" + inactive +
+                "active=" + active +
                 '}';
     }
 }
