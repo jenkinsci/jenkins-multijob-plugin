@@ -30,7 +30,7 @@ public final class SameNodeAsPrevParameters extends AbstractBuildParameters {
     public static class DescriptorImpl extends Descriptor<AbstractBuildParameters> {
         @Override
         public String getDisplayName() {
-            return "Build on the same node that the previous build";
+            return "Build on the same node as the previous build";
         }
     }
 }
