@@ -65,12 +65,6 @@ public class MultiJobItem {
 		this.weather = health.getDescription();
 		this.weatherIconUrl = health.getIconUrl();
 		this.healthScore = health.getScore();
-		/*
-		this.lastSuccess = null != project.getLastSuccessfulBuild() ? project.getLastSuccessfulBuild()
-			.getTimestampString() : "N/A";
-		this.lastFailure = null != project.getLastFailedBuild() ? project.getLastFailedBuild()
-			.getTimestampString() : "N/A";
-			*/
 	}
 
 	public MultiJobItem(String name, Result result, String statusIconColor, String weather, String weatherIconUrl,

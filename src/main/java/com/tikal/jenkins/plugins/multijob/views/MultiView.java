@@ -3,6 +3,7 @@ package com.tikal.jenkins.plugins.multijob.views;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
+import com.tikal.jenkins.plugins.multijob.MultiJobResumeControl;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 import com.tikal.jenkins.plugins.multijob.Plugin;
 import hudson.model.AbstractProject;
@@ -30,11 +31,14 @@ public class MultiView {
 	private List<MultiJobItem> multiJobItems;
 	private HashMap<String, Map<String, List<MultiJobBuild.SubBuild>>> subBuilds;
 	private static Jenkins jenkins = Jenkins.getInstance();
+	private boolean resume = false;
 
 	public MultiView(MultiJobProject multiJobProject) {
 		this.multiJobItems = new ArrayList<MultiJobItem>();
 		this.subBuilds = new HashMap<String, Map<String, List<MultiJobBuild.SubBuild>>>();
 		MultiJobBuild build = multiJobProject.getLastBuild();
+		MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
+		resume = null != control;
 
 		int buildNumber = null == build ? 0 : build.getNumber();
 		addBuildsLevel(subBuilds, build);
@@ -144,6 +148,12 @@ public class MultiView {
 			} else {
 				Job subProject = (Job) it;
 				if (null == subProject) continue;
+				if (resume) {
+					int bn = getResumedBuildNumber(project.getLastBuild(), subProject.getDisplayName());
+					if (0 != bn) {
+						buildNumber = bn;
+					}
+				}
 				addSimpleProject(subProject, buildNumber, ++currentCount, phaseId, childs);
 			}
 		}
@@ -206,4 +216,16 @@ public class MultiView {
 		ret.add(new MultiJobItem(project, buildNumber, count, level));
 	}
 
+	public int getResumedBuildNumber(MultiJobBuild multiJobBuild, String jobName) {
+		MultiJobResumeControl control = multiJobBuild.getAction(MultiJobResumeControl.class);
+		if (null != control) {
+			MultiJobBuild prev = (MultiJobBuild) control.getRun();
+			for (MultiJobBuild.SubBuild subBuild : prev.getSubBuilds()) {
+				if (jobName.equals(subBuild.getJobName()) && Result.SUCCESS.equals(subBuild.getResult())) {
+					return subBuild.getBuildNumber();
+				}
+			}
+		}
+		return 0;
+	}
 }
