@@ -4,6 +4,7 @@ import com.cisco.jenkins.plugins.script.PipingTask;
 import com.cisco.jenkins.plugins.script.ScriptRunner;
 import com.cisco.jenkins.plugins.script.config.ConfigFactory;
 import com.cisco.jenkins.plugins.script.config.ScriptConfig;
+import com.sonyericsson.rebuild.RebuildCause;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
@@ -20,6 +21,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.BuildListener;
+import hudson.model.CauseAction;
 import hudson.model.Computer;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
@@ -257,6 +259,19 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 } else {
                     runner.evaluate(scriptText);
                 }
+            }
+        }
+
+        if (Utils.rebuildPluginAvailable()) {
+            RebuildCause rebuildCause = build.getCause(RebuildCause.class);
+            if (rebuildCause != null) {
+                MultiJobBuild prevBuild = (MultiJobBuild) rebuildCause.getUpstreamRun();
+                WasResumedAction wasResumedAction = prevBuild.getAction(WasResumedAction.class);
+                if (wasResumedAction != null && wasResumedAction.isActive()) {
+                    build.addAction(new MultiJobResumeControl(prevBuild));
+                    build.addAction(new CauseAction(new ResumeCause(prevBuild)));
+                    wasResumedAction.deactivate();
+                } // else it's a plain rebuild
             }
         }
 

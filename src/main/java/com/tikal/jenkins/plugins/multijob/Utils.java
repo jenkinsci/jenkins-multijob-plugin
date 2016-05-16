@@ -2,6 +2,8 @@ package com.tikal.jenkins.plugins.multijob;
 
 import com.tikal.jenkins.plugins.multijob.views.TableProperty;
 import hudson.EnvVars;
+import hudson.PluginManager;
+import hudson.PluginWrapper;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.User;
@@ -57,5 +59,16 @@ public final class Utils {
             ret.put(entry.getKey(), entry.getValue());
         }
         return ret;
+    }
+
+    public static boolean rebuildPluginAvailable() {
+        try {
+            Class.forName("com.sonyericsson.rebuild.Rebuilder");
+            PluginManager pluginManager = Jenkins.getInstance().getPluginManager();
+            PluginWrapper rebuildPluginWrapper = pluginManager.getPlugin("rebuild");
+            return rebuildPluginWrapper != null && rebuildPluginWrapper.isActive();
+        } catch (ClassNotFoundException ignore) {
+            return false;
+        }
     }
 }
