@@ -37,8 +37,10 @@ public class MultiView {
 		this.multiJobItems = new ArrayList<MultiJobItem>();
 		this.subBuilds = new HashMap<String, Map<String, List<MultiJobBuild.SubBuild>>>();
 		MultiJobBuild build = multiJobProject.getLastBuild();
-		MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
-		resume = null != control;
+		if (null != build) {
+			MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
+			resume = null != control;
+		}
 
 		int buildNumber = null == build ? 0 : build.getNumber();
 		addBuildsLevel(subBuilds, build);
