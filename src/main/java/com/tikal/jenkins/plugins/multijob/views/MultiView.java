@@ -148,7 +148,7 @@ public class MultiView {
 			} else {
 				Job subProject = (Job) it;
 				if (null == subProject) continue;
-				if (resume) {
+				if (resume && config.getResumeCondition().isStart()) {
 					int bn = getResumedBuildNumber(project.getLastBuild(), subProject.getDisplayName());
 					if (0 != bn) {
 						buildNumber = bn;

@@ -21,6 +21,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.BuildListener;
+import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Computer;
 import hudson.model.DependecyDeclarer;
@@ -263,7 +264,17 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
 
         if (Utils.rebuildPluginAvailable()) {
-            RebuildCause rebuildCause = build.getCause(RebuildCause.class);
+            RebuildCause rebuildCause = null;
+            int buildNumber = 0;
+            for (Cause cause : build.getCauses()) {
+                if (cause instanceof RebuildCause) {
+                    RebuildCause r = (RebuildCause) cause;
+                    if (r.getUpstreamBuild() > buildNumber) {
+                        rebuildCause = r;
+                        buildNumber = r.getUpstreamBuild();
+                    }
+                }
+            }
             if (rebuildCause != null) {
                 MultiJobBuild prevBuild = (MultiJobBuild) rebuildCause.getUpstreamRun();
                 WasResumedAction wasResumedAction = prevBuild.getAction(WasResumedAction.class);

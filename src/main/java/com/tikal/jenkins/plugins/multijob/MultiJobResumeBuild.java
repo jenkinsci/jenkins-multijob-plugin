@@ -17,7 +17,7 @@ import java.util.List;
 
 public class MultiJobResumeBuild implements RunAction2 {
 
-    private final Run<?, ?> run;
+    private transient Run<?, ?> run;
 
     public MultiJobResumeBuild(Run<?, ?> run) {
         this.run = run;
