@@ -84,7 +84,6 @@
                     </td>
                     	 	<td class="no-wrap" width="10%">
  -					<label class="no-wrap" for="_${index}">parameters</label>
- -						<input id="_${index}" type="checkbox"/>
  -						<div>${it.getBuildParams(builder)}</div>
  				</td>
 	 				<td class="no-wrap" width="10%">
