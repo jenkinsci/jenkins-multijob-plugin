@@ -5,7 +5,12 @@ import hudson.EnvVars;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.model.AbstractBuild;
+import hudson.model.Action;
 import hudson.model.BuildListener;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
+import hudson.model.ParametersAction;
+import hudson.model.Run;
 import hudson.model.User;
 import jenkins.model.Jenkins;
 
@@ -13,7 +18,9 @@ import javax.annotation.Nonnull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -70,5 +77,23 @@ public final class Utils {
         } catch (ClassNotFoundException ignore) {
             return false;
         }
+    }
+
+    public static List<Action> copyBuildCauses(Run<?, ?> run) {
+        List<Action> actions = new ArrayList<Action>();
+        boolean hasUserIdCause = false;
+        for (Object cause : run.getCauses()) {
+            if (cause instanceof Cause.UserIdCause) {
+                hasUserIdCause = true;
+                actions.add(new CauseAction(new Cause.UserIdCause()));
+            } else {
+                actions.add(new CauseAction((Cause) cause));
+            }
+        }
+        if (!hasUserIdCause) {
+            actions.add(new CauseAction(new Cause.UserIdCause()));
+        }
+        actions.addAll(run.getActions(ParametersAction.class));
+        return actions;
     }
 }

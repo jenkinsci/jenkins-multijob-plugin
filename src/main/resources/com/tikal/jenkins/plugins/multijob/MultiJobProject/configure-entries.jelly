@@ -28,6 +28,10 @@ THE SOFTWARE.
     <f:entry title="Poll subjobs in addition to multijob when polling" field="pollSubjobs" help="/plugin/jenkins-multijob-plugin/help-pollsubjobs.html">
       <f:checkbox/>
     </f:entry>
+    <f:entry title="Continue job execution after Jenkins restart" field="surviveRestart"
+             help="/plugin/jenkins-multijob-plugin/help-surviveRestart.html">
+      <f:checkbox/>
+    </f:entry>
   </f:section>
 
   <p:config-trigger/>

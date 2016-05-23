@@ -13,7 +13,6 @@ import hudson.model.TaskListener;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.scm.PollingResult;
-import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.AlternativeUiTextProvider;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -29,7 +28,8 @@ import java.util.Map;
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
 
-        private volatile boolean pollSubjobs = false;
+    private volatile boolean pollSubjobs = false;
+    private volatile boolean surviveRestart = false;
 
 	@SuppressWarnings("rawtypes")
 	private MultiJobProject(ItemGroup parent, String name) {
@@ -115,45 +115,48 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		return Jenkins.getInstance().getRootUrl();
 	}
 
-        @Override
-        public PollingResult poll(TaskListener listener) {
-            //Preserve default behavior unless specified otherwise
-            if (!getPollSubjobs()) {
-                return super.poll(listener);
-            }
+    @Override
+    public PollingResult poll(TaskListener listener) {
+        //Preserve default behavior unless specified otherwise
+        if (!getPollSubjobs()) {
+            return super.poll(listener);
+        }
 
-            PollingResult result = super.poll(listener);
-            //If multijob has changes, save the effort of checking children
-            if (result.hasChanges()) {
-                return result;
-            }
-            List<AbstractProject> downProjs = getDownstreamProjects();
-            PollingResult tmpResult = new PollingResult(PollingResult.Change.NONE);
-            //return when we get changes to save resources
-            //If we don't get changes, return the most significant result
-            for (AbstractProject downProj : downProjs) {
-                tmpResult = downProj.poll(listener);
-                if (result.change.ordinal() < tmpResult.change.ordinal()) {
-                    result = tmpResult;
-                    if (result.hasChanges()) {
-                        return result;
-                    }
-                }
-            }
+        PollingResult result = super.poll(listener);
+        //If multijob has changes, save the effort of checking children
+        if (result.hasChanges()) {
             return result;
         }
-
-        public boolean getPollSubjobs() {
-            return pollSubjobs;
+        List<AbstractProject> downProjs = getDownstreamProjects();
+        PollingResult tmpResult = new PollingResult(PollingResult.Change.NONE);
+        //return when we get changes to save resources
+        //If we don't get changes, return the most significant result
+        for (AbstractProject downProj : downProjs) {
+            tmpResult = downProj.poll(listener);
+            if (result.change.ordinal() < tmpResult.change.ordinal()) {
+                result = tmpResult;
+                if (result.hasChanges()) {
+                    return result;
+                }
+            }
         }
+        return result;
+    }
 
-        public void setPollSubjobs(boolean poll) {
-            pollSubjobs = poll;
-        }
+    public boolean getPollSubjobs() {
+        return pollSubjobs;
+    }
 
-    public AbstractTestResultAction<?> getTestResultAction() {
-        MultiJobBuild b = getLastCompletedBuild();
-        return b != null ? b.getAction(AbstractTestResultAction.class) : null;
+    public void setPollSubjobs(boolean poll) {
+        pollSubjobs = poll;
+    }
+
+    public boolean isSurviveRestart() {
+        return surviveRestart;
+    }
+
+    public void setSurviveRestart(boolean surviveRestart) {
+        this.surviveRestart = surviveRestart;
     }
 
     @Override
@@ -166,6 +169,10 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
             k = "pollSubjobs";
             if (json.has(k)) {
                 setPollSubjobs(json.getBoolean(k));
+            }
+            k = "surviveRestart";
+            if (json.has(k)) {
+                setSurviveRestart(json.getBoolean(k));
             }
         }
     }

@@ -5,7 +5,7 @@ import hudson.model.Run;
 
 public class MultiJobResumeControl implements Action {
 
-    private final Run<?, ?> run;
+    private transient Run<?, ?> run;
 
     public MultiJobResumeControl(Run<?, ?> run) {
         this.run = run;

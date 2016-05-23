@@ -15,6 +15,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.console.HyperlinkNote;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -229,10 +230,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
+        MultiJobBuild multiJobBuild = (MultiJobBuild) build;
+        MultiJobProject thisProject = multiJobBuild.getProject();
+
         if (null == executionType) {
             executionType = ExecutionType.PARALLEL;
         }
 
+
+        //TODO fix possible NPE
         boolean isMasterNode = Computer.currentComputer().getNode().getDescriptor() instanceof Jenkins.DescriptorImpl;
 
         if (enableGroovyScript) {
@@ -314,8 +320,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
 
         Jenkins jenkins = Jenkins.getInstance();
-        MultiJobBuild multiJobBuild = (MultiJobBuild) build;
-        MultiJobProject thisProject = multiJobBuild.getProject();
         Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new LinkedHashMap<PhaseSubJob, PhaseJobsConfig>();
         final CounterManager phaseCounters = new CounterManager();
 
@@ -590,7 +594,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             this.queue = queue;
         }
 
-        public Boolean call() {
+        public Boolean call() throws IOException {
             Result result = null;
             AbstractBuild jobBuild = null;
             try {

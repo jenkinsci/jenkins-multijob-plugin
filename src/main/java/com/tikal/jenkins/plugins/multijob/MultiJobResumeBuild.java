@@ -1,9 +1,7 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.Action;
-import hudson.model.Cause;
 import hudson.model.CauseAction;
-import hudson.model.ParametersAction;
 import hudson.model.Queue;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
@@ -12,7 +10,6 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MultiJobResumeBuild implements RunAction2 {
@@ -48,7 +45,7 @@ public class MultiJobResumeBuild implements RunAction2 {
         }
 
         final MultiJobResumeControl control = new MultiJobResumeControl(run);
-        List<Action> actions = copyBuildCauses();
+        List<Action> actions = Utils.copyBuildCauses(run);
         actions.add(control);
         actions.add(new CauseAction(new ResumeCause(run)));
         Jenkins.getInstance().getQueue().schedule2((Queue.Task) run.getParent(), 0, actions);
@@ -56,26 +53,12 @@ public class MultiJobResumeBuild implements RunAction2 {
     }
 
     public void onAttached(Run<?, ?> run) {
+        this.run = run;
     }
 
     public void onLoad(Run<?, ?> run) {
+        this.run = run;
     }
 
-    private List<Action> copyBuildCauses() {
-        List<Action> actions = new ArrayList<Action>();
-        boolean hasUserIdCause = false;
-        for (Object cause : run.getCauses()) {
-            if (cause instanceof Cause.UserIdCause) {
-                hasUserIdCause = true;
-                actions.add(new CauseAction(new Cause.UserIdCause()));
-            } else {
-                actions.add(new CauseAction((Cause) cause));
-            }
-        }
-        if (!hasUserIdCause) {
-            actions.add(new CauseAction(new Cause.UserIdCause()));
-        }
-        actions.addAll(run.getActions(ParametersAction.class));
-        return actions;
-    }
+
 }

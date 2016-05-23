@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.XmlFile;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
@@ -21,11 +22,13 @@ import org.kohsuke.stapler.export.ExportedBean;
 import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 
 @ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
@@ -33,6 +36,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     private List<SubBuild> subBuilds;
     private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
     private Map<String, SubBuild> subBuildsMap = new HashMap<String, SubBuild>();
+
+    private static final Logger LOGGER = Logger.getLogger(MultiJobBuild.class.getName());
 
     public MultiJobBuild(MultiJobProject project) throws IOException {
         super(project);
@@ -118,6 +123,18 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             getSubBuilds().add(subBuild);
         }
         subBuildsMap.put(key, subBuild);
+
+        if (project.isSurviveRestart() && isBuilding()) {
+            String path = project.getConfigFile().getFile().getParent() + "/com.tikal.jenkins.plugins.multijob" +
+                    ".resume" + String.valueOf(getNumber()) + ".xml";
+            XmlFile resumeConfigFile = new XmlFile(new File(path));
+            try {
+                resumeConfigFile.write(this);
+            } catch (IOException e) {
+                LOGGER.severe("Failed to save build state to resume config for " + getProject().getDisplayName() +
+                                      " #" + getNumber());
+            }
+        }
     }
 
     @Exported
@@ -131,7 +148,21 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             Build<MultiJobProject, MultiJobBuild>.BuildExecution {
         @Override
         public Result run(BuildListener listener) throws Exception {
-            Result result = super.run(listener);
+            super.run(listener);
+            String path = getProject().getRootDir().getAbsolutePath() + "/com.tikal.jenkins.plugins.multijob.resume" +
+                    String.valueOf(getNumber()) + ".xml";
+            File configFile = new File(path);
+            if (configFile.exists()) {
+                try {
+                    Files.delete(configFile.toPath());
+                } catch (IOException e) {
+                    listener.getLogger().println("[MultiJobPlugin] Failed to delete resume build config");
+                }
+            }
+            return computeResult();
+        }
+
+        private Result computeResult() {
             MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
             if (isAborted()) {
                 super.getBuild().addAction(action);
@@ -141,9 +172,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                 super.getBuild().addAction(action);
                 return Result.FAILURE;
             }
-            if (isUnstable())
+            if (isUnstable()) {
                 return Result.UNSTABLE;
-            return result;
+            }
+            return Result.SUCCESS;
         }
 
         private boolean isAborted() {

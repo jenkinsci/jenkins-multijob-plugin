@@ -159,17 +159,6 @@ table(style: "margin-top: 1em; margin-left:1em;") {
     }
 }
 
-if (null != my.getTestResultAction()) {
-    t.summary(icon: "clipboard.png") {
-        a(href: "lastCompletedBuild/testReport/") {
-            text("Latest Test Result")
-        }
-        text(" ")
-        t.test-result(it: my.getTestResultAction()) {
-        }
-    }
-}
-
 st.include(page: "updownprojects.jelly")
 
 div(id: "tablePropertyDialog", title: "Configure table columnns") {

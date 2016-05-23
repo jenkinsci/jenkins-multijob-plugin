@@ -42,10 +42,6 @@ public class Plugin extends hudson.Plugin implements Describable<Plugin> {
         load();
         instance = Jenkins.getInstance().getPlugin(Plugin.class);
         init();
-        System.out.println("Plugin map");
-        for (Map.Entry<String, Boolean> entry : columns.entrySet()) {
-            System.out.println(entry.getKey() + " -> " + entry.getValue());
-        }
     }
 
     public Descriptor<Plugin> getDescriptor() {
