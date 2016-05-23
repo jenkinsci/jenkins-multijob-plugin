@@ -114,30 +114,35 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     }
 
     private void updateLastMetrics(SubBuild subBuild) {
-        for (SubBuild sub : getPreviousBuild().getSubBuilds()) {
-            boolean is = false;
-            if (sub.getJobName().equals(subBuild.getJobName())) {
-                if (null != sub.getPhaseName() && null != subBuild.getPhaseName()) {
-                    is = sub.getPhaseName().equals(subBuild.getPhaseName());
-                } else {
-                    is = true;
-                }
-            }
-            if (is) {
-                Long successTimestamp = sub.getSuccessTimestamp();
-                Long failureTimestamp = sub.getFailureTimestamp();
-                Result result = subBuild.getResult();
-                if (null != result) {
-                    if (Result.SUCCESS.equals(result)) {
-                        successTimestamp = subBuild.getBuild().getTimeInMillis();
-                    }
-                    if (Result.FAILURE.equals(result)) {
-                        failureTimestamp = subBuild.getBuild().getTimeInMillis();
+        if (null != getPreviousBuild()) {
+            for (SubBuild sub : getPreviousBuild().getSubBuilds()) {
+                boolean is = false;
+                if (sub.getJobName().equals(subBuild.getJobName())) {
+                    if (null != sub.getPhaseName() && null != subBuild.getPhaseName()) {
+                        is = sub.getPhaseName().equals(subBuild.getPhaseName());
+                    } else {
+                        is = true;
                     }
                 }
-                subBuild.setSuccessTimestamp(successTimestamp);
-                subBuild.setFailureTimestamp(failureTimestamp);
+                if (is) {
+                    Long successTimestamp = sub.getSuccessTimestamp();
+                    Long failureTimestamp = sub.getFailureTimestamp();
+                    Result result = subBuild.getResult();
+                    if (null != result) {
+                        if (Result.SUCCESS.equals(result)) {
+                            successTimestamp = subBuild.getBuild().getTimeInMillis();
+                        }
+                        if (Result.FAILURE.equals(result)) {
+                            failureTimestamp = subBuild.getBuild().getTimeInMillis();
+                        }
+                    }
+                    subBuild.setSuccessTimestamp(successTimestamp);
+                    subBuild.setFailureTimestamp(failureTimestamp);
+                }
             }
+        } else {
+            subBuild.setSuccessTimestamp(subBuild.getBuild().getTimeInMillis());
+            subBuild.setFailureTimestamp(subBuild.getBuild().getTimeInMillis());
         }
     }
 
