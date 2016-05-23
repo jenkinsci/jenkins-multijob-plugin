@@ -85,7 +85,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 
     @JavaScriptMethod
     public boolean isBuilding() {
-        return null != this.getLastBuild() ? this.getLastBuild().isBuilding() : false;
+        return null != this.getLastBuild() && this.getLastBuild().isBuilding();
     }
 
     @JavaScriptMethod

@@ -113,7 +113,36 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         }
     }
 
+    private void updateLastMetrics(SubBuild subBuild) {
+        for (SubBuild sub : getPreviousBuild().getSubBuilds()) {
+            boolean is = false;
+            if (sub.getJobName().equals(subBuild.getJobName())) {
+                if (null != sub.getPhaseName() && null != subBuild.getPhaseName()) {
+                    is = sub.getPhaseName().equals(subBuild.getPhaseName());
+                } else {
+                    is = true;
+                }
+            }
+            if (is) {
+                Long successTimestamp = sub.getSuccessTimestamp();
+                Long failureTimestamp = sub.getFailureTimestamp();
+                Result result = subBuild.getResult();
+                if (null != result) {
+                    if (Result.SUCCESS.equals(result)) {
+                        successTimestamp = subBuild.getBuild().getTimeInMillis();
+                    }
+                    if (Result.FAILURE.equals(result)) {
+                        failureTimestamp = subBuild.getBuild().getTimeInMillis();
+                    }
+                }
+                subBuild.setSuccessTimestamp(successTimestamp);
+                subBuild.setFailureTimestamp(failureTimestamp);
+            }
+        }
+    }
+
     public void addSubBuild(SubBuild subBuild) {
+        updateLastMetrics(subBuild);
         String key = subBuild.getPhaseName().concat(subBuild.getJobName())
                 .concat(String.valueOf(subBuild.getBuildNumber()));
         if (subBuildsMap.containsKey(key)) {
@@ -220,6 +249,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final boolean aborted;
         private final AbstractBuild<?, ?> build;
 
+        private Long successTimestamp = null;
+        private Long failureTimestamp = null;
+
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
@@ -253,7 +285,23 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = retry;
             this.aborted = aborted;
-			this.build = build;
+            this.build = build;
+        }
+
+        public Long getSuccessTimestamp() {
+            return successTimestamp;
+        }
+
+        public void setSuccessTimestamp(Long successTimestamp) {
+            this.successTimestamp = successTimestamp;
+        }
+
+        public Long getFailureTimestamp() {
+            return failureTimestamp;
+        }
+
+        public void setFailureTimestamp(Long failureTimestamp) {
+            this.failureTimestamp = failureTimestamp;
         }
 
         @Exported

@@ -236,7 +236,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if (null == executionType) {
             executionType = ExecutionType.PARALLEL;
         }
-        
+
         Computer computer = Computer.currentComputer();
         boolean isMasterNode = true;
         if (null != computer) {
@@ -907,8 +907,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     private void abortSubBuild(MultiJobBuild multiJobBuild, MultiJobProject multiJobProject, AbstractBuild<?, ?> jobBuild) {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
-                multiJobBuild.getNumber(), jobBuild.getProject().getName(),
-                jobBuild.getNumber(), phaseName, Result.ABORTED, BallColor.ABORTED.getImage(), "", jobBuild.getUrl(), false, true, jobBuild);
+                                         multiJobBuild.getNumber(), jobBuild.getProject().getName(),
+                                         jobBuild.getNumber(), phaseName, Result.ABORTED, BallColor.ABORTED.getImage
+                (), "", jobBuild.getUrl(), false, true, jobBuild);
         multiJobBuild.addSubBuild(subBuild);
     }
 

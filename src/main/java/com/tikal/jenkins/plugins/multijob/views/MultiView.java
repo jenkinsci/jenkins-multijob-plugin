@@ -6,6 +6,7 @@ import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.MultiJobResumeControl;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 import com.tikal.jenkins.plugins.multijob.Plugin;
+import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.HealthReport;
 import hudson.model.Item;
@@ -21,6 +22,7 @@ import org.jenkinsci.plugins.conditionalbuildstep.singlestep.SingleConditionalBu
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,8 +36,8 @@ public class MultiView {
 	private boolean resume = false;
 
 	public MultiView(MultiJobProject multiJobProject) {
-		this.multiJobItems = new ArrayList<MultiJobItem>();
-		this.subBuilds = new HashMap<String, Map<String, List<MultiJobBuild.SubBuild>>>();
+		this.multiJobItems = new ArrayList<>();
+		this.subBuilds = new HashMap<>();
 		MultiJobBuild build = multiJobProject.getLastBuild();
 		if (null != build) {
 			MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
@@ -45,7 +47,16 @@ public class MultiView {
 		int buildNumber = null == build ? 0 : build.getNumber();
 		addBuildsLevel(subBuilds, build);
 
-		addTopLevelProject(multiJobProject, buildNumber, multiJobItems);
+		String lastSuccess = "N/A";
+		String lastFailure = "N/A";
+		if (null != multiJobProject.getLastSuccessfulBuild()) {
+			lastSuccess = multiJobProject.getLastSuccessfulBuild().getTimestampString();
+		}
+		if (null != multiJobProject.getLastFailedBuild()) {
+			lastFailure = multiJobProject.getLastFailedBuild().getTimestampString();
+		}
+
+		addTopLevelProject(multiJobProject, buildNumber, multiJobItems, lastSuccess, lastFailure);
 
 		initUserProperty();
 	}
@@ -73,11 +84,11 @@ public class MultiView {
 				String jobName = subBuild.getJobName();
 				Map<String, List<MultiJobBuild.SubBuild>> map = ret.get(phaseName);
 				if (null == map) {
-					map = new HashMap<String, List<MultiJobBuild.SubBuild>>();
+					map = new HashMap<>();
 				}
 				List<MultiJobBuild.SubBuild> subList = map.get(jobName);
 				if (null == subList) {
-					subList = new LinkedList<MultiJobBuild.SubBuild>();
+					subList = new LinkedList<>();
 				}
 				subList.add(subBuild);
 				map.put(jobName, subList);
@@ -101,8 +112,9 @@ public class MultiView {
 		return multiJobItems;
 	}
 
-	private void addTopLevelProject(MultiJobProject project, int buildNumber, List<MultiJobItem> ret) {
-		addMultiProject(project, buildNumber, 0, 0, ret);
+	private void addTopLevelProject(MultiJobProject project, int buildNumber, List<MultiJobItem> ret, String
+			lastSuccess, String lastFailure) {
+		addMultiProject(project, buildNumber, 0, 0, ret, lastSuccess, lastFailure);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -113,12 +125,11 @@ public class MultiView {
 		int phaseId = currentCount;
 		MultiJobBuilder reactorBuilder = (MultiJobBuilder) builder;
 		List<PhaseJobsConfig> subProjects = reactorBuilder.getPhaseJobs();
-		//Queue<PhaseJobsConfig> subProjects = new LinkedList<PhaseJobsConfig>(reactorBuilder.getPhaseJobs());
 		String phaseName = reactorBuilder.getPhaseName();
 
 		Map<String, List<MultiJobBuild.SubBuild>> phaseProjects = subBuilds.get(phaseName);
 		if (null == phaseProjects) {
-			phaseProjects = new HashMap<String, List<MultiJobBuild.SubBuild>>();
+			phaseProjects = new HashMap<>();
 		}
 
 
@@ -143,20 +154,33 @@ public class MultiView {
 			}
 
 			phaseProjects.put(it.getName(), subs);
-			int buildNumber = null != subBuild ? subBuild.getBuildNumber() : 0;
+			int buildNumber = 0;
+			String lastSuccess = "N/A";
+			String lastFailure = "N/A";
+			if (null != subBuild) {
+				buildNumber = subBuild.getBuildNumber();
+				if (null != subBuild.getSuccessTimestamp()) {
+					long successDuration = new GregorianCalendar().getTimeInMillis() - subBuild.getSuccessTimestamp();
+					lastSuccess = Util.getPastTimeString(successDuration);
+				}
+				if (null != subBuild.getFailureTimestamp()) {
+					long failureDuration = new GregorianCalendar().getTimeInMillis() - subBuild.getFailureTimestamp();
+					lastFailure = Util.getPastTimeString(failureDuration);
+				}
+			}
 			if (it instanceof MultiJobProject) {
 				MultiJobProject subProject = (MultiJobProject) it;
-				currentCount = addMultiProject(subProject, buildNumber, phaseId, currentCount, childs);
+				currentCount = addMultiProject(subProject, buildNumber, phaseId, currentCount, childs, lastSuccess,
+											   lastFailure);
 			} else {
 				Job subProject = (Job) it;
-				if (null == subProject) continue;
 				if (resume && config.getResumeCondition().isStart()) {
 					int bn = getResumedBuildNumber(project.getLastBuild(), subProject.getDisplayName());
 					if (0 != bn) {
 						buildNumber = bn;
 					}
 				}
-				addSimpleProject(subProject, buildNumber, ++currentCount, phaseId, childs);
+				addSimpleProject(subProject, buildNumber, ++currentCount, phaseId, childs, lastSuccess, lastFailure);
 			}
 		}
 
@@ -190,9 +214,9 @@ public class MultiView {
 	}
 
 	private int addMultiProject(MultiJobProject project, int buildNumber, int level, int count,
-	                            List<MultiJobItem> ret) {
+	                            List<MultiJobItem> ret, String lastSuccess, String lastFailure) {
 		int currentCount = count;
-		ret.add(new MultiJobItem(project, buildNumber, ++currentCount, level));
+		ret.add(new MultiJobItem(project, buildNumber, ++currentCount, level, lastSuccess, lastFailure));
 
 		for (Builder builder : project.getBuilders()) {
 			if (builder instanceof MultiJobBuilder) {
@@ -214,8 +238,9 @@ public class MultiView {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void addSimpleProject(Job project, int buildNumber, int count, int level, List<MultiJobItem> ret) {
-		ret.add(new MultiJobItem(project, buildNumber, count, level));
+	private void addSimpleProject(Job project, int buildNumber, int count, int level, List<MultiJobItem> ret, String
+			lastSuccess, String lastFailure) {
+		ret.add(new MultiJobItem(project, buildNumber, count, level, lastSuccess, lastFailure));
 	}
 
 	public int getResumedBuildNumber(MultiJobBuild multiJobBuild, String jobName) {
