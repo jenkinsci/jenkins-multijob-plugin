@@ -1,23 +1,20 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import java.util.logging.Logger;
-
-import hudson.matrix.MatrixRun;
-import hudson.plugins.copyartifact.BuildFilter;
-import hudson.plugins.copyartifact.BuildSelector;
-import hudson.plugins.copyartifact.Messages;
-import hudson.plugins.copyartifact.SimpleBuildSelectorDescriptor;
-import jenkins.model.Jenkins;
-
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import hudson.EnvVars;
 import hudson.Extension;
+import hudson.matrix.MatrixRun;
 import hudson.model.Cause;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Descriptor;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.plugins.copyartifact.BuildFilter;
+import hudson.plugins.copyartifact.BuildSelector;
+import hudson.plugins.copyartifact.SimpleBuildSelectorDescriptor;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.util.logging.Logger;
 
 /**
  * Copy artifacts from the build that was part of this MultiJob build.
@@ -72,7 +69,7 @@ public class MultiJobBuildSelector extends BuildSelector {
         return true;
     }
 
-    @Extension(ordinal=20)
+    @Extension(optional = true, ordinal=20)
     public static final Descriptor<BuildSelector> DESCRIPTOR =
             new SimpleBuildSelectorDescriptor(
                     MultiJobBuildSelector.class,
