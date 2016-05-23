@@ -236,10 +236,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if (null == executionType) {
             executionType = ExecutionType.PARALLEL;
         }
-
-
-        //TODO fix possible NPE
-        boolean isMasterNode = Computer.currentComputer().getNode().getDescriptor() instanceof Jenkins.DescriptorImpl;
+        
+        Computer computer = Computer.currentComputer();
+        boolean isMasterNode = true;
+        if (null != computer) {
+            isMasterNode = computer.getNode().getDescriptor() instanceof Jenkins.DescriptorImpl;
+        }
 
         if (enableGroovyScript) {
             if (isRunOnSlave && !isMasterNode) {
