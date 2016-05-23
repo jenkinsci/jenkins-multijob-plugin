@@ -93,7 +93,7 @@ public class MultiItemListener extends ItemListener {
                     }
                 }
             }
-            
+
 
             if (item.isSurviveRestart()) {
                 File[] configs = item.getRootDir().listFiles((dir, name) -> {
