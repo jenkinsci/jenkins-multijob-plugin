@@ -31,10 +31,10 @@ public class ResumeCause extends Cause.UpstreamCause {
 	public void print(TaskListener listener) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("[MultiJob] Resume build ");
-		if (afterRestart) {
-			sb.append("after restart ");
-		}
 		sb.append(HyperlinkNote.encodeTo(getUpstreamUrl(), "#" + String.valueOf(getUpstreamBuild())));
 		listener.getLogger().println(sb.toString());
+		if (afterRestart) {
+			sb.append(" after Jenkins restart");
+		}
 	}
 }
