@@ -192,12 +192,14 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                     listener.getLogger().println("[MultiJobPlugin] Failed to delete resume build config");
                 }
             }
-            Jenkins j = Jenkins.getInstance();
-            if (null == j || j.isTerminating()) {
-                String restartPath = getProject().getRootDir().getAbsolutePath() + "/com.tikal.jenkins.plugins" +
-                        ".multijob.restart" + String.valueOf(getNumber()) + ".xml";
-                File restartFile = new File(restartPath);
-                restartFile.createNewFile();
+            if (project.isSurviveRestart()) {
+                Jenkins j = Jenkins.getInstance();
+                if (null == j || j.isTerminating()) {
+                    String restartPath = getProject().getRootDir().getAbsolutePath() + "/com.tikal.jenkins.plugins" +
+                            ".multijob.restart" + String.valueOf(getNumber()) + ".xml";
+                    File restartFile = new File(restartPath);
+                    restartFile.createNewFile();
+                }
             }
             return computeResult();
         }

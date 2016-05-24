@@ -307,7 +307,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     AbstractProject childProject = (AbstractProject) item;
                     AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
                     if (null != childBuild) {
-                        if (childBuild.getResult().equals(Result.FAILURE)) {
+                        if (childBuild.getResult().equals(Result.FAILURE)
+                                || childBuild.getResult().equals(Result.ABORTED)) {
                             resume = true;
                             failedBuildMap.put(childProject.getUrl(), subBuild);
                         } else {

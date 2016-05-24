@@ -106,6 +106,11 @@ public class MultiItemListener extends ItemListener {
                     MultiJobBuild build = item.getBuildByNumber(buildNumber);
                     if (null != build) {
                         scheduleResumeBuild(item, build);
+                        try {
+                            Files.delete(restartFlag.toPath());
+                        } catch (IOException e) {
+                            LOGGER.warning("Failed to remove restart flag for " + item.getDisplayName() + " #" + buildNumber);
+                        }
                     }
                 }
 
@@ -143,7 +148,7 @@ public class MultiItemListener extends ItemListener {
     private void scheduleResumeBuild(MultiJobProject project, MultiJobBuild build) {
         List<Action> actions = Utils.copyBuildCauses(build);
         actions.add(new MultiJobResumeControl(build));
-        actions.add(new CauseAction(new ResumeCause(build)));
+        actions.add(new CauseAction(new ResumeCause(build, true)));
         Jenkins.getActiveInstance().getQueue().schedule2(project, project.getQuietPeriod(), actions);
     }
 }
