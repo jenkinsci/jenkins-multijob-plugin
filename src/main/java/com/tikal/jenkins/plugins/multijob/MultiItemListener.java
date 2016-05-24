@@ -28,7 +28,9 @@ public class MultiItemListener extends ItemListener {
 
     private static final Logger LOGGER = Logger.getLogger(MultiItemListener.class.getName());
 
-    private static final String REGEX = "com.tikal.jenkins.plugins.multijob.resume\\d+.xml";
+    private static final String CONFIG_REGEX = "com.tikal.jenkins.plugins.multijob.resume\\d+.xml";
+
+    private static final String RESTART_REGEX = "com.tikal.jenkins.plugins.multijob.restart\\d+.xml";
 
     @Override
     public void onLoaded() {
@@ -94,10 +96,22 @@ public class MultiItemListener extends ItemListener {
                 }
             }
 
-
             if (item.isSurviveRestart()) {
+                File[] restartFlags = item.getRootDir().listFiles((dir, name) -> {
+                    return name.matches(RESTART_REGEX);
+                });
+
+                for (File restartFlag : restartFlags) {
+                    int buildNumber = Integer.valueOf(restartFlag.getName().replaceAll("\\D+", ""));
+                    MultiJobBuild build = item.getBuildByNumber(buildNumber);
+                    if (null != build) {
+                        scheduleResumeBuild(item, build);
+                    }
+                }
+
+
                 File[] configs = item.getRootDir().listFiles((dir, name) -> {
-                    return name.matches(REGEX);
+                    return name.matches(CONFIG_REGEX);
                 });
 
                 for (File config : configs) {
@@ -110,12 +124,7 @@ public class MultiItemListener extends ItemListener {
                         try {
                             Files.copy(config.toPath(), buildXmlPath);
                             MultiJobBuild build = new MultiJobBuild(item, buildDir.toFile());
-
-                            final MultiJobResumeControl control = new MultiJobResumeControl(build);
-                            List<Action> actions = Utils.copyBuildCauses(build);
-                            actions.add(control);
-                            actions.add(new CauseAction(new ResumeCause(build)));
-                            Jenkins.getActiveInstance().getQueue().schedule2(item, item.getQuietPeriod(), actions);
+                            scheduleResumeBuild(item, build);
                         } catch (IOException e) {
                             LOGGER.warning("Failed to copy build config for " + item.getDisplayName() + " #" + buildNumber);
                         }
@@ -129,5 +138,12 @@ public class MultiItemListener extends ItemListener {
                 }
             }
         });
+    }
+
+    private void scheduleResumeBuild(MultiJobProject project, MultiJobBuild build) {
+        List<Action> actions = Utils.copyBuildCauses(build);
+        actions.add(new MultiJobResumeControl(build));
+        actions.add(new CauseAction(new ResumeCause(build)));
+        Jenkins.getActiveInstance().getQueue().schedule2(project, project.getQuietPeriod(), actions);
     }
 }
