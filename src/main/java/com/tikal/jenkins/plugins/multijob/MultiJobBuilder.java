@@ -108,6 +108,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      */
     public static final String PERSISTENT_VARS_PREFIX = "RESUMABLE_";
 
+    @Deprecated
+    public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
+                           ContinuationCondition continuationCondition) {
+        this(phaseName, phaseJobs, continuationCondition, ExecutionType.PARALLEL);
+    }
+
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
             ContinuationCondition continuationCondition, ExecutionType executionType) {
@@ -345,6 +351,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             return true;
         }
 
+        if (null == executionType) {
+            executionType = ExecutionType.PARALLEL;
+        }
         int poolSize = executionType.isParallel() ? subTasks.size() : 1;
         ExecutorService executor = Executors.newFixedThreadPool(poolSize);
         Set<Result> jobResults = new HashSet<Result>();
