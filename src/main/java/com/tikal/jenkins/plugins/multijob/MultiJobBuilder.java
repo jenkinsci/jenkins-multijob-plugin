@@ -1,25 +1,55 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
+import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
+import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
+import com.tikal.jenkins.plugins.multijob.counters.CounterManager;
+import groovy.util.Eval;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.console.HyperlinkNote;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.BallColor;
+import hudson.model.Build;
+import hudson.model.BuildListener;
+import hudson.model.DependecyDeclarer;
+import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
+import hudson.model.Executor;
+import hudson.model.Item;
 import hudson.model.Queue.QueueAction;
+import hudson.model.Result;
+import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
+import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
+import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,34 +65,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
-
-import net.sf.json.JSONObject;
-import jenkins.model.Jenkins;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
-
-import org.jenkinsci.lib.envinject.EnvInjectException;
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
-import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
-import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
-import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
-import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
-import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
-import com.tikal.jenkins.plugins.multijob.counters.CounterManager;
-
-
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-
-import groovy.util.*;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     /**
@@ -226,7 +228,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         Jenkins jenkins = Jenkins.getInstance();
         MultiJobBuild multiJobBuild = (MultiJobBuild) build;
         MultiJobProject thisProject = multiJobBuild.getProject();
-        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new LinkedHashMap<PhaseSubJob, PhaseJobsConfig>(
+        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
                 phaseJobs.size());
         final CounterManager phaseCounters = new CounterManager();
 
@@ -430,6 +432,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             this.queue = queue;
         }
 
+        /**
+         * Subtask execution
+         * @return value is not used in the builder. Can be used to return some state of the task in the future.
+         */
         public Object call() {
             Result result = null;
             AbstractBuild jobBuild = null;
@@ -1064,13 +1070,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     public enum ExecutionType {
 
-        PARALLEL("Running multijob jobs in parallel") {
+        PARALLEL("Running phase jobs in parallel") {
             @Override
             public boolean isParallel() {
                 return true;
             }
         },
-        SEQUENTIALLY("Running multiple jobs sequentially") {
+        SEQUENTIALLY("Running phase jobs sequentially") {
             @Override
             public boolean isParallel() {
                 return false;
