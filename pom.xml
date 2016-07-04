@@ -116,7 +116,7 @@
 		<dependency>
 			<groupId>com.cisco.jenkins.plugins</groupId>
 			<artifactId>groovy-script-plugin</artifactId>
-			<version>1.56.0</version>
+			<version>1.66.0</version>
 		</dependency>
 
 		<dependency>

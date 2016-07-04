@@ -261,9 +261,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 runner.bindVariablesMap(Utils.getBindings(bindings));
                 if (isUseScriptFile) {
                     if (isScriptOnSlave) {
-                        runner.evaluateOnSlaveFs(scriptPath);
+                        runner.evaluateOnSlaveFs(expandToken(scriptPath, build, listener));
                     } else {
-                        runner.evaluateFromWorkspace(scriptPath);
+                        runner.evaluateFromWorkspace(expandToken(scriptPath, build, listener));
                     }
                 } else {
                     runner.evaluate(scriptText);
@@ -404,9 +404,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     runner.bindVariablesMap(binding);
                     if (phaseConfig.isUseScriptFile() && null != phaseConfig.getScriptPath()) {
                         if (phaseConfig.isJobScriptOnSlaveNode()) {
-                            jobScriptEvalRes = runner.evaluateOnSlaveFs(phaseConfig.getScriptPath());
+                            jobScriptEvalRes = runner
+                                    .evaluateOnSlaveFs(expandToken(phaseConfig.getScriptPath(), build, listener));
                         } else {
-                            jobScriptEvalRes = runner.evaluateFromWorkspace(phaseConfig.getScriptPath());
+                            jobScriptEvalRes = runner
+                                    .evaluateFromWorkspace(expandToken(phaseConfig.getScriptPath(), build, listener));
                         }
                     } else if (null != phaseConfig.getJobScript()) {
                         jobScriptEvalRes = runner.evaluate(phaseConfig.getJobScript());
@@ -458,9 +460,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     runner.bindVariablesMap(binding);
                     if (phaseConfig.isUseResumeScriptFile()) {
                         if (phaseConfig.isResumeScriptOnSlaveNode()) {
-                            isStart = runner.evaluateOnSlaveFs(phaseConfig.getResumeScriptPath());
+                            isStart = runner
+                                    .evaluateOnSlaveFs(expandToken(phaseConfig.getResumeScriptPath(), build, listener));
                         } else {
-                            isStart = runner.evaluateFromWorkspace(phaseConfig.getResumeScriptPath());
+                            isStart = runner.evaluateFromWorkspace(expandToken(phaseConfig.getResumeScriptPath(),
+                                    build, listener));
                         }
                     } else {
                         isStart = runner.evaluate(phaseConfig.getResumeScriptText());
