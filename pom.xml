@@ -53,7 +53,7 @@
 		<connection>scm:git:git://github.com:xored/tikal-multijob-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:xored/tikal-multijob-plugin.git</developerConnection>
 		<url>https://github.com/xored/tikal-multijob-plugin.git</url>
-		<tag>HEAD<i/tag>
+		<tag>HEAD</tag>
 	</scm>
 
 
