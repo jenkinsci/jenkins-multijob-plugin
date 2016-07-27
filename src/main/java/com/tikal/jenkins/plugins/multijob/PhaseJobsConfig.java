@@ -363,16 +363,15 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	}
 
-	private static ParametersAction mergeParameters(ParametersAction base,
-			ParametersAction overlay) {
+	private static MultiJobParametersAction mergeParameters(MultiJobParametersAction base,
+			MultiJobParametersAction overlay) {
 		LinkedHashMap<String, ParameterValue> params = new LinkedHashMap<String, ParameterValue>();
 		for (ParameterValue param : base.getParameters())
 			if (param != null)
 				params.put(param.getName(), param);
 		for (ParameterValue param : overlay.getParameters())
 			params.put(param.getName(), param);
-		return new ParametersAction(params.values().toArray(
-				new ParameterValue[params.size()]));
+		return new MultiJobParametersAction(params.values().toArray(new ParameterValue[params.size()]));
 	}
 
 	/**
@@ -398,7 +397,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			AbstractProject project, boolean isCurrentInclude)
 			throws IOException, InterruptedException {
 		List<Action> actions = new ArrayList<Action>();
-		ParametersAction params = null;
+		MultiJobParametersAction params = null;
 		LinkedList<ParameterValue> paramsValuesList = new LinkedList<ParameterValue>();
 
 		List originalActions = project.getActions();
@@ -419,7 +418,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 					paramsValuesList.add(parameterdef
 							.getDefaultParameterValue());
 			}
-			params = new ParametersAction(
+			params = new MultiJobParametersAction(
 					paramsValuesList
 							.toArray(new ParameterValue[paramsValuesList.size()]));
 
@@ -428,13 +427,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		// Merge current parameters with the defaults from the triggered job.
 		// Current parameters override the defaluts.
 		if (isCurrentInclude) {
-			ParametersAction defaultParameters = build
-					.getAction(ParametersAction.class);
-
-			if (params != null && defaultParameters != null) {
-				params = mergeParameters(params, defaultParameters);
-			} else if (params == null) {
-				params = defaultParameters;
+			ParametersAction defaultParameters = build.getAction(ParametersAction.class);
+			if (defaultParameters != null) {
+				MultiJobParametersAction mjpa = new MultiJobParametersAction(defaultParameters.getParameters());
+				if (params != null) {
+					params = mergeParameters(params, mjpa);
+				} else {
+					params = mjpa;
+				}
 			}
 		}
 		// Backward compatibility
@@ -445,8 +445,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 				try {
 					a = config.getAction(build, listener);
 					if (a instanceof ParametersAction) {
-						params = params == null ? (ParametersAction) a
-								: mergeParameters(params, (ParametersAction) a);
+						MultiJobParametersAction mjpa = new MultiJobParametersAction(((ParametersAction) a).getParameters());
+						if (params == null) {
+							params = mjpa;
+						} else {
+							params = mergeParameters(params, mjpa);
+						}
 					} else if (a != null) {
 						actions.add(a);
 					}

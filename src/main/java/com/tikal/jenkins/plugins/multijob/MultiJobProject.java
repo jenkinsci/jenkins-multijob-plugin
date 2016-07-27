@@ -21,7 +21,6 @@ import hudson.scm.PollingResult;
 import hudson.scm.PollingResult.*;
 
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
-import hudson.tasks.test.AbstractTestResultAction;
 
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -121,11 +120,6 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
         public void setPollSubjobs(boolean poll) {
             pollSubjobs = poll;
         }
-
-    public AbstractTestResultAction<?> getTestResultAction() {
-        MultiJobBuild b = getLastCompletedBuild();
-        return b != null ? b.getAction(AbstractTestResultAction.class) : null;
-    }
 
     @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
