@@ -202,4 +202,9 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<packaging>hpi</packaging>
+
+	<properties>
+		<findbugs.failOnError>false</findbugs.failOnError>
+	</properties>
+
 </project>
