@@ -385,13 +385,17 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	 * @param build
 	 *            build that is triggering project
 	 * @param listener
+	 * 			  Project's listener
 	 * @param project
 	 *            Project that is being triggered
 	 * @param isCurrentInclude
 	 *            Include parameters from the current build.
 	 * @return
+	 * 			retuen List
 	 * @throws IOException
+	 * 			throws IOException
 	 * @throws InterruptedException
+	 * 			throws InterruptedException
 	 */
 	public List<Action> getActions(AbstractBuild build, TaskListener listener,
 			AbstractProject project, boolean isCurrentInclude)

@@ -15,6 +15,16 @@ public final class CounterHelper {
      * Put the counters in phase variables,
      * add the counters to the multijob variables,
      * and merge all in previous variables.
+     *
+     * @param listener
+     *      listener
+     * @param phaseName
+     *      phaseName
+     * @param incomingVars
+     *      incomingVars
+     * @param previousEnvVars
+     *      previousEnvVars
+     * @return Map
      */
     public static synchronized Map<String, String> putPhaseAddMultijobAndMergeTheRest(
         BuildListener listener,
