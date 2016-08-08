@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>1.565.1</version>
+		<version>2.9</version>
 	</parent>
 	<!-- parent> <groupId>org.jvnet.hudson.plugins</groupId> <artifactId>hudson-plugin-parent</artifactId> 
 		<version>2.1.0</version> <relativePath>../pom.xml</relativePath> </parent -->
@@ -85,6 +85,16 @@
 			<groupId>org.jenkins-ci.main</groupId>
 			<artifactId>maven-plugin</artifactId>
 			<version>2.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpclient</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpcore</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -96,7 +106,7 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>matrix-project</artifactId>
-			<version>1.4</version>
+			<version>1.7.1</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -202,4 +212,9 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<packaging>hpi</packaging>
+
+	<properties>
+		<findbugs.failOnError>false</findbugs.failOnError>
+	</properties>
+
 </project>

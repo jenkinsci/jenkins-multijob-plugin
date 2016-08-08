@@ -6,7 +6,7 @@ import hudson.model.AbstractProject;
  * The different statuses of the job which may or not triggered the build.
  * <p>These are used to compute the {@link MultiJobBuilder#JOB_IS_BUILDABLE} variable.
  * There is only one status available for each job, and the current check sequence is 
- * described at {@link MultiJobBuilder#getScmChange()}.</p>
+ * described at MultiJobBuilder.getScmChange().</p>
  *      
  */
 public enum StatusJob {
