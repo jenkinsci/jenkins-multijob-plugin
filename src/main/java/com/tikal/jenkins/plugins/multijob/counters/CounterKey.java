@@ -14,6 +14,12 @@ import hudson.model.Result;
  * <p>We can use these new variables at job condition, so we can write now conditions as follows
  * (of course, these new variables are available in the next phase):</p>
  *
+ * <ul>
+ *      <li><b>${PHASE_SUCCESSFUL} &gt; 1</b>: The number of <b>SUCCESSFUL</b> jobs are greater than 1.</li>
+ *      <li><b>${PHASE_ABORTED} == 0 || ${PHASE_UNSTABLE} == 2</b>:
+ *      The number of <b>ABORTED</b> jobs are equals to 0,
+ *      or the number of <b>UNSTABLE</b> jobs are equals to 2.</li>
+ * </ul>
  *
  */
 public enum CounterKey {
