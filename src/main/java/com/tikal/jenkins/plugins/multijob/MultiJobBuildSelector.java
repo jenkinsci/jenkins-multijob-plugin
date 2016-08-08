@@ -72,7 +72,7 @@ public class MultiJobBuildSelector extends BuildSelector {
         return true;
     }
 
-    @Extension(ordinal=20)
+    @Extension(optional = true, ordinal=20)
     public static final Descriptor<BuildSelector> DESCRIPTOR =
             new SimpleBuildSelectorDescriptor(
                     MultiJobBuildSelector.class,
