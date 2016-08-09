@@ -42,7 +42,7 @@ public final class SubTask {
         this.cancel = true;
     }
 
-    public void GenerateFuture() {
+    public void generateFuture() {
         this.future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
                                             new UpstreamCause((Run) multiJobBuild),
                                             actions.toArray(new Action[actions.size()]));

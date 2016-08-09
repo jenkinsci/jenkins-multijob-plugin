@@ -460,7 +460,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 while (retry <= maxRetries && !finish) {
                     retry++;
                     if (subTask.isShouldTrigger()) {
-                        subTask.GenerateFuture();
+                        subTask.generateFuture();
                     }
                     QueueTaskFuture<AbstractBuild> future = (QueueTaskFuture<AbstractBuild>) subTask.future;
                     while (true) {
@@ -504,7 +504,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                                     listener.getLogger().println("Known failure detected, retrying this build. Try " + retry + " of " + maxRetries + ".");
                                     updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result, true);
 
-                                    subTask.GenerateFuture();
+                                    subTask.generateFuture();
                                 } else {
                                     listener.getLogger().println("Known failure detected, max retries (" + maxRetries + ") exceeded.");
                                     updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result);
