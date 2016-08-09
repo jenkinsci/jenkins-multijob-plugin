@@ -1,0 +1,6 @@
+<div>
+    Will perform a check before resuming a build to ensure all the listed environment variables are identical between the resumed build and the current build.<br/>
+    e.g.: This could be used to ensure we are not resuming a build from an older SCM revision (GIT_COMMIT, SVN_REVISION, etc.)<br/>
+    If the variables don't match, a full build will be triggered instead.<br/>
+    You can define multiple variables using comma as a separator.<br/>
+</div>

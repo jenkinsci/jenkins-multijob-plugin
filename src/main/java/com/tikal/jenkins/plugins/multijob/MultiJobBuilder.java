@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import hudson.EnvVars;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
@@ -66,6 +67,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     /**
      * The name of the parameter in the build.getBuildVariables() to enable the job build, regardless
@@ -204,36 +206,55 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
+        Jenkins jenkins = Jenkins.getInstance();
+        MultiJobBuild multiJobBuild = (MultiJobBuild) build;
+        MultiJobProject thisProject = multiJobBuild.getProject();
+
         boolean resume = false;
         Map<String, SubBuild> successBuildMap = new HashMap<String, SubBuild>();
         Map<String, SubBuild> resumeBuildMap = new HashMap<String, SubBuild>();
         MultiJobResumeControl control = build.getAction(MultiJobResumeControl.class);
         if (null != control) {
             MultiJobBuild prevBuild = (MultiJobBuild) control.getRun();
-            for (SubBuild subBuild : prevBuild.getSubBuilds()) {
-                Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
-                    AbstractProject.class);
-                if (item instanceof AbstractProject) {
-                    AbstractProject childProject = (AbstractProject) item;
-                    AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
-                    if (null != childBuild) {
-                        if (Result.SUCCESS.equals(childBuild.getResult())) {
-                            successBuildMap.put(childProject.getUrl(), subBuild);
-                        } else {
-                            resume = true;
-                            resumeBuildMap.put(childProject.getUrl(), subBuild);
+
+            boolean willResumeBuild = true;
+            if (thisProject.getCheckResumeEnvVars()) {
+                String[] variables = thisProject.getResumeEnvVars().split(",");
+                for( int i = 0; i < variables.length; i++ ) {
+                    String previousValue = prevBuild.getEnvironment(listener).get(variables[i]);
+                    String currentValue = build.getEnvironment(listener).get(variables[i]);
+                    if( !StringUtils.equals(previousValue, currentValue) ) {
+                        willResumeBuild = false;
+                        listener.getLogger().println(String.format("Cannot resume the build, values for '%s' do not match: [%s][%s]", variables[i], previousValue, currentValue));
+                        break;
+                    }
+                }
+            }
+
+            if(willResumeBuild) {
+                for (SubBuild subBuild : prevBuild.getSubBuilds()) {
+                    Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
+                        AbstractProject.class);
+                    if (item instanceof AbstractProject) {
+                        AbstractProject childProject = (AbstractProject) item;
+                        AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
+                        if (null != childBuild) {
+                            if (Result.SUCCESS.equals(childBuild.getResult())) {
+                                successBuildMap.put(childProject.getUrl(), subBuild);
+                            } else {
+                                resume = true;
+                                resumeBuildMap.put(childProject.getUrl(), subBuild);
+                            }
                         }
                     }
                 }
             }
+
             if (!resume) {
                 successBuildMap.clear();
             }
         }
 
-        Jenkins jenkins = Jenkins.getInstance();
-        MultiJobBuild multiJobBuild = (MultiJobBuild) build;
-        MultiJobProject thisProject = multiJobBuild.getProject();
         Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
                 phaseJobs.size());
         final CounterManager phaseCounters = new CounterManager();
