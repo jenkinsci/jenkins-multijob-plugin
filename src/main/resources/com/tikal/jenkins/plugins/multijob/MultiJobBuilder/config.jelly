@@ -72,6 +72,13 @@
             </table>
         </f:repeatable>
       </f:entry>
+
+      <f:entry title="Job execution type" field="executionType" help="/plugin/jenkins-multijob-plugin/help-executionType">
+        <f:enum field="executionType">
+            ${it.getLabel()}
+        </f:enum>
+      </f:entry>
+
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
         field="continuationCondition" help="/plugin/jenkins-multijob-plugin/help-continuationCondition.html">
         <f:enum field="continuationCondition">
