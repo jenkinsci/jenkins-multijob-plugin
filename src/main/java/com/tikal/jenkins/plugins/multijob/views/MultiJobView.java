@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
+import com.joelj.jenkins.eztemplates.InheritenceStep.EzTemplateBuilder;
 import hudson.Extension;
 import hudson.Indenter;
 import hudson.Util;
@@ -121,6 +122,16 @@ public class MultiJobView extends ListView {
             if (builder instanceof MultiJobBuilder) {
                 addProjectFromBuilder(project, buildState, out, builder,
                         phaseNestLevel, false);
+            }
+
+            else if (builder instanceof EzTemplateBuilder) {
+                final List<BuildStep> conditionalbuilders = ((EzTemplateBuilder) builder).getConditionalbuilders();
+                for (BuildStep buildStep : conditionalbuilders) {
+                    if (buildStep instanceof MultiJobBuilder) {
+                        addProjectFromBuilder(project, buildState, out,
+                                buildStep, phaseNestLevel, true);
+                    }
+                }
             }
 
             else if (builder instanceof ConditionalBuilder) {
