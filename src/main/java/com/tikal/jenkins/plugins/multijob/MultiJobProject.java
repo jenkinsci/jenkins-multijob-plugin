@@ -145,7 +145,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
             json = json.getJSONObject(k);
             k = "pollSubjobs";
             if (json.has(k)) {
-                setPollSubjobs(json.getBoolean(k));
+                setPollSubjobs(json.optBoolean(k));
             }
             String resumeEnvVars = null;
             k = "resumeEnvVars";
