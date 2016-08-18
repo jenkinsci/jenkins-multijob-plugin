@@ -5,6 +5,7 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.views.BuildButtonColumn;
 import hudson.views.ListViewColumn;
+import org.jenkins.plugins.builton.BuiltOnColumn;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ abstract public class MultiJobListViewColumn extends ListViewColumn {
 
     @SuppressWarnings("unchecked")
     private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(StatusColumn.class, WeatherColumn.class, JobColumn.class,
-            LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, ConsoleColumn.class, BuildButtonColumn.class);
+            LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, ConsoleColumn.class, BuildButtonColumn.class, BuiltOnColumn.class);
 
     private static final Logger LOGGER = Logger.getLogger(MultiJobListViewColumn.class.getName());
 }
