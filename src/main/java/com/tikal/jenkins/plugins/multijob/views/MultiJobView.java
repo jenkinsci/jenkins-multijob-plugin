@@ -164,7 +164,7 @@ public class MultiJobView extends ListView {
         MultiJobBuilder reactorBuilder = (MultiJobBuilder) builder;
         List<PhaseJobsConfig> subProjects = reactorBuilder.getPhaseJobs();
         String currentPhaseName = reactorBuilder.getPhaseName();
-        PhaseWrapper phaseWrapper = new PhaseWrapper(phaseNestLevel,
+        PhaseWrapper phaseWrapper = new PhaseWrapper(project, phaseNestLevel,
                 currentPhaseName, isConditional);
         out.add(phaseWrapper);
         for (PhaseJobsConfig projectConfig : subProjects) {

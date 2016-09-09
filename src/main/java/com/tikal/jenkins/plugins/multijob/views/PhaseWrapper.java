@@ -16,14 +16,12 @@ import java.util.List;
 @SuppressWarnings("rawtypes")
 public class PhaseWrapper extends AbstractWrapper {
 
-    final int nestLevel;
-
     final String phaseName;
 
     final boolean isConditional;
 
-    public PhaseWrapper(int nestLevel, String phaseName, boolean isConditional) {
-        this.nestLevel = nestLevel;
+    public PhaseWrapper(Job project, int nestLevel, String phaseName, boolean isConditional) {
+        super(project, nestLevel);
         this.phaseName = phaseName;
         this.isConditional = isConditional;
     }
@@ -49,17 +47,9 @@ public class PhaseWrapper extends AbstractWrapper {
         return phaseName;
     }
 
-    public int getNestLevel() {
-        return nestLevel;
-    }
-
     public boolean isConditional() {
         return isConditional;
     }
-
-    // public AbstractProject getProject() {
-    // return project;
-    // }
 
     public BallColor getIconColor() {
         try {
@@ -93,7 +83,7 @@ public class PhaseWrapper extends AbstractWrapper {
     public String getCss() {
         StringBuilder builder = new StringBuilder();
         builder.append("padding-left:");
-        builder.append(String.valueOf((getNestLevel() + 1) * 20));
+        builder.append(String.valueOf((nestLevel + 1) * 20));
         builder.append("px;");
         builder.append("font-style:italic;font-size:smaller;font-weight:bold;");
         return builder.toString();

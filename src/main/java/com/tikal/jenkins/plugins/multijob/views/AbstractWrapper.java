@@ -4,20 +4,36 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import hudson.model.*;
 import org.acegisecurity.AccessDeniedException;
 
-import hudson.model.HealthReport;
-import hudson.model.Hudson;
-import hudson.model.Item;
-import hudson.model.ItemGroup;
-import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
 import hudson.search.Search;
 import hudson.search.SearchIndex;
 import hudson.security.ACL;
 import hudson.security.Permission;
 
+import javax.annotation.Nonnull;
+
 abstract public class AbstractWrapper implements TopLevelItem {
+
+    protected final int nestLevel;
+    protected final Job project;
+
+    public AbstractWrapper(Job project, int nestLevel) {
+        this.project = project;
+        this.nestLevel = nestLevel;
+    }
+
+    @Nonnull
+    @Override
+    public ACL getACL() {
+        return project.getACL();
+    }
+
+    public int getNestLevel() {
+        return nestLevel;
+    }
+
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
     }
 
@@ -46,7 +62,7 @@ abstract public class AbstractWrapper implements TopLevelItem {
 
     @Deprecated
     public String getAbsoluteUrl() {
-        return null;
+        return project.getAbsoluteUrl();
     }
 
     public File getRootDir() {
@@ -66,10 +82,6 @@ abstract public class AbstractWrapper implements TopLevelItem {
     }
 
     public SearchIndex getSearchIndex() {
-        return null;
-    }
-
-    public ACL getACL() {
         return null;
     }
 
