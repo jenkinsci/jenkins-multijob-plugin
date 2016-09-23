@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
+import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import hudson.model.AbstractBuild;
 import hudson.model.HealthReport;
 import hudson.model.Job;
@@ -48,6 +49,7 @@ public class MultiJobItem {
 			AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
 			this.buildName = "#".concat(String.valueOf(buildNumber));
 			this.buildUrl = url.concat(String.valueOf(buildNumber));
+
 			this.result = build.getResult();
 			this.statusIconColor = build.getIconColor().getImage();
 			this.lastDuration = build.getDurationString();
@@ -65,7 +67,43 @@ public class MultiJobItem {
 		this.lastFailure = lastFailure;
 	}
 
-	public MultiJobItem(String name, Result result, String statusIconColor, String weather, String weatherIconUrl,
+
+    public MultiJobItem(Job<?, ?> project, int buildNumber, int itemId, int parentItemId, String lastSuccess, String
+            lastFailure, Result minSuccessResult) {
+        this.itemId = itemId;
+        this.parentItemId = parentItemId;
+        this.isProject = true;
+        if (0 != buildNumber) {
+            this.buildNumber = buildNumber;
+        } else {
+            this.buildNumber = null != project.getLastBuild() ? project.getLastBuild().getNumber() : 0;
+        }
+        this.isBuild = 0 != this.buildNumber;
+        this.name = project.getDisplayName();
+        this.url = "/".concat(project.getParent().getUrl()).concat(project.getShortUrl());
+        if (0 != buildNumber) {
+            AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) project.getBuildByNumber(buildNumber);
+            this.buildName = "#".concat(String.valueOf(buildNumber));
+            this.buildUrl = url.concat(String.valueOf(buildNumber));
+            this.result = minSuccessResult.isWorseOrEqualTo(build.getResult()) ? Result.SUCCESS : build.getResult();
+            this.statusIconColor = build.getIconColor().getImage();
+            this.lastDuration = build.getDurationString();
+        } else {
+            this.result = Result.NOT_BUILT;
+            this.statusIconColor = "nobuilt.png";
+            this.lastDuration = "N/A";
+        }
+        this.status = null != this.result ? this.result.toString() : "Not built yet";
+        HealthReport health = project.getBuildHealth();
+        this.weather = health.getDescription();
+        this.weatherIconUrl = health.getIconUrl();
+        this.healthScore = health.getScore();
+        this.lastSuccess = lastSuccess;
+        this.lastFailure = lastFailure;
+    }
+
+
+    public MultiJobItem(String name, Result result, String statusIconColor, String weather, String weatherIconUrl,
 						int healthScore, boolean isConditional, int itemId, int
 		parentItemId) {
 		this.isConditional = isConditional;

@@ -1,0 +1,8 @@
+<div>
+    Define how to decide the status of the whole MultiJob Phase, based on the status of current job. <br><br>
+    <b>Never</b> Usual behaviour: if this Job is Failed or Unstable, MultiJob Phase will have Failed status.<br>
+    <b>Stable or Unstable but not Failed</b> If status of this phase is Unstable the MultiJob Phase will have Success status still.<br>
+    <b>Always</b> The same as previous mode, but Failed status will be ignored for MultiJob Phase status too.<br><br>
+
+    Supported command for DSL-script: ignoreJobResult( 'ALWAYS' or 'NEVER' or 'STABLE' )
+</div>

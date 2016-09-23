@@ -73,6 +73,13 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private boolean isResumeScriptOnSlaveNode;
 	private boolean isRunJobScriptOnSlave;
 	private boolean isRunResumeScriptOnSlave;
+	private IgnoreJobResult ignoreJobResult;
+
+	public IgnoreJobResult getIgnoreJobResult() { return ignoreJobResult; }
+
+	public void setIgnoreJobResult(IgnoreJobResult ignoreJobResult) {
+		this.ignoreJobResult = ignoreJobResult;
+	}
 
 	public boolean isBuildOnlyIfSCMChanges() {
 		return this.buildOnlyIfSCMChanges;
@@ -320,7 +327,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			ResumeCondition resumeCondition, String resumeScriptPath, String resumeScriptText,
 			boolean isUseResumeScriptFile,
 			boolean isJobScriptOnSlaveNode, boolean isResumeScriptOnSlaveNode,
-			boolean isRunResumeScriptOnSlave, boolean isRunJobScriptOnSlave) {
+			boolean isRunResumeScriptOnSlave, boolean isRunJobScriptOnSlave,
+						   IgnoreJobResult ignoreJobResult) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
@@ -372,6 +380,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 		this.isRunResumeScriptOnSlave = isRunResumeScriptOnSlave;
 		this.isRunJobScriptOnSlave = isRunJobScriptOnSlave;
+		this.ignoreJobResult = ignoreJobResult;
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {
@@ -666,7 +675,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return this;
 	}
 
-	public static enum KillPhaseOnJobResultCondition {
+	public enum KillPhaseOnJobResultCondition {
 		FAILURE("Failure (stop the phase execution if the job is failed)") {
 			@Override
 			public boolean isKillPhase(Result result) {
@@ -689,6 +698,33 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		abstract public boolean isKillPhase(Result result);
 
 		private KillPhaseOnJobResultCondition(String label) {
+			this.label = label;
+		}
+
+		final private String label;
+
+		public String getLabel() {
+			return label;
+		}
+	}
+
+	public enum IgnoreJobResult {
+		NEVER("Never") {
+			@Override
+			public Result getMinSuccessResult() { return Result.SUCCESS; }
+		},
+		UNSTABLE("Stable or Unstable but not Failed") {
+			@Override
+			public Result getMinSuccessResult() { return Result.UNSTABLE; }
+		},
+		ALWAYS("Always") {
+			@Override
+			public Result getMinSuccessResult() { return Result.FAILURE; }
+		};
+
+		abstract public Result getMinSuccessResult();
+
+		private IgnoreJobResult(String label) {
 			this.label = label;
 		}
 
@@ -754,8 +790,6 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			this.label = label;
 			this.value = value;
 		}
-
-
 
 		public List<ResumeCondition> all() {
 			List<ResumeCondition> list = new ArrayList<ResumeCondition>();

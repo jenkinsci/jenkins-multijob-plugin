@@ -237,7 +237,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             for (SubBuild subBuild : builders) {
                 if (!subBuild.isRetry() && !subBuild.isAbort()) {
                     Result buildResult = subBuild.getResult();
-                    if (buildResult != null && buildResult.isWorseThan(result)) {
+                    Result minSuccessResult = subBuild.getMinSuccessResult();
+                    if (buildResult != null && buildResult.isWorseThan(result) && buildResult.isWorseThan(minSuccessResult)) {
                         return true;
                     }
                 }
@@ -262,13 +263,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final boolean aborted;
         private final AbstractBuild<?, ?> build;
 
+        private final Result minSuccessResult;
+
         private Long successTimestamp = null;
         private Long failureTimestamp = null;
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
-                AbstractBuild<?, ?> build) {
+                AbstractBuild<?, ?> build, Result minSuccessResult) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
@@ -281,12 +284,13 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.retry = false;
             this.aborted = false;
             this.build = build;
+            this.minSuccessResult = minSuccessResult;
         }
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
-                boolean retry, boolean aborted, AbstractBuild<?, ?> build) {
+                boolean retry, boolean aborted, AbstractBuild<?, ?> build, Result minSuccessResult) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
@@ -299,6 +303,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.retry = retry;
             this.aborted = aborted;
             this.build = build;
+            this.minSuccessResult = minSuccessResult;
         }
 
         public Long getSuccessTimestamp() {
@@ -362,6 +367,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public String getJobName() {
             return jobName;
         }
+
+        @Exported
+        public Result getMinSuccessResult() { return minSuccessResult; }
 
         @Exported
         public int getBuildNumber() {

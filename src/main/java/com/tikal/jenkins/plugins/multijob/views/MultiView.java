@@ -135,6 +135,7 @@ public class MultiView {
 
 		List<MultiJobItem> childs = new ArrayList<MultiJobItem>();
 		for (PhaseJobsConfig config : subProjects) {
+            Result minSuccessResult = config.getIgnoreJobResult().getMinSuccessResult();
 			Item it = jenkins.getItem(config.getJobName(), project.getParent(), AbstractProject.class);
 			MultiJobBuild.SubBuild subBuild = null;
 			List<MultiJobBuild.SubBuild> subs = phaseProjects.get(it.getName());
@@ -174,13 +175,15 @@ public class MultiView {
 											   lastFailure);
 			} else {
 				Job subProject = (Job) it;
-				if (resume && config.getResumeCondition().isStart()) {
+
+                if (resume && config.getResumeCondition().isStart()) {
 					int bn = getResumedBuildNumber(project.getLastBuild(), subProject.getDisplayName());
 					if (0 != bn) {
 						buildNumber = bn;
 					}
 				}
-				addSimpleProject(subProject, buildNumber, ++currentCount, phaseId, childs, lastSuccess, lastFailure);
+				addSimpleProject(subProject, buildNumber, ++currentCount, phaseId, childs, lastSuccess,
+                                                                                        lastFailure, minSuccessResult);
 			}
 		}
 
@@ -206,7 +209,7 @@ public class MultiView {
 
 		MultiJobItem item = new MultiJobItem(phaseName, result, iconColor, healthReport.getDescription(),
 											 healthReport.getIconUrl(), healthReport.getScore(), isConditional,
-			phaseId, level);
+																									phaseId, level);
 		ret.add(item);
 		ret.addAll(childs);
 
@@ -242,6 +245,11 @@ public class MultiView {
 			lastSuccess, String lastFailure) {
 		ret.add(new MultiJobItem(project, buildNumber, count, level, lastSuccess, lastFailure));
 	}
+
+    private void addSimpleProject(Job project, int buildNumber, int count, int level, List<MultiJobItem> ret, String
+            lastSuccess, String lastFailure, Result minSuccessResult) {
+        ret.add(new MultiJobItem(project, buildNumber, count, level, lastSuccess, lastFailure, minSuccessResult));
+    }
 
 	public int getResumedBuildNumber(MultiJobBuild multiJobBuild, String jobName) {
 		MultiJobResumeControl control = multiJobBuild.getAction(MultiJobResumeControl.class);

@@ -17,6 +17,13 @@
                         ${it.getLabel()}
                     </f:enum>
                 </f:entry>
+
+                <f:entry title="Ignore job result:" field="ignoreJobResult" help="/plugin/jenkins-multijob-plugin/help-ignoreJobResult.html">
+                    <f:enum field="ignoreJobResult">
+                        ${it.getLabel()}
+                    </f:enum>
+                </f:entry>
+
                 <f:entry title="Build only if SCM changes" field="buildOnlyIfSCMChanges">
                     <f:checkbox name="buildOnlyIfSCMChanges" checked="${instance.buildOnlyIfSCMChanges}" default="false"/>
                 </f:entry>
@@ -118,6 +125,12 @@
             </f:entry>
             </table>
         </f:repeatable>
+      </f:entry>
+
+      <f:entry title="Ignore phase result" field="ignorePhaseResult" help="/plugin/jenkins-multijob-plugin/help-ignorePhaseResult.html">
+        <f:enum field="ignorePhaseResult">
+            ${it.getLabel()}
+        </f:enum>
       </f:entry>
 
       <f:entry title="Job execution type" field="executionType" help="/plugin/jenkins-multijob-plugin/help-executionType.html">
