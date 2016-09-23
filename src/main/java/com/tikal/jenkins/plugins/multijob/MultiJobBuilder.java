@@ -499,6 +499,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             if (jobStatus == StatusJob.IS_DISABLED_AT_PHASECONFIG) {
                 phaseCounters.processSkipped();
+		continue;
             } else {
                 boolean shouldTrigger = (null == successBuildMap.get(subJob.getUrl()));
                 subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild, shouldTrigger));
