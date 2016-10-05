@@ -73,9 +73,15 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private boolean isResumeScriptOnSlaveNode;
 	private boolean isRunJobScriptOnSlave;
 	private boolean isRunResumeScriptOnSlave;
-	private IgnoreJobResult ignoreJobResult;
+	private IgnoreJobResult ignoreJobResult = IgnoreJobResult.NEVER;
 
-	public IgnoreJobResult getIgnoreJobResult() { return ignoreJobResult; }
+	public IgnoreJobResult getIgnoreJobResult() {
+        if (null == ignoreJobResult) {
+            return IgnoreJobResult.NEVER;
+        } else {
+            return ignoreJobResult;
+        }
+	}
 
 	public void setIgnoreJobResult(IgnoreJobResult ignoreJobResult) {
 		this.ignoreJobResult = ignoreJobResult;
@@ -378,9 +384,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			this.isUseResumeScriptFile = isUseResumeScriptFile;
 			this.resumeBindings = Util.fixNull(resumeBindings);
 		}
+
 		this.isRunResumeScriptOnSlave = isRunResumeScriptOnSlave;
 		this.isRunJobScriptOnSlave = isRunJobScriptOnSlave;
-		this.ignoreJobResult = ignoreJobResult;
+		if (null != ignoreJobResult) {
+			this.ignoreJobResult = ignoreJobResult;
+		} else {
+			this.ignoreJobResult = IgnoreJobResult.NEVER;
+		}
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {

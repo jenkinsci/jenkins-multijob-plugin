@@ -147,7 +147,11 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             this.executionType = executionType;
         }
         this.isRunOnSlave = isRunOnSlave;
-        this.ignorePhaseResult = ignorePhaseResult;
+        if (null == ignorePhaseResult) {
+            this.ignorePhaseResult = IgnorePhaseResult.NEVER;
+        } else {
+            this.ignorePhaseResult = ignorePhaseResult;
+        }
     }
 
     public String expandToken(String toExpand, final AbstractBuild<?,?> build, final BuildListener listener) {
@@ -233,6 +237,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
         MultiJobBuild multiJobBuild = (MultiJobBuild) build;
         MultiJobProject thisProject = multiJobBuild.getProject();
+
+        if (null == ignorePhaseResult) {
+            ignorePhaseResult = IgnorePhaseResult.NEVER;
+        }
 
         if (null == executionType) {
             executionType = ExecutionType.PARALLEL;
@@ -1408,7 +1416,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         return executionType;
     }
 
-    public IgnorePhaseResult getIgnorePhaseResult() { return ignorePhaseResult; }
+    public IgnorePhaseResult getIgnorePhaseResult() {
+        if (null == ignorePhaseResult) {
+            return IgnorePhaseResult.NEVER;
+        } else {
+            return ignorePhaseResult;
+        }
+    }
 
     public void setIgnorePhaseResult(IgnorePhaseResult ignorePhaseResult) { this.ignorePhaseResult = ignorePhaseResult; }
 
