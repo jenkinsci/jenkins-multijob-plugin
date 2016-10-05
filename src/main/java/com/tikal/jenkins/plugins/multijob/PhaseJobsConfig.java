@@ -76,11 +76,11 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private IgnoreJobResult ignoreJobResult = IgnoreJobResult.NEVER;
 
 	public IgnoreJobResult getIgnoreJobResult() {
-        if (null == ignoreJobResult) {
-            return IgnoreJobResult.NEVER;
-        } else {
-            return ignoreJobResult;
-        }
+		if (null == ignoreJobResult) {
+			return IgnoreJobResult.NEVER;
+		} else {
+			return ignoreJobResult;
+		}
 	}
 
 	public void setIgnoreJobResult(IgnoreJobResult ignoreJobResult) {
