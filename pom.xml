@@ -14,14 +14,6 @@
 	<description>Enabling full hierarchy of Jenkins jobs</description>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin</url>
 
-	<distributionManagement>
-		<repository>
-			<id>maven.jenkins-ci.org</id>
-			<url>http://maven.jenkins-ci.org/content/repositories/releases/</url>
-		</repository>
-	</distributionManagement>
-
-
 	<developers>
 		<developer>
 			<id>alex-n</id>
@@ -37,6 +29,11 @@
 			<id>itaior</id>
 			<name>Itai Or</name>
 			<email>itai@tikalk.com</email>
+		</developer>
+		<developer>
+			<id>cohencil</id>
+			<name>Chen Cohen</name>
+			<email>chenc@tikalk.com</email>
 		</developer>
 	</developers>
 
