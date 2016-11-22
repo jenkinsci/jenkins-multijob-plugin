@@ -28,6 +28,9 @@ THE SOFTWARE.
     <f:entry title="Poll subjobs in addition to multijob when polling" field="pollSubjobs" help="/plugin/jenkins-multijob-plugin/help-pollsubjobs.html">
       <f:checkbox/>
     </f:entry>
+    <f:entry title="Use 'Commit Path' in phase jobs." field="useCommitPath" help="/plugin/jenkins-multijob-plugin/help-useCommitPath.html">
+      <f:checkbox/>
+    </f:entry>
     <f:optionalBlock name="resumeEnvVars" title="Resume build with identical environment variables" checked="${it.checkResumeEnvVars}">
       <f:entry title="Environment Variables" help="/plugin/jenkins-multijob-plugin/help-resumesamevars.html">
         <f:textbox field="resumeEnvVars"/>

@@ -1,6 +1,41 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import hudson.EnvVars;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.lib.envinject.EnvInjectLogger;
+import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
+import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
+import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
+import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
+import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.StaplerRequest;
+
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
@@ -32,42 +67,6 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.jenkinsci.lib.envinject.EnvInjectLogger;
-import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
-import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
-import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
-import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     /**
      * The name of the parameter in the build.getBuildVariables() to enable the job build, regardless
@@ -266,6 +265,33 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 phaseSubJobs.put(new PhaseSubJob(job), phaseJobConfig);
             }
         }
+		// Commit path logic, enabling
+	    boolean useCommitPath = false;
+	    List<AbstractProject> commitPathJobs = new ArrayList<>();
+	    if (thisProject.getUseCommitPath()) {
+		    if (build.getChangeSets().isEmpty()) {
+			    listener.getLogger().println("Commit path active but no changes detected");
+		    } else {
+			    List<String> affectedPaths = getAffectedPaths(multiJobBuild);
+			    List<String> remainingPaths = new ArrayList<>(affectedPaths);
+			    for (Map.Entry<PhaseSubJob, PhaseJobsConfig> entry : phaseSubJobs.entrySet()) {
+				    AbstractProject subJob = entry.getKey().job;
+				    PhaseJobsConfig phaseJobsConfig = entry.getValue();
+				    for (String affectedPath : affectedPaths) {
+					    if (jobPathIsMatching(phaseJobsConfig, affectedPath)) {
+						    remainingPaths.remove(affectedPath); //ignore result, duplicates are ok
+						    commitPathJobs.add(subJob);
+					    }
+				    }
+			    }
+			    if (remainingPaths.isEmpty()) {
+				    useCommitPath = true;
+				    listener.getLogger().println("Commit path is used for this build");
+			    } else {
+				    listener.getLogger().println("Commit path will not be used, unhandled paths found.");
+			    }
+		    }
+	    }
 
         List<SubTask> subTasks = new ArrayList<SubTask>();
         int index = 0;
@@ -273,6 +299,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             index++;
 
             AbstractProject subJob = phaseSubJob.job;
+
+			// Commit path logic, per job
+	        if (useCommitPath) {
+		        if (!commitPathJobs.contains(subJob)) {
+			        listener.getLogger().println(String.format("Commit path: Skipping %s. Project is not affected by the SCM changes in this build.", subJob.getName()));
+			        phaseCounters.processSkipped();
+			        continue;
+		        }
+	        }
 
             // To be coherent with final results, we need to do this here.
             PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
@@ -444,6 +479,31 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
         return true;
     }
+
+	private boolean jobPathIsMatching(PhaseJobsConfig config, String path) {
+		return path != null
+				&& !path.trim().isEmpty()
+				&& hasCommitPath(config)
+				&& getCommitPath(config).matcher(path).matches();
+	}
+
+	private List<String> getAffectedPaths(MultiJobBuild build) {
+		List<String> affectedPaths = new ArrayList<>();
+		for (ChangeLogSet<? extends Entry> changeSet : build.getChangeSets()) {
+			for (Entry entry : changeSet) {
+				affectedPaths.addAll(entry.getAffectedPaths());
+			}
+		}
+		return affectedPaths;
+	}
+
+	private boolean hasCommitPath(PhaseJobsConfig config) {
+		return config.getEnableCommitPath() && config.getCommitPathPattern() != null;
+	}
+
+	private Pattern getCommitPath(PhaseJobsConfig config) {
+		return config.getCommitPathPattern();
+	}
 
     public final class SubJobWorker implements Callable {
         final private MultiJobProject multiJobProject;
