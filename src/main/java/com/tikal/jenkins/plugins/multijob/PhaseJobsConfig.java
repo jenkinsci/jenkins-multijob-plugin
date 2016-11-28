@@ -34,17 +34,23 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
+	private static final Logger logger = LoggerFactory.getLogger(PhaseJobsConfig.class);
 	private String jobName;
 	private String jobProperties;
 	private boolean currParams;
@@ -60,6 +66,9 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private KillPhaseOnJobResultCondition killPhaseOnJobResultCondition = KillPhaseOnJobResultCondition.NEVER;
 	private boolean buildOnlyIfSCMChanges = false;
 	private boolean applyConditionOnlyIfNoSCMChanges = false;
+	private String commitPath;
+	private Pattern commitPathPattern;
+	private boolean enableCommitPath;
 
 	public boolean isBuildOnlyIfSCMChanges() {
 		return this.buildOnlyIfSCMChanges;
@@ -182,13 +191,38 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return getClass().getSimpleName();
 	}
 
-	@DataBoundConstructor
+	@Deprecated
 	public PhaseJobsConfig(String jobName, String jobProperties,
 			boolean currParams, List<AbstractBuildParameters> configs,
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges, boolean applyConditionOnlyIfNoSCMChanges) {
+		this(jobName,
+				jobProperties,
+				currParams,
+				configs,
+				killPhaseOnJobResultCondition,
+				disableJob,
+				enableRetryStrategy,
+				parsingRulesPath,
+				maxRetries,
+				enableCondition,
+				abortAllJob,
+				condition,
+				buildOnlyIfSCMChanges,
+				applyConditionOnlyIfNoSCMChanges,
+				false,
+				null);
+	}
+
+	@DataBoundConstructor
+	public PhaseJobsConfig(String jobName, String jobProperties,
+			boolean currParams, List<AbstractBuildParameters> configs,
+			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
+			boolean disableJob, boolean enableRetryStrategy,
+			String parsingRulesPath, int maxRetries, boolean enableCondition,
+			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges, boolean applyConditionOnlyIfNoSCMChanges, boolean enableCommitPath, String commitPath) {
 		this.jobName = jobName;
 		this.jobProperties = jobProperties;
 		this.currParams = currParams;
@@ -206,10 +240,54 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
 		this.applyConditionOnlyIfNoSCMChanges = applyConditionOnlyIfNoSCMChanges;
+		this.enableCommitPath = enableCommitPath;
+		if (enableCommitPath) {
+			setCommitPath(commitPath);
+		}else{
+			unsetCommitPath();
+		}
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {
 		return configs;
+	}
+
+	public String getCommitPath() {
+		return commitPath;
+	}
+
+	public void setCommitPath(String commitPath) {
+		if (commitPath == null || commitPath.trim().isEmpty()) {
+			unsetCommitPath();
+			return;
+		}
+		try {
+			this.commitPathPattern = Pattern.compile(commitPath);
+			this.commitPath = commitPath;
+		} catch (PatternSyntaxException e) {
+			logger.error("Failed to set commit path for {}, invalid pattern: {}", this.jobName, commitPath);
+		}
+	}
+
+	private void unsetCommitPath() {
+		this.commitPath = "";
+		this.commitPathPattern = null;
+	}
+
+	public boolean isEnableCommitPath() {
+		return enableCommitPath;
+	}
+
+	public void setEnableCommitPath(boolean enableCommitPath) {
+		this.enableCommitPath = enableCommitPath;
+	}
+
+	public Pattern getCommitPathPattern() {
+		return commitPathPattern;
+	}
+
+	public boolean getEnableCommitPath() {
+		return enableCommitPath;
 	}
 
 	@Extension(optional = true)
@@ -218,6 +296,19 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 		public DescriptorImpl() {
 			load();
+		}
+
+		@SuppressWarnings("unused")
+		public FormValidation doCheckCommitPath(@QueryParameter String value) {
+			try {
+				if (value == null || value.trim().isEmpty()){
+					return FormValidation.warning("Pattern should not be empty.");
+				}
+				Pattern.compile(value);
+				return FormValidation.ok();
+			} catch (PatternSyntaxException e) {
+				return FormValidation.error("Not a valid pattern, see java.util.regex.Pattern for details.");
+			}
 		}
 
 		@Override

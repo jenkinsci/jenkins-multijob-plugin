@@ -7,6 +7,9 @@
 - Add context to your buildflow implementing parameter inheritance from the MultiJob to all its Phases and Jobs, Phases are sequential whilst jobs inside each Phase are parallel
 
 ## News
+In version 1.24 there is support for skipping phase jobs based on paths touched in the commit.
+You can read the details [here](CommitPath.md).
+
 In version 1.17 we inject new variables to use them in conditions, powering this feature.
 You can read the details (variable names, values, ...) [here](AboutNewVariables.md).
 

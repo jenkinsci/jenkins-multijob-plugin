@@ -1,0 +1,23 @@
+<div>
+  	If checked, patterns defined in phase jobs of the MultiJob will be considered when determining which jobs to be executed.
+	<br/>
+	This is only valid if ALL paths in a commit are covered by patterns.
+	<br/>
+	Example, a commit affects paths:
+	<pre>
+	project1/src/integTest/java/com/acme/test/TestOne.java
+	project2/src/integTest/java/com/acme/test/TestSomethingElse.java</pre>
+	Say we have a large number of sub jobs but the paths above are only affecting one phase job each. Then there is no need to execute the others.
+	<br/>
+	Define regex patterns in the commit path field for the two jobs:
+	<pre>
+	Job-One: "project1/src/integTest/java/.*"
+	Job-Two: "project2/src/integTest/java/.*"</pre>
+	- and only the jobs Job-One and Job-Two will be executed.
+	<br/>
+	If another change (project1/src/main/java/com/acme/product/Main.java) would be present that is not covered in a phase job config,
+	then ALL jobs will be executed for the whole change set.
+	<br/>
+	<br/>
+	A path may be present in more than one job.
+</div>

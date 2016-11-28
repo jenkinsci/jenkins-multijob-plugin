@@ -55,6 +55,13 @@
                         </f:entry>
                     </f:block>
                 </f:optionalBlock>
+                <f:optionalBlock title="Use commit path for this job" name="enableCommitPath" inline="true" checked="${instance.enableCommitPath}" help="/plugin/jenkins-multijob-plugin/help-commitPath.html">
+                    <f:block>
+                        <f:entry title="Commit Path" field="commitPath">
+                            <f:textbox name="commitPath" default="" />
+                        </f:entry>
+                    </f:block>
+                </f:optionalBlock>
                 <f:block>
                     <f:hetero-list name="configs" hasHeader="true"
                        descriptors="${descriptor.getBuilderConfigDescriptors()}"
