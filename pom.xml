@@ -106,7 +106,27 @@
 			<version>1.7.1</version>
 			<optional>true</optional>
 		</dependency>
-
+                
+                
+                <!-- Workflow plugin imports are used to test compatibility -->
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins.workflow</groupId>
+                    <artifactId>workflow-job</artifactId>
+                    <version>${workflow.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins.workflow</groupId>
+                    <artifactId>workflow-cps</artifactId>
+                    <version>${workflow.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jenkins-ci.plugins.workflow</groupId>
+                    <artifactId>workflow-basic-steps</artifactId>
+                    <version>${workflow.version}</version>
+                    <scope>test</scope>
+                </dependency>
 	</dependencies>
 
 	<build>
@@ -212,6 +232,8 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
+                <workflow.version>1.4</workflow.version>
+                <jenkins.version>2.31</jenkins.version>
 	</properties>
 
 </project>
