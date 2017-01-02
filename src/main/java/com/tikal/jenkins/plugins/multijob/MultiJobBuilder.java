@@ -16,11 +16,13 @@ import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.model.Cause;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Executor;
 import hudson.model.Item;
+import hudson.model.Queue;
 import hudson.model.Queue.QueueAction;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -49,6 +51,8 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -87,6 +91,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private ExecutionType executionType;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
+    private static final Logger logger = LoggerFactory.getLogger(MultiJobBuilder.class);
 
 
     /**
@@ -517,6 +522,22 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
                                 finish = true;
                                 break;
+                            } else { // No build running yet, check the queue and cancel the item started by the multijob upstream cause
+                                Queue jenkinsQueue = Jenkins.getActiveInstance().getQueue();
+                                List<hudson.model.Queue.Item> items = jenkinsQueue.getItems(subTask.subJob);
+                                for (hudson.model.Queue.Item item : items) {
+                                    for (Cause cause : item.getCauses()) {
+                                        if (subTask.getCause() != null && subTask.getCause().equals(cause)) {
+                                            String message = "Sub job " + subTask.subJob.getDisplayName() + " (" + subTask.getCause().getShortDescription() +
+                                                ") should be cancelled, but no build running yet. Removing it from the queue.";
+                                            logger.info(message);
+                                            listener.getLogger().println(message);
+                                            jenkinsQueue.cancel(item);
+                                            updateSubBuild(subTask.multiJobBuild, multiJobProject, subTask.phaseConfig);
+                                            return Boolean.FALSE;
+                                        }
+                                    }
+                                }
                             }
                         }
 

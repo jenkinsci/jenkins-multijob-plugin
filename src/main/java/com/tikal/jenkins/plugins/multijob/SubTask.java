@@ -20,6 +20,7 @@ public final class SubTask {
     public Result result;
     private boolean cancel;
     private boolean isShouldTrigger;
+    private UpstreamCause cause;
 
     SubTask(AbstractProject subJob, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild, boolean isShouldTrigger) {
         this.subJob = subJob;
@@ -42,9 +43,14 @@ public final class SubTask {
         this.cancel = true;
     }
 
+    public UpstreamCause getCause() {
+        return cause;
+    }
+
     public void generateFuture() {
+        cause = new UpstreamCause((Run) multiJobBuild);
         this.future = subJob.scheduleBuild2(subJob.getQuietPeriod(),
-                                            new UpstreamCause((Run) multiJobBuild),
+                                            cause,
                                             actions.toArray(new Action[actions.size()]));
     }
 }
