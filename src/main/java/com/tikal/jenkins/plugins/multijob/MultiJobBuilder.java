@@ -899,8 +899,20 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     }
 
     private class MultiJobAction implements Action, QueueAction {
+        protected transient AbstractBuild build;
         public int buildNumber;
         public int index;
+
+        /**
+         * Maintain backwards compatibility with previous versions of this class.
+         * See https://wiki.jenkins-ci.org/display/JENKINS/Hint+on+retaining+backward+compatibility
+         */
+        protected Object readResolve() {
+            if (build != null) {
+                buildNumber = build.getNumber();
+            }
+            return this;
+        }
 
         public MultiJobAction(AbstractBuild build, int index) {
             this.buildNumber = build.getNumber();
