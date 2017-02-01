@@ -71,7 +71,7 @@ public class AllBuildsInvokedTest
             // create multijob-phase containing 'worker' job
             PhaseJobsConfig phaseJobConfig = new PhaseJobsConfig("worker", null, true, null,
                     KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false, false);
-            // TODO job parameters
+            // TODO add non-default job parameters values
 
             List<PhaseJobsConfig> phaseJobsConfigs = Collections.singletonList(phaseJobConfig);
 
@@ -81,7 +81,7 @@ public class AllBuildsInvokedTest
 
             childJob.getBuildersList().add(new Shell("echo \"worker finished for $JOB_NAME\""));
 
-            // TODO job parameters
+            // TODO add non-default job parameters values
             PhaseJobsConfig childPhaseJobConfig = new PhaseJobsConfig(childJob.getName(), null, false, null,
                     KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "", false, false);
             childrenJobConfigList.add(childPhaseJobConfig);
