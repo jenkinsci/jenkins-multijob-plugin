@@ -25,9 +25,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
   <st:include page="configure-common.jelly" />
   <f:section title="Multijob specific configuration" name="multijob">
-    <f:entry title="Poll subjobs in addition to multijob when polling" field="pollSubjobs" help="/plugin/jenkins-multijob-plugin/help-pollsubjobs.html">
-      <f:checkbox/>
-    </f:entry>
+    <f:optionalBlock name="pollSubjobs" title="Poll subjobs in addition to multijob when polling" help="/plugin/jenkins-multijob-plugin/help-pollsubjobs.html" field="pollSubjobs" inline="true" />
     <f:optionalBlock name="resumeEnvVars" title="Resume build with identical environment variables" checked="${it.checkResumeEnvVars}">
       <f:entry title="Environment Variables" help="/plugin/jenkins-multijob-plugin/help-resumesamevars.html">
         <f:textbox field="resumeEnvVars"/>

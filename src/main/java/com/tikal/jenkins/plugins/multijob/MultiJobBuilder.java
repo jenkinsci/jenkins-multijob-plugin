@@ -1,6 +1,5 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import hudson.EnvVars;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild.SubBuild;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 import com.tikal.jenkins.plugins.multijob.counters.CounterHelper;
@@ -42,11 +41,9 @@ import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -572,14 +569,18 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 try {
                     listener.getLogger().println("Scanning failed job console output using parsing rule file " + subTask.phaseConfig.getParsingRulesPath() + ".");
                     final File rulesFile = new File(subTask.phaseConfig.getParsingRulesPath());
-                    final BufferedReader reader = new BufferedReader(new FileReader(rulesFile.getAbsolutePath()));
+                    FileInputStream fis = new FileInputStream(rulesFile.getAbsoluteFile());
+                    InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                    final BufferedReader reader = new BufferedReader(isr);
                     try {
                         String line;
                         while ((line = reader.readLine()) != null) {
                             compiledPatterns.add(Pattern.compile(line));
                         }
                     } finally {
-                        reader.close();
+                        if (reader != null) {
+                            reader.close();
+                        }
                     }
                 } catch (Exception e) {
                     if (e instanceof InterruptedException) {
@@ -639,8 +640,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             try {
                 final List<Pattern> patterns = getCompiledPattern();
                 final File logFile = build.getLogFile();
-
-                final BufferedReader reader = new BufferedReader(new FileReader(logFile.getAbsolutePath()));
+                FileInputStream fis = new FileInputStream(logFile);
+                InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                final BufferedReader reader = new BufferedReader(isr);
                 try {
                     int numberOfThreads = 10; // Todo : Add this in Configure section
                     if (numberOfThreads < 0) {
@@ -668,7 +670,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                     executorAnalyser.shutdownNow();
                 } finally {
-                    reader.close();
+                    if (reader != null) {
+                        reader.close();
+                    }
                 }
             } catch (Exception e) {
                 if (e instanceof InterruptedException) {

@@ -12,7 +12,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.search.SearchIndex;
 import hudson.search.Search;
-import hudson.security.ACL;
 import hudson.security.Permission;
 
 import java.io.File;
@@ -31,15 +30,10 @@ public class ProjectWrapper extends AbstractWrapper {
 
     final BuildState buildState;
 
-    final Job project;
-
-    final int nestLevel;
-
     public ProjectWrapper(MultiJobProject multijob, Job project,
             BuildState buildState, int nestLevel) {
-        this.project = project;
+        super(project, nestLevel);
         this.multijob = multijob;
-        this.nestLevel = nestLevel;
         this.buildState = buildState;
     }
 
@@ -70,11 +64,6 @@ public class ProjectWrapper extends AbstractWrapper {
 
     public String getShortUrl() {
         return project.getShortUrl();
-    }
-
-    @Deprecated
-    public String getAbsoluteUrl() {
-        return project.getAbsoluteUrl();
     }
 
     @SuppressWarnings("unchecked")
@@ -119,10 +108,6 @@ public class ProjectWrapper extends AbstractWrapper {
         return project.getSearchIndex();
     }
 
-    public ACL getACL() {
-        return project.getACL();
-    }
-
     public void checkPermission(Permission permission)
             throws AccessDeniedException {
         project.checkPermission(permission);
@@ -134,10 +119,6 @@ public class ProjectWrapper extends AbstractWrapper {
 
     public Hudson getParent() {
         return Hudson.getInstance();
-    }
-
-    public int getNestLevel() {
-        return nestLevel;
     }
 
     public TopLevelItemDescriptor getDescriptor() {
@@ -195,22 +176,22 @@ public class ProjectWrapper extends AbstractWrapper {
             builder.append("font-weight:bold;");
         }
         builder.append("padding-left:");
-        builder.append(String.valueOf((getNestLevel() + 1) * 20));
+        builder.append(String.valueOf((nestLevel + 1) * 20));
         builder.append("px");
         return builder.toString();
     }
 
     public HealthReport getBuildHealth() {
-        return getProject().getBuildHealth();
+        return project.getBuildHealth();
     }
 
     @SuppressWarnings("unchecked")
     public List<HealthReport> getBuildHealthReports() {
-        return getProject().getBuildHealthReports();
+        return project.getBuildHealthReports();
     }
 
     public boolean isBuildable() {
-        return multijob == null && getProject().isBuildable();
+        return multijob == null && project.isBuildable();
     }
 
     public String getRelativeNameFrom(ItemGroup g) {
