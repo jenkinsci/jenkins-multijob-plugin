@@ -1,3 +1,4 @@
+[![Vizsla](https://s3.amazonaws.com/svg.vizsla.io/5.svg)](http://vizsla.io/subscribe/jenkinsci/tikal-multijob-plugin)
 ![picture alt](http://www.tikalk.com/assets/logo-1bb9a466c9d195c148557434c3437446.png "Tikal Community") Jenkins MultiJob Plugin
 ====
 
