@@ -44,13 +44,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -75,7 +69,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
-    private ExecutionType executionType = ExecutionType.PARALLEL;
+    private ExecutionType executionType;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
 
@@ -227,7 +221,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                 }
             }
-
             if(willResumeBuild) {
                 for (SubBuild subBuild : prevBuild.getSubBuilds()) {
                     Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
@@ -252,7 +245,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
         }
 
-        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new HashMap<PhaseSubJob, PhaseJobsConfig>(
+        Map<PhaseSubJob, PhaseJobsConfig> phaseSubJobs = new LinkedHashMap<PhaseSubJob, PhaseJobsConfig>(
                 phaseJobs.size());
         final CounterManager phaseCounters = new CounterManager();
 
