@@ -4,6 +4,10 @@ The MultiJob plugin provides a retry functionality for subjobs.
 
 1. On the Jenkins master server: store a text file with the content from the Jenkins output to parse, e.g. in `/etc/jenkins/retryrules/myrule`. If the defined text has been found and the subjob's status is `UNSTABLE`: restart that subjob.
 
+  * Example: Retry when a subjob is failed, but not unstable (pre plugin version 1.25 behaviour):
+
+    ```Finished: FAILURE```
+
   * Example: Retry when some action in the job fails due to an exception (in this case some sort of timeout):
 
     ```java.util.concurrent.TimeoutException```
