@@ -365,7 +365,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if (null == executionType) {
             executionType = ExecutionType.PARALLEL;
         }
-        int poolSize = executionType.isParallel() ? subTasks.size() : 1;
+        int poolSize = (executionType.isParallel() || !executionType.waitPreviousJob()) ? subTasks.size() : 1;
         ExecutorService executor = Executors.newFixedThreadPool(poolSize);
         Set<Result> jobResults = new HashSet<Result>();
         BlockingQueue<SubTask> queue = new ArrayBlockingQueue<SubTask>(subTasks.size());
@@ -376,9 +376,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 Callable worker = new SubJobWorker(thisProject, listener, subTask, queue);
                 completion.submit(worker);
                 if (!executionType.isParallel()) {
-                    Future<Boolean> future = completion.take();
+                    Future<Boolean> future = executionType.waitPreviousJob()?completion.take():completion.poll();
                     try {
-                        future.get();
+                        if (executionType.waitPreviousJob())
+                        {
+                            future.get();
+                        }
                         if (checkPhaseTermination(subTask, subTasks, listener)) {
                             break;
                         }
@@ -1102,10 +1105,29 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             public boolean isParallel() {
                 return true;
             }
+            @Override
+            public boolean waitPreviousJob() {
+                return false;
+            }
         },
         SEQUENTIALLY("Running phase jobs sequentially") {
             @Override
             public boolean isParallel() {
+                return false;
+            }
+
+            @Override
+            public boolean waitPreviousJob() {
+                return true;
+            }
+        },
+        SEQUENTIALLY_WITHOUT_WAIT("Running phase jobs sequentially without waiting completion of a previous job") {
+            @Override
+            public boolean isParallel() {
+                return false;
+            }
+            @Override
+            public boolean waitPreviousJob() {
                 return false;
             }
         };
@@ -1121,6 +1143,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
 
         abstract public boolean isParallel();
+        abstract public boolean waitPreviousJob();
     }
 
     public void setExecutionType(ExecutionType executionType) {
