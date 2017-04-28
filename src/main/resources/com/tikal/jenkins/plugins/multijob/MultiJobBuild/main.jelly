@@ -64,7 +64,7 @@
                             </j:when>
 						</j:choose>
 	 				</td>
-	 				<td class="no-wrap" width="50%">
+	 				<td class="no-wrap" width="40%">
 	 					<a href="${rootURL}/${builder.url}">${builder.jobName}</a>
 	 				</td>
 					<td class="no-wrap" width="5%">
@@ -82,7 +82,11 @@
                                 ( ${builder.duration} )
                             </j:when>
 						</j:choose>
-                    </td>	
+                    </td>
+                    	 	<td class="no-wrap" width="10%">
+ -					<label class="no-wrap" for="_${index}">parameters</label>
+ -						<div>${it.getBuildParams(builder)}</div>
+ 				</td>
 	 				<td class="no-wrap" width="10%">
                         <a href="${rootURL}/${builder.url}console">
                             Console Output
