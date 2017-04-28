@@ -509,7 +509,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         result = jobBuild.getResult();
                         reportFinish(listener, jobBuild, result);
 
-                        if (result.isWorseOrEqualTo(Result.FAILURE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
+                        if (result.isWorseOrEqualTo(Result.UNSTABLE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
                             if (isKnownRandomFailure(jobBuild)) {
                                 if (retry <= maxRetries) {
                                     listener.getLogger().println("Known failure detected, retrying this build. Try " + retry + " of " + maxRetries + ".");
