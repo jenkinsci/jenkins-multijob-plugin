@@ -468,7 +468,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 int retry = 0;
                 boolean finish = false;
 
-                while (retry <= maxRetries && !finish) {
+                while (retry < maxRetries && !finish) {
                     retry++;
                     if (subTask.isShouldTrigger()) {
                         subTask.generateFuture();
