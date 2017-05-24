@@ -40,27 +40,27 @@ import org.jvnet.hudson.test.Issue;
 public class MultiJobParametersActionTest {
     
     @Test
-    public void ShouldMergeEmptyParameters() {
+    public void shouldMergeEmptyParameters() {
         MultiJobParametersAction params = new MultiJobParametersAction();
         assertShouldSchedule(params, true);
     }
     
     @Test
-    public void ShouldMergeEmptyParametersOfDifferentTypes() {
+    public void shouldMergeEmptyParametersOfDifferentTypes() {
         MultiJobParametersAction params = new MultiJobParametersAction();
         assertShouldSchedule(params, false);
     }
     
     @Test
     @Issue("JENKINS-38850")
-    public void ShouldMergeSameParameters() {
+    public void shouldMergeSameParameters() {
         MultiJobParametersAction params = new MultiJobParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
         assertShouldSchedule(params, new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
     }
     
     @Test
     @Issue("JENKINS-38850")
-    public void ShouldNotMergeDifferentParameters() {
+    public void shouldNotMergeDifferentParameters() {
         MultiJobParametersAction params = new MultiJobParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
         
         assertShouldNotSchedule(params, new StringParameterValue("A", "aValue"));
@@ -71,7 +71,7 @@ public class MultiJobParametersActionTest {
     
     @Test
     @Issue("JENKINS-38850")
-    public void ShouldNotMergeEmptyParameters() {
+    public void shouldNotMergeEmptyParameters() {
         MultiJobParametersAction params1 = new MultiJobParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
         MultiJobParametersAction params2 = new MultiJobParametersAction();
         ParametersAction params3 = new ParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
