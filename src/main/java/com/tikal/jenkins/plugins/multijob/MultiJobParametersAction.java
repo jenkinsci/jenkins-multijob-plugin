@@ -18,6 +18,7 @@ public class MultiJobParametersAction extends ParametersAction {
     private List<ParameterValue> parameters;
 
     public MultiJobParametersAction(@Nonnull List<ParameterValue> parameters) {
+        super(parameters);
         this.parameters = parameters;
     }
 
