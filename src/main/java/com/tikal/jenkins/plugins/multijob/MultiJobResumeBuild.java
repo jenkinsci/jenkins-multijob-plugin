@@ -8,6 +8,7 @@ import hudson.model.Queue;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -15,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MultiJobResumeBuild implements RunAction2 {
+public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
 
     private final Run<?, ?> run;
 
@@ -24,7 +25,7 @@ public class MultiJobResumeBuild implements RunAction2 {
     }
 
     public String getIconFileName() {
-		return "plugin/jenkins-multijob-plugin/tool32.png";
+        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? "plugin/jenkins-multijob-plugin/tool32.png" : null;
 	}
 
     public String getDisplayName() {
@@ -70,5 +71,11 @@ public class MultiJobResumeBuild implements RunAction2 {
         }
         actions.addAll(run.getActions(ParametersAction.class));
         return actions;
+    }
+
+    @Override
+    public Object getTarget() {
+        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        return this;
     }
 }
