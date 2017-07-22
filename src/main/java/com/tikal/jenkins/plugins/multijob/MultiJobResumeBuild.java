@@ -1,11 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import hudson.model.Action;
-import hudson.model.Cause;
-import hudson.model.CauseAction;
-import hudson.model.ParametersAction;
-import hudson.model.Queue;
-import hudson.model.Run;
+import hudson.model.*;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import org.kohsuke.stapler.StaplerProxy;
@@ -25,7 +20,7 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
     }
 
     public String getIconFileName() {
-        return Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER) ? "plugin/jenkins-multijob-plugin/tool32.png" : null;
+        return Jenkins.getInstance().hasPermission(Job.BUILD) ? "plugin/jenkins-multijob-plugin/tool32.png" : null;
 	}
 
     public String getDisplayName() {
@@ -75,7 +70,7 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
 
     @Override
     public Object getTarget() {
-        Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.getInstance().checkPermission(Job.BUILD);
         return this;
     }
 }
