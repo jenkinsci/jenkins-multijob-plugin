@@ -13,6 +13,10 @@
             </f:entry>
         
             <f:advanced>
+                <f:entry title="Job alias" field="jobAlias"
+                         help="/plugin/jenkins-multijob-plugin/help-jobAlias.html">
+                    <f:textbox />
+                </f:entry>
                 <f:entry title="Kill the phase on:" field="killPhaseOnJobResultCondition">
                     <f:enum field="killPhaseOnJobResultCondition">
                         ${it.getLabel()}
