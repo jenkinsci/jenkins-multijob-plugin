@@ -77,6 +77,7 @@ public class PhaseWrapper extends AbstractWrapper {
         } catch (Exception e) {
             return null;
         }
+
         return null;
     }
 

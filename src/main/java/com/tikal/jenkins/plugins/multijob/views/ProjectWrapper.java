@@ -27,14 +27,15 @@ import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 public class ProjectWrapper extends AbstractWrapper {
 
     final MultiJobProject multijob;
-
     final BuildState buildState;
+    final Run build;
 
     public ProjectWrapper(MultiJobProject multijob, Job project,
-            BuildState buildState, int nestLevel) {
+            BuildState buildState, int nestLevel, Run build) {
         super(project, nestLevel);
         this.multijob = multijob;
         this.buildState = buildState;
+        this.build = build;
     }
 
     @SuppressWarnings("unchecked")
@@ -51,7 +52,7 @@ public class ProjectWrapper extends AbstractWrapper {
     }
 
     public String getDisplayName() {
-        return project.getDisplayName();
+        return buildState.getJobName();
     }
 
     public String getFullDisplayName() {
@@ -61,6 +62,12 @@ public class ProjectWrapper extends AbstractWrapper {
     public String getUrl() {
         return project.getUrl();
     }
+
+    public int getBuildNumber() {
+        return this.build.getNumber();
+    }
+
+    public String getBuildDuration() { return  this.build.getDurationString(); }
 
     public String getShortUrl() {
         return project.getShortUrl();
@@ -130,6 +137,9 @@ public class ProjectWrapper extends AbstractWrapper {
         if (buildState == null) {
             return null;
         }
+        if (build == null) {
+            return null;
+        }
         if (Result.SUCCESS.equals(result)) {
             return project.getBuildByNumber(buildState
                     .getLastSuccessBuildNumber());
@@ -138,7 +148,7 @@ public class ProjectWrapper extends AbstractWrapper {
             return project.getBuildByNumber(buildState
                     .getLastFailureBuildNumber());
         }
-        return project.getBuildByNumber(buildState.getLastBuildNumber());
+        return this.build;
     }
 
     public Run getLastFailedBuild() {
@@ -158,7 +168,7 @@ public class ProjectWrapper extends AbstractWrapper {
     }
 
     public BallColor getIconColor() {
-        if (project instanceof AbstractProject &&  ((AbstractProject) project).isDisabled())
+        /*if (project instanceof AbstractProject &&  ((AbstractProject) project).isDisabled())
             return BallColor.DISABLED;
         Run lastBuild = getLastBuild();
         while (lastBuild != null && lastBuild.hasntStartedYet())
@@ -167,7 +177,12 @@ public class ProjectWrapper extends AbstractWrapper {
         if (lastBuild != null)
             return lastBuild.getIconColor();
         else
-            return BallColor.GREY;
+            return BallColor.GREY;*/
+        if( build != null )
+        {
+            return this.build.getIconColor();
+        }
+        return BallColor.GREY;
     }
 
     public String getCss() {

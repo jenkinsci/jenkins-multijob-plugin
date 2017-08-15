@@ -65,7 +65,7 @@
 						</j:choose>
 	 				</td>
 	 				<td class="no-wrap" width="50%">
-	 					<a href="${rootURL}/${builder.url}">${builder.jobName}</a>
+                        <a href="${rootURL}/${builder.url}">${builder.jobName} - ${builder.getJobAlias()}</a>
 	 				</td>
 					<td class="no-wrap" width="5%">
 						<j:choose>
