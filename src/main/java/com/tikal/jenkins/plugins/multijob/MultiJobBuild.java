@@ -301,5 +301,14 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		public AbstractBuild<?,?> getBuild() {
 			return build;
 		}
+
+		@Exported
+		public boolean isMultiJobBuild() {
+            if (build instanceof MultiJobBuild)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
