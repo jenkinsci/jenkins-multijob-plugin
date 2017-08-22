@@ -188,7 +188,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final String parentJobName;
         private final int parentBuildNumber;
         private final String jobName;
-        private String jobAlias = "Test007";
+        private final String jobAlias;
         private final int buildNumber;
         private final String phaseName;
         private final Result result;
@@ -310,5 +310,14 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 		public AbstractBuild<?,?> getBuild() {
 			return build;
 		}
+
+		@Exported
+		public boolean isMultiJobBuild() {
+            if (build instanceof MultiJobBuild)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
