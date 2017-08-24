@@ -32,283 +32,283 @@ import jenkins.model.Jenkins;
 @ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
-    private List<SubBuild> subBuilds;
-    private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
-    private Map<String, SubBuild> subBuildsMap = new HashMap<String, SubBuild>();
+	private List<SubBuild> subBuilds;
+	private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
+	private Map<String, SubBuild> subBuildsMap = new HashMap<String, SubBuild>();
 
-    public MultiJobBuild(MultiJobProject project) throws IOException {
-        super(project);
-    }
+	public MultiJobBuild(MultiJobProject project) throws IOException {
+		super(project);
+	}
 
-    @Override
-    public ChangeLogSet<? extends Entry> getChangeSet() {
-        return super.getChangeSet();
-    }
+	@Override
+	public ChangeLogSet<? extends Entry> getChangeSet() {
+		return super.getChangeSet();
+	}
 
-    public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
-        if (changeLogSet != null) {
-            this.changeSets.addChangeLogSet(changeLogSet);
-        }
-    }
+	public void addChangeLogSet(ChangeLogSet<? extends Entry> changeLogSet) {
+		if (changeLogSet != null) {
+			this.changeSets.addChangeLogSet(changeLogSet);
+		}
+	}
 
-    public MultiJobBuild(MultiJobProject project, File buildDir)
-            throws IOException {
-        super(project, buildDir);
-    }
+	public MultiJobBuild(MultiJobProject project, File buildDir)
+			throws IOException {
+		super(project, buildDir);
+	}
 
-    @Override
-    public synchronized void doStop(StaplerRequest req, StaplerResponse rsp)
-            throws IOException, ServletException {
-        super.doStop(req, rsp);
-    }
+	@Override
+	public synchronized void doStop(StaplerRequest req, StaplerResponse rsp)
+			throws IOException, ServletException {
+		super.doStop(req, rsp);
+	}
 
-    @Override
-    public void addAction(Action a) {
-        super.addAction(a);
-    }
+	@Override
+	public void addAction(Action a) {
+		super.addAction(a);
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void run() {
-        execute(new MultiJobRunnerImpl());
-    }
+	@SuppressWarnings("unchecked")
+	@Override
+	public void run() {
+		execute(new MultiJobRunnerImpl());
+	}
 
-    public List<SubBuild> getBuilders() {
-        MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
-        return multiJobBuild.getSubBuilds();
-    }
+	public List<SubBuild> getBuilders() {
+		MultiJobBuild multiJobBuild = getParent().getNearestBuild(getNumber());
+		return multiJobBuild.getSubBuilds();
+	}
 
-    public String getBuildParams(SubBuild subBuild) {
-        try {
-            AbstractProject project = (AbstractProject) Jenkins.getInstance()
-            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);;
-            Run build = project.getBuildByNumber(subBuild.getBuildNumber());
-            ParametersAction action = build.getAction(ParametersAction.class);
-            List<ParameterValue> parameters = action.getParameters();
-            StringBuffer buffer = new StringBuffer();
-            for (ParameterValue parameterValue : parameters) {
-                StringParameterValue stringParameter;
-                try {
-                    stringParameter = ((StringParameterValue) parameterValue);
-                } catch (Exception e) {
-                    continue;
-                }
-                String value = stringParameter.value;
-                String name = stringParameter.getName();
-                buffer.append("<input type='text' size='15' value='")
-                        .append(name)
-                        .append("' readonly/>")
-                        .append("&nbsp;")
-                        .append("<input type='text' size='35' value='")
-                        .append(value)
-                        .append("'/ readonly>")
-                        .append("</br>");
-            }
-            return buffer.toString();
-        } catch (Exception e) {
-            return "Failed to retrieve build parameters.";
-        }
-    }
+	public String getBuildParams(SubBuild subBuild) {
+		try {
+			AbstractProject project = (AbstractProject) Jenkins.getInstance()
+					.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
+			;
+			Run build = project.getBuildByNumber(subBuild.getBuildNumber());
+			ParametersAction action = build.getAction(ParametersAction.class);
+			List<ParameterValue> parameters = action.getParameters();
+			StringBuffer buffer = new StringBuffer();
+			for (ParameterValue parameterValue : parameters) {
+				StringParameterValue stringParameter;
+				try {
+					stringParameter = ((StringParameterValue) parameterValue);
+				} catch (Exception e) {
+					continue;
+				}
+				String value = stringParameter.value;
+				String name = stringParameter.getName();
+				buffer.append("<input type='text' size='15' value='")
+						.append(name)
+						.append("' readonly/>")
+						.append("&nbsp;")
+						.append("<input type='text' size='35' value='")
+						.append(value)
+						.append("'/ readonly>")
+						.append("</br>");
+			}
+			return buffer.toString();
+		} catch (Exception e) {
+			return "Failed to retrieve build parameters.";
+		}
+	}
 
-    public void addSubBuild(SubBuild subBuild) {
-        String key = subBuild.getPhaseName().concat(subBuild.getJobName())
-                .concat(String.valueOf(subBuild.getBuildNumber()));
-        if (subBuildsMap.containsKey(key)) {
-            SubBuild e = subBuildsMap.get(key);
-            Collections.replaceAll(getSubBuilds(), e, subBuild);
-        } else {
-            getSubBuilds().add(subBuild);
-        }
-        subBuildsMap.put(key, subBuild);
-    }
+	public void addSubBuild(SubBuild subBuild) {
+		String key = subBuild.getPhaseName().concat(subBuild.getJobName())
+				.concat(String.valueOf(subBuild.getBuildNumber()));
+		if (subBuildsMap.containsKey(key)) {
+			SubBuild e = subBuildsMap.get(key);
+			Collections.replaceAll(getSubBuilds(), e, subBuild);
+		} else {
+			getSubBuilds().add(subBuild);
+		}
+		subBuildsMap.put(key, subBuild);
+	}
 
-    @Exported
-    public List<SubBuild> getSubBuilds() {
-        if (subBuilds == null)
-            subBuilds = new CopyOnWriteArrayList<SubBuild>();
-        return subBuilds;
-    }
+	@Exported
+	public List<SubBuild> getSubBuilds() {
+		if (subBuilds == null)
+			subBuilds = new CopyOnWriteArrayList<SubBuild>();
+		return subBuilds;
+	}
 
-    protected class MultiJobRunnerImpl extends
-            Build<MultiJobProject, MultiJobBuild>.BuildExecution {
-        @Override
-        public Result run(BuildListener listener) throws Exception {
-            Result result = super.run(listener);
-            if (isAborted()) {
-                result = Result.ABORTED;
-            } else if (isNotBuilt()) {
-                result = Result.NOT_BUILT;
-            } else if (isFailure()) {
-                result = Result.FAILURE;
-            } else if (isUnstable()) {
-                result = Result.UNSTABLE;
-            }
+	protected class MultiJobRunnerImpl extends
+			Build<MultiJobProject, MultiJobBuild>.BuildExecution {
+		@Override
+		public Result run(BuildListener listener) throws Exception {
+			Result result = super.run(listener);
+			if (isAborted()) {
+				result = Result.ABORTED;
+			} else if (isNotBuilt()) {
+				result = Result.NOT_BUILT;
+			} else if (isFailure()) {
+				result = Result.FAILURE;
+			} else if (isUnstable()) {
+				result = Result.UNSTABLE;
+			}
 
-            if (!Result.SUCCESS.equals(result)) {
-                MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
-                super.getBuild().addAction(action);
-            }
+			if (!Result.SUCCESS.equals(result)) {
+				MultiJobResumeBuild action = new MultiJobResumeBuild(super.getBuild());
+				super.getBuild().addAction(action);
+			}
 
-            return result;
-        }
+			return result;
+		}
 
-        private boolean isAborted() {
-            return evaluateResult(Result.NOT_BUILT);
-        }
+		private boolean isAborted() {
+			return evaluateResult(Result.NOT_BUILT);
+		}
 
-        private boolean isNotBuilt() {
-            return evaluateResult(Result.FAILURE);
-        }
+		private boolean isNotBuilt() {
+			return evaluateResult(Result.FAILURE);
+		}
 
-        private boolean isFailure() {
-            return evaluateResult(Result.UNSTABLE);
-        }
+		private boolean isFailure() {
+			return evaluateResult(Result.UNSTABLE);
+		}
 
-        private boolean isUnstable() {
-            return evaluateResult(Result.SUCCESS);
-        }
+		private boolean isUnstable() {
+			return evaluateResult(Result.SUCCESS);
+		}
 
-        private boolean evaluateResult(Result result) {
-            List<SubBuild> builders = getBuilders();
-            for (SubBuild subBuild : builders) {
-                if (!subBuild.isRetry() && !subBuild.isAbort()) {
-                    Result buildResult = subBuild.getResult();
-                    if (buildResult != null && buildResult.isWorseThan(result)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-    }
+		private boolean evaluateResult(Result result) {
+			List<SubBuild> builders = getBuilders();
+			for (SubBuild subBuild : builders) {
+				if (!subBuild.isRetry() && !subBuild.isAbort()) {
+					Result buildResult = subBuild.getResult();
+					if (buildResult != null && buildResult.isWorseThan(result)) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+	}
 
-    @ExportedBean(defaultVisibility = 999)
-    public static class SubBuild {
+	@ExportedBean(defaultVisibility = 999)
+	public static class SubBuild {
 
-        private final String parentJobName;
-        private final int parentBuildNumber;
-        private final String jobName;
-        private final int buildNumber;
-        private final String phaseName;
-        private final Result result;
-        private final String icon;
-        private final String duration;
-        private final String url;
-        private final boolean retry;
-        private final boolean aborted;
-        private final AbstractBuild<?, ?> build;
+		private final String parentJobName;
+		private final int parentBuildNumber;
+		private final String jobName;
+		private final int buildNumber;
+		private final String phaseName;
+		private final Result result;
+		private final String icon;
+		private final String duration;
+		private final String url;
+		private final boolean retry;
+		private final boolean aborted;
+		private final AbstractBuild<?, ?> build;
 
-        public SubBuild(String parentJobName, int parentBuildNumber,
-                String jobName, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url,
-                AbstractBuild<?, ?> build) {
-            this.parentJobName = parentJobName;
-            this.parentBuildNumber = parentBuildNumber;
-            this.jobName = jobName;
-            this.buildNumber = buildNumber;
-            this.phaseName = phaseName;
-            this.result = result;
-            this.icon = icon;
-            this.duration = duration;
-            this.url = url;
-            this.retry = false;
-            this.aborted = false;
-            this.build = build;
-        }
-
-        public SubBuild(String parentJobName, int parentBuildNumber,
-                String jobName, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url,
-                boolean retry, boolean aborted, AbstractBuild<?, ?> build) {
-            this.parentJobName = parentJobName;
-            this.parentBuildNumber = parentBuildNumber;
-            this.jobName = jobName;
-            this.buildNumber = buildNumber;
-            this.phaseName = phaseName;
-            this.result = result;
-            this.icon = icon;
-            this.duration = duration;
-            this.url = url;
-            this.retry = retry;
-            this.aborted = aborted;
+		public SubBuild(String parentJobName, int parentBuildNumber,
+						String jobName, int buildNumber, String phaseName,
+						Result result, String icon, String duration, String url,
+						AbstractBuild<?, ?> build) {
+			this.parentJobName = parentJobName;
+			this.parentBuildNumber = parentBuildNumber;
+			this.jobName = jobName;
+			this.buildNumber = buildNumber;
+			this.phaseName = phaseName;
+			this.result = result;
+			this.icon = icon;
+			this.duration = duration;
+			this.url = url;
+			this.retry = false;
+			this.aborted = false;
 			this.build = build;
-        }
+		}
 
-        @Exported
-        public String getDuration() {
-            return duration;
-        }
-
-        @Exported
-        public boolean isRetry() {
-            return retry;
-        }
-
-
-        @Exported
-        public boolean isAbort() {
-            return aborted;
-        }
-
-        @Exported
-        public String getIcon() {
-            return icon;
-        }
-
-        @Exported
-        public String getUrl() {
-            return url;
-        }
-
-        @Exported
-        public String getPhaseName() {
-            return phaseName;
-        }
-
-        @Exported
-        public String getParentJobName() {
-            return parentJobName;
-        }
-
-        @Exported
-        public int getParentBuildNumber() {
-            return parentBuildNumber;
-        }
-
-        @Exported
-        public String getJobName() {
-            return jobName;
-        }
-
-        @Exported
-        public int getBuildNumber() {
-            return buildNumber;
-        }
-
-        @Exported
-        public Result getResult() {
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "SubBuild [parentJobName=" + parentJobName
-                    + ", parentBuildNumber=" + parentBuildNumber + ", jobName="
-                    + jobName + ", buildNumber=" + buildNumber + "]";
-        }
+		public SubBuild(String parentJobName, int parentBuildNumber,
+						String jobName, int buildNumber, String phaseName,
+						Result result, String icon, String duration, String url,
+						boolean retry, boolean aborted, AbstractBuild<?, ?> build) {
+			this.parentJobName = parentJobName;
+			this.parentBuildNumber = parentBuildNumber;
+			this.jobName = jobName;
+			this.buildNumber = buildNumber;
+			this.phaseName = phaseName;
+			this.result = result;
+			this.icon = icon;
+			this.duration = duration;
+			this.url = url;
+			this.retry = retry;
+			this.aborted = aborted;
+			this.build = build;
+		}
 
 		@Exported
-		public AbstractBuild<?,?> getBuild() {
+		public String getDuration() {
+			return duration;
+		}
+
+		@Exported
+		public boolean isRetry() {
+			return retry;
+		}
+
+
+		@Exported
+		public boolean isAbort() {
+			return aborted;
+		}
+
+		@Exported
+		public String getIcon() {
+			return icon;
+		}
+
+		@Exported
+		public String getUrl() {
+			return url;
+		}
+
+		@Exported
+		public String getPhaseName() {
+			return phaseName;
+		}
+
+		@Exported
+		public String getParentJobName() {
+			return parentJobName;
+		}
+
+		@Exported
+		public int getParentBuildNumber() {
+			return parentBuildNumber;
+		}
+
+		@Exported
+		public String getJobName() {
+			return jobName;
+		}
+
+		@Exported
+		public int getBuildNumber() {
+			return buildNumber;
+		}
+
+		@Exported
+		public Result getResult() {
+			return result;
+		}
+
+		@Override
+		public String toString() {
+			return "SubBuild [parentJobName=" + parentJobName
+					+ ", parentBuildNumber=" + parentBuildNumber + ", jobName="
+					+ jobName + ", buildNumber=" + buildNumber + "]";
+		}
+
+		@Exported
+		public AbstractBuild<?, ?> getBuild() {
 			return build;
 		}
 
 		@Exported
 		public boolean isMultiJobBuild() {
-            if (build instanceof MultiJobBuild)
-            {
-                return true;
-            }
-            return false;
-        }
-    }
+			if (build instanceof MultiJobBuild) {
+				return true;
+			}
+			return false;
+		}
+	}
 }
