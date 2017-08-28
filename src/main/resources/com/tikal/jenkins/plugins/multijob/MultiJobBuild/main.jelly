@@ -66,11 +66,15 @@
 								</td>
 								<td class="no-wrap" width="50%">
 									<a href="${rootURL}/${builder.url}">
-										${builder.jobName}
 										<j:choose>
-											<j:when test="${!builder.getJobAlias().equals('')}">
-												(${builder.getJobAlias()})
-											</j:when>
+											<j:if test="${builder.getJobAlias() != null}">
+												<j:when test="${builder.getJobAlias() != ''}">
+													${builder.jobName} (${builder.getJobAlias()})
+												</j:when>
+											</j:if>
+											<j:otherwise>
+												${builder.jobName}
+											</j:otherwise>
 										</j:choose>
 									</a>
 								</td>

@@ -46,7 +46,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 	private String jobName;
-	private String jobAlias;
+	private String jobAlias = "";
 	private String jobProperties;
 	private boolean currParams;
 	private boolean exposedSCM;

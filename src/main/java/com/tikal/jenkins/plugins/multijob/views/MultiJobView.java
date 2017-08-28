@@ -170,19 +170,20 @@ public class MultiJobView extends ListView {
                 int lastSuccess = 0, lastFailure = 0;
                 if( project.getLastBuild() != null ) {
                     for (SubBuild sb : project.getLastBuild().getSubBuilds()) {
-                        if (sb.getJobAlias().equals(projectConfig.getJobAlias())) {
-                            tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
-                            if (latestAliasBuild == null) {
-                                latestAliasBuild = tmp_build;
-                            }
+                    	if (sb.getJobAlias() != null) {
+							if (sb.getJobAlias().equals(projectConfig.getJobAlias())) {
+								tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
+								if (latestAliasBuild == null) {
+									latestAliasBuild = tmp_build;
+								}
 
-                            if(latestAliasBuild.getIconColor() == BallColor.RED) {
-                                lastFailure = tmp_build.getNumber();
-                            }
-                            else if(latestAliasBuild.getIconColor() == BallColor.BLUE) {
-                                lastSuccess = tmp_build.getNumber();
-                            }
-                        }
+								if (latestAliasBuild.getIconColor() == BallColor.RED) {
+									lastFailure = tmp_build.getNumber();
+								} else if (latestAliasBuild.getIconColor() == BallColor.BLUE) {
+									lastSuccess = tmp_build.getNumber();
+								}
+							}
+						}
                     }
 
                     buildState = new BuildState(buildState.jobName, buildState.previousBuildNumber,
@@ -266,8 +267,11 @@ public class MultiJobView extends ListView {
             }
         }
         String displayName = project.getDisplayName();
-        if( !alias.equals("") ) {
-        	displayName += " (" + alias + ")";
+        if( alias != null )
+		{
+			if( !alias.equals("") ) {
+				displayName += " (" + alias + ")";
+			}
 		}
         return new BuildState(displayName, previousBuildNumber,
                 lastBuildNumber, lastSuccessBuildNumber, lastFailureBuildNumber);

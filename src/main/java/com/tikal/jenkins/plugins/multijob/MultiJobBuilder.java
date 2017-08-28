@@ -286,13 +286,18 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             boolean conditionExistsAndEvaluatedToTrue = false;
 
             if (phaseConfig.getEnableCondition() && phaseConfig.getCondition() != null) {
+            	String subJobDisplayName = subJob.getName();
+            	if (phaseConfig.getJobAlias() != null && !phaseConfig.getJobAlias().equals("")) {
+            		subJobDisplayName += " (" + phaseConfig.getJobAlias() + ")";
+				}
+
                 // if SCM has changes or set to always build and condition should always be evaluated
                 if(jobStatus.isBuildable() && !phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
                     if (evalCondition(phaseConfig.getCondition(), build, listener)) {
-                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
+                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJobDisplayName));
                         conditionExistsAndEvaluatedToTrue = true;
                     } else {
-                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJobDisplayName));
                         phaseCounters.processSkipped();
                         continue;
                     }
@@ -300,26 +305,26 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 // if SCM has no changes but condition is set to be evaluated in this case
                 else if(!jobStatus.isBuildable() && phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
                     if (evalCondition(phaseConfig.getCondition(), build, listener)) {
-                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
+                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJobDisplayName));
                         conditionExistsAndEvaluatedToTrue = true;
                     } else {
-                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJobDisplayName));
                         phaseCounters.processSkipped();
                         continue;
                     }
                 }
                 // no SCM changes and no condition evaluation
                 else if(!jobStatus.isBuildable() && !phaseConfig.isApplyConditionOnlyIfNoSCMChanges()) {
-                    listener.getLogger().println(String.format("Skipping %s. No SCM changes found and condition is skipped.", subJob.getName()));
+                    listener.getLogger().println(String.format("Skipping %s. No SCM changes found and condition is skipped.", subJobDisplayName));
                     phaseCounters.processSkipped();
                     continue;
                 } else {
                     if (!evalCondition(phaseConfig.getCondition(), build, listener)) {
-                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJob.getName()));
+                        listener.getLogger().println(String.format("Skipping %s. Condition was evaluated to false.", subJobDisplayName));
                         phaseCounters.processSkipped();
                         continue;
                     } else {
-                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJob.getName()));
+                        listener.getLogger().println(String.format("Triggering %s. Condition was evaluated to true.", subJobDisplayName));
                         conditionExistsAndEvaluatedToTrue = true;
                     }
                 }
@@ -331,7 +336,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 continue;
             }
 
-            reportStart(listener, subJob);
+            reportStart(listener, subJob, phaseConfig);
             List<Action> actions = new ArrayList<Action>();
 
             if (resume) {
@@ -482,7 +487,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                                     exect.interrupt(Result.ABORTED);
                                 }
 
-                                reportFinish(listener, jobBuild, Result.ABORTED);
+                                reportFinish(listener, jobBuild, Result.ABORTED, subTask.phaseConfig);
                                 abortSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, subTask.phaseConfig.getJobAlias());
 
                                 finish = true;
@@ -499,7 +504,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                                 throw e;
                             }
                         }
-                        updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild);
+                        updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, subTask.phaseConfig.getJobAlias());
                         if (future.isDone()) {
                             break;
                         }
@@ -507,7 +512,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                     if (jobBuild != null && !finish) {
                         result = jobBuild.getResult();
-                        reportFinish(listener, jobBuild, result);
+                        reportFinish(listener, jobBuild, result, subTask.phaseConfig);
 
                         if (result.isWorseOrEqualTo(Result.UNSTABLE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
                             if (isKnownRandomFailure(jobBuild)) {
@@ -539,7 +544,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             } catch (Exception e) {
                 if (e instanceof InterruptedException) {
                     if (jobBuild != null) {
-                        reportFinish(listener, jobBuild, Result.ABORTED);
+                        reportFinish(listener, jobBuild, Result.ABORTED, subTask.phaseConfig);
                         abortSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, subTask.phaseConfig.getJobAlias());
                         subTask.result = Result.ABORTED;
                     }
@@ -703,22 +708,31 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         return false;
     }
 
-    private void reportStart(BuildListener listener, AbstractProject subJob) {
+    private void reportStart(BuildListener listener, AbstractProject subJob, PhaseJobsConfig phaseConfig) {
+		String jobDisplayName = subJob.getFullName();
+		if (phaseConfig.getJobAlias() != null && !phaseConfig.getJobAlias().equals("")) {
+			jobDisplayName += " (" + phaseConfig.getJobAlias() + ")";
+		}
         listener.getLogger().printf(
                 "Starting build job %s.\n",
                 HyperlinkNote.encodeTo('/' + subJob.getUrl(),
-                        subJob.getFullName()));
+						jobDisplayName));
     }
 
     private void reportFinish(BuildListener listener, AbstractBuild jobBuild,
-            Result result) {
+            Result result, PhaseJobsConfig phaseConfig) {
+    	String jobDisplayName = jobBuild.getProject().getFullName();
+    	if (phaseConfig.getJobAlias() != null && !phaseConfig.getJobAlias().equals("")) {
+			jobDisplayName += " (" + phaseConfig.getJobAlias() + ")";
+		}
+
         listener.getLogger().println(
                 "Finished Build : "
                         + HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",
                                 String.valueOf(jobBuild.getDisplayName()))
                         + " of Job : "
                         + HyperlinkNote.encodeTo('/' + jobBuild.getProject()
-                                .getUrl(), jobBuild.getProject().getFullName())
+                                .getUrl(), jobDisplayName)
                         + " with status : "
                         + HyperlinkNote.encodeTo('/' + jobBuild.getUrl()
                                 + "/console", result.toString()));
@@ -727,15 +741,15 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private void updateSubBuild(MultiJobBuild multiJobBuild,
             MultiJobProject multiJobProject, PhaseJobsConfig phaseConfig) {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
-                multiJobBuild.getNumber(), phaseConfig.getJobName(), "Test00", 0,
+                multiJobBuild.getNumber(), phaseConfig.getJobName(), phaseConfig.getJobAlias(), 0,
                 phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "", null);
         multiJobBuild.addSubBuild(subBuild);
     }
 
     private void updateSubBuild(MultiJobBuild multiJobBuild,
-            MultiJobProject multiJobProject, AbstractBuild<?, ?> jobBuild) {
+            MultiJobProject multiJobProject, AbstractBuild<?, ?> jobBuild, String jobAlias) {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
-                multiJobBuild.getNumber(), jobBuild.getProject().getName(), "Test01",
+                multiJobBuild.getNumber(), jobBuild.getProject().getName(), jobAlias,
                 jobBuild.getNumber(), phaseName, null, jobBuild.getIconColor()
                         .getImage(), jobBuild.getDurationString(),
                 jobBuild.getUrl(), jobBuild);
