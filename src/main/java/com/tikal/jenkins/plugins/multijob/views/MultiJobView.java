@@ -165,29 +165,40 @@ public class MultiJobView extends ListView {
                         project, subProject, projectConfig.getJobAlias());
                 phaseWrapper.addChildBuildState(jobBuildState);
 
-                Run latestAliasBuild = null;
-                Run tmp_build;
+                Run tmp_build, latestAliasBuild = null;
                 int lastSuccess = 0, lastFailure = 0;
                 if( project.getLastBuild() != null ) {
-                    for (SubBuild sb : project.getLastBuild().getSubBuilds()) {
-                    	if (sb.getJobAlias() != null) {
-							if (sb.getJobAlias().equals(projectConfig.getJobAlias())) {
-								tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
-								if (latestAliasBuild == null) {
-									latestAliasBuild = tmp_build;
-								}
+                    for ( MultiJobBuild mjb : project.getBuilds() ) {
+                    	for ( SubBuild sb : mjb.getSubBuilds() ) {
+							if (sb.getJobAlias() != null) {
+								if (sb.getJobAlias().equals(projectConfig.getJobAlias())) {
+									tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
+									if (tmp_build != null) {
+										if (latestAliasBuild == null) {
+											latestAliasBuild = tmp_build;
+										}
 
-								if (latestAliasBuild.getIconColor() == BallColor.RED) {
-									lastFailure = tmp_build.getNumber();
-								} else if (latestAliasBuild.getIconColor() == BallColor.BLUE) {
-									lastSuccess = tmp_build.getNumber();
+										if (lastFailure == 0 && tmp_build.getIconColor() == BallColor.RED) {
+											lastFailure = tmp_build.getNumber();
+										} else if (lastSuccess == 0 && tmp_build.getIconColor() == BallColor.BLUE) {
+											lastSuccess = tmp_build.getNumber();
+										}
+
+										if (lastFailure != 0 && lastSuccess != 0) {
+											break;
+										}
+									}
 								}
 							}
 						}
-                    }
 
-                    buildState = new BuildState(buildState.jobName, buildState.previousBuildNumber,
-                            buildState.lastBuildNumber, lastSuccess, lastFailure);
+						if (lastFailure != 0 && lastSuccess != 0) {
+							break;
+						}
+					}
+
+                    jobBuildState = new BuildState(jobBuildState.jobName, jobBuildState.previousBuildNumber,
+							jobBuildState.lastBuildNumber, lastSuccess, lastFailure);
                 }
                 addSimpleProject(project, subProject, jobBuildState,
                         phaseNestLevel + 1, out, latestAliasBuild);
