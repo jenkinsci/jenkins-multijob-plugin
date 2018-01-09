@@ -93,7 +93,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                 } catch (Exception e) {
                     continue;
                 }
-                String value = stringParameter.value;
+                String value = (String) stringParameter.getValue();
                 String name = stringParameter.getName();
                 buffer.append("<input type='text' size='15' value='")
                         .append(name)

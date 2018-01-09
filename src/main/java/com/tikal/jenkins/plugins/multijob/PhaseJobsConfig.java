@@ -252,12 +252,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 				String paramValue = null;
 				if (pdef instanceof StringParameterDefinition) {
 					StringParameterDefinition stringParameterDefinition = (StringParameterDefinition) pdef;
-					paramValue = stringParameterDefinition
-							.getDefaultParameterValue().value;
+					paramValue = (String) stringParameterDefinition
+							.getDefaultParameterValue().getValue();
 				} else if (pdef instanceof BooleanParameterDefinition) {
 					BooleanParameterDefinition booleanParameterDefinition = (BooleanParameterDefinition) pdef;
 					paramValue = String.valueOf(booleanParameterDefinition
-							.getDefaultParameterValue().value);
+							.getDefaultParameterValue().getValue());
 				}
 				sb.append(pdef.getName()).append("=").append(paramValue)
 						.append("\n");
