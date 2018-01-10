@@ -81,7 +81,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public String getBuildParams(SubBuild subBuild) {
         try {
             AbstractProject project = (AbstractProject) Jenkins.getInstance()
-            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);;
+            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
             Run build = project.getBuildByNumber(subBuild.getBuildNumber());
             ParametersAction action = build.getAction(ParametersAction.class);
             List<ParameterValue> parameters = action.getParameters();
@@ -188,6 +188,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final String parentJobName;
         private final int parentBuildNumber;
         private final String jobName;
+        private final String jobAlias;
         private final int buildNumber;
         private final String phaseName;
         private final Result result;
@@ -199,12 +200,13 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final AbstractBuild<?, ?> build;
 
         public SubBuild(String parentJobName, int parentBuildNumber,
-                String jobName, int buildNumber, String phaseName,
+                String jobName, String jobAlias, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
                 AbstractBuild<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
+            this.jobAlias = jobAlias;
             this.buildNumber = buildNumber;
             this.phaseName = phaseName;
             this.result = result;
@@ -217,12 +219,13 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         }
 
         public SubBuild(String parentJobName, int parentBuildNumber,
-                String jobName, int buildNumber, String phaseName,
+                String jobName, String jobAlias, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
                 boolean retry, boolean aborted, AbstractBuild<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
+            this.jobAlias = jobAlias;
             this.buildNumber = buildNumber;
             this.phaseName = phaseName;
             this.result = result;
@@ -281,6 +284,11 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         }
 
         @Exported
+        public String getJobAlias() {
+            return jobAlias;
+        }
+
+        @Exported
         public int getBuildNumber() {
             return buildNumber;
         }
@@ -294,12 +302,22 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public String toString() {
             return "SubBuild [parentJobName=" + parentJobName
                     + ", parentBuildNumber=" + parentBuildNumber + ", jobName="
-                    + jobName + ", buildNumber=" + buildNumber + "]";
+                    + jobName + ", jobAlias=" + jobAlias
+                    + ", buildNumber=" + buildNumber + "]";
         }
 
 		@Exported
 		public AbstractBuild<?,?> getBuild() {
 			return build;
 		}
+
+		@Exported
+		public boolean isMultiJobBuild() {
+            if (build instanceof MultiJobBuild)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
