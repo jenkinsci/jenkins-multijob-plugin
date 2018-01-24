@@ -14,16 +14,16 @@
 			border-left:1px dashed #D3DDE2;
 		}
 		.collapse{
-		  text-decoration: underline;
-		  cursor:pointer;
-		  display:block;
-		  color: blue;
+			text-decoration: underline;
+			cursor:pointer;
+			display:block;
+			color: blue;
 		}
 		.collapse + input{
-		  display:none;
+			display:none;
 		}
 		.collapse + input + *{
-		  display:none;
+			display:none;
 		}
 		.collapse+ input:checked + *{
 			position:absolute;
@@ -31,93 +31,80 @@
 			background-color:#ffffff;
 			height:300px;
 			border:1px dashed #D3DDE2;
-		  	display:block;
-		  	padding: 10px;
-		  	font-size: 1.2em;
-		  	overflow: auto;
-		  	overflow-x: hidden;
-		  	-ms-overflow-x: hidden;
+			display:block;
+			padding: 10px;
+			font-size: 1.2em;
+			overflow: auto;
+			overflow-x: hidden;
+			-ms-overflow-x: hidden;
 		}
 	</style>
-	
-	<table border="0" style="margin-top: 1em; margin-left:1em;" width="70%">
-    <j:set var="lastPhase" value=""/>
-	<j:forEach var="builder" items="${it.getBuilders()}">
-	<tr>
-		<td>
-			<table border="0" width="100%">
-				<j:choose>
-                    <j:when test="${!lastPhase.equals(builder.phaseName)}">
-                    <j:set var="lastPhase" value="${builder.phaseName}"/>
-                        <tr>
-                            <td colspan="6" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
-                        </tr>
-                    </j:when>
-                    <tr>
-                        <td class="no-wrap" width="3%" >
-                            <span class="job"><img src="${imagesURL}/24x24/${builder.icon}" alt=""/></span>
-                        </td>
-                        <td class="no-wrap" width="7%" >
-                            <j:choose>
-                                <j:when test="${builder.isRetry()}">
-                                    <img src="${rootURL}/plugin/jenkins-multijob-plugin/retry.gif" title="Failure, retry this build." alt="Failure, retry this build."/>
-                                </j:when>
-                            </j:choose>
-                        </td>
-                        <td class="no-wrap" width="50%">
-                            <a href="${rootURL}/${builder.url}">${builder.jobName} - ${builder.getJobAlias()}</a>
-                        </td>
-                        <td class="no-wrap" width="5%">
-                            <j:choose>
-                                <j:when test="${builder.url.length() > 0}">
-                                    <a href="${rootURL}/${builder.url}">
-                                        build #${builder.buildNumber}
-                                    </a>
-                                </j:when>
-                            </j:choose>
-                        </td>
-                        <td class="no-wrap" width="25%">
-                            <j:choose>
-                                <j:when test="${builder.duration.length() > 0}">
-                                    ( ${builder.duration} )
-                                </j:when>
-                            </j:choose>
-                        </td>
-                        <td class="no-wrap" width="10%">
-                            <a href="${rootURL}/${builder.url}console">
-                                Console Output
-                            </a>
-                        </td>
-                    </tr>
-                    <j:choose>
-                        <j:when test="${builder.isMultiJobBuild()}">
-                            <table border="0" style="margin-top: 1em; margin-left:1em;" width="100%">
-                                <j:set var="subBuildlastPhase" value=""/>
-                                <j:forEach var="subBuildBuilder" items="${builder.build.getSubBuilds()}">
-                                <j:choose>
-                                    <j:when test="${!subBuildlastPhase.equals(subBuildBuilder.phaseName)}">
-                                        <tr>
-                                            <td>
-                                                <j:set var="subBuildlastPhase" value="${subBuildBuilder.phaseName}"/>
-                                                [Phase] - ${subBuildBuilder.phaseName}
-                                            </td>
-                                        </tr>
-                                    </j:when>
-                                </j:choose>
-                                <tr>
-                                    <td>
-                                        ${subBuildBuilder.jobName}
-                                    </td>
-                                </tr>
-                                </j:forEach>
-                            </table>
-                        </j:when>
-                    </j:choose>
-				</j:choose>
-			</table>
-		</td>
-	</tr>
-	</j:forEach>
+
+	<table border="0" style="margin-top: 1em; margin-left:1em;" width="55%">
+		<j:set var="lastPhase" value=""/>
+		<j:forEach var="builder" items="${it.getBuilders()}">
+			<tr>
+				<td>
+					<table border="0" width="100%">
+						<j:choose>
+							<j:when test="${!lastPhase.equals(builder.phaseName)}">
+								<j:set var="lastPhase" value="${builder.phaseName}"/>
+								<tr>
+									<td colspan="6" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
+								</tr>
+							</j:when>
+							<tr>
+								<td class="no-wrap" width="3%" >
+									<span class="job"><img src="${imagesURL}/24x24/${builder.icon}" alt=""/></span>
+								</td>
+								<td class="no-wrap" width="7%" >
+									<j:choose>
+										<j:when test="${builder.isRetry()}">
+											<img src="${rootURL}/plugin/jenkins-multijob-plugin/retry.gif" title="Failure, retry this build." alt="Failure, retry this build."/>
+										</j:when>
+									</j:choose>
+								</td>
+								<td class="no-wrap" width="50%">
+									<a href="${rootURL}/${builder.url}">
+										<j:choose>
+											<j:if test="${builder.getJobAlias() != null}">
+												<j:when test="${builder.getJobAlias() != ''}">
+													${builder.jobName} (${builder.getJobAlias()})
+												</j:when>
+											</j:if>
+											<j:otherwise>
+												${builder.jobName}
+											</j:otherwise>
+										</j:choose>
+									</a>
+								</td>
+								<td class="no-wrap" width="5%">
+									<j:choose>
+										<j:when test="${builder.url.length() > 0}">
+											<a href="${rootURL}/${builder.url}">
+												build #${builder.buildNumber}
+											</a>
+										</j:when>
+									</j:choose>
+								</td>
+								<td class="no-wrap" width="25%">
+									<j:choose>
+										<j:when test="${builder.duration.length() > 0}">
+											( ${builder.duration} )
+										</j:when>
+									</j:choose>
+								</td>
+								<td class="no-wrap" width="10%">
+									<a href="${rootURL}/${builder.url}console">
+										Console Output
+									</a>
+								</td>
+							</tr>
+						</j:choose>
+					</table>
+				</td>
+			</tr>
+		</j:forEach>
 	</table>
 	<p:upstream-downstream />
 </j:jelly>
