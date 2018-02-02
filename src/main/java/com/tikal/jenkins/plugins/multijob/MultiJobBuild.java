@@ -196,7 +196,9 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final String url;
         private final boolean retry;
         private final boolean aborted;
-        private final AbstractBuild<?, ?> build;
+        @Deprecated
+        private transient AbstractBuild<?, ?> build;
+        private String buildID;
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
@@ -213,7 +215,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = false;
             this.aborted = false;
-            this.build = build;
+            buildID = build.getExternalizableId();
         }
 
         public SubBuild(String parentJobName, int parentBuildNumber,
@@ -231,7 +233,14 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.url = url;
             this.retry = retry;
             this.aborted = aborted;
-			this.build = build;
+            buildID = build.getExternalizableId();
+        }
+
+        private Object readResolve() {
+            if (build != null) {
+                buildID = build.getExternalizableId();
+            }
+            return this;
         }
 
         @Exported
@@ -299,7 +308,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 		@Exported
 		public AbstractBuild<?,?> getBuild() {
-			return build;
+			return (AbstractBuild) Run.fromExternalizableId(buildID);
 		}
     }
 }
