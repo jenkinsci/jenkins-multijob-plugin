@@ -196,7 +196,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final String url;
         private final boolean retry;
         private final boolean aborted;
-        private final AbstractBuild<?, ?> build;
+        private transient final AbstractBuild<?, ?> build;
 
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, int buildNumber, String phaseName,
