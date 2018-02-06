@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
