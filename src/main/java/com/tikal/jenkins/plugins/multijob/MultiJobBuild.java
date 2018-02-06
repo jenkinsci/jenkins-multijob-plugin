@@ -35,6 +35,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     private List<SubBuild> subBuilds;
     private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
     private Map<String, SubBuild> subBuildsMap = new HashMap<String, SubBuild>();
+    private MultiJobTestResults multiJobTestResults;
+    
 
     public MultiJobBuild(MultiJobProject project) throws IOException {
         super(project);
@@ -127,6 +129,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         if (subBuilds == null)
             subBuilds = new CopyOnWriteArrayList<SubBuild>();
         return subBuilds;
+    }
+    
+    public MultiJobTestResults getMultiJobTestResults() {
+        return multiJobTestResults;
+    }
+    
+    public void addTestsResult() {
+        multiJobTestResults = new MultiJobTestResults();
+        this.addAction(multiJobTestResults);
     }
 
     protected class MultiJobRunnerImpl extends
