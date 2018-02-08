@@ -27,6 +27,7 @@ import hudson.model.Run;
 import hudson.model.StringParameterValue;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
 
 @ExportedBean(defaultVisibility = 999)
@@ -196,8 +197,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final String url;
         private final boolean retry;
         private final boolean aborted;
-        @Deprecated
-        private transient AbstractBuild<?, ?> build;
         private String buildID;
 
         public SubBuild(String parentJobName, int parentBuildNumber,
@@ -234,13 +233,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             this.retry = retry;
             this.aborted = aborted;
             buildID = build.getExternalizableId();
-        }
-
-        private Object readResolve() {
-            if (build != null) {
-                buildID = build.getExternalizableId();
-            }
-            return this;
         }
 
         @Exported
@@ -307,8 +299,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         }
 
 		@Exported
+        @CheckForNull
 		public AbstractBuild<?,?> getBuild() {
-			return (AbstractBuild) Run.fromExternalizableId(buildID);
+            if (buildID != null) {
+                Run<?, ?> build = Run.fromExternalizableId(buildID);
+                if (build instanceof AbstractBuild) {
+                    return (AbstractBuild) build;
+                }
+            } // else null if loaded from historical data prior to JENKINS-49328
+			return null;
 		}
     }
 }
