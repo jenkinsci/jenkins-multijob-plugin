@@ -50,6 +50,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	private boolean aggregatedTestResults;
 	private boolean exposedSCM;
 	private boolean disableJob;
+	private boolean pretendSuccess;
 	private String parsingRulesPath;
 	private int maxRetries;
 	private boolean enableRetryStrategy;
@@ -133,6 +134,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.disableJob = disableJob;
 	}
 
+	public boolean isPretendSuccess() {
+		return pretendSuccess;
+	}
+
+	public void setPretendSuccess(boolean pretendSuccess) {
+		this.pretendSuccess = pretendSuccess;
+	}
+
 	public KillPhaseOnJobResultCondition getKillPhaseOnJobResultCondition() {
 		return killPhaseOnJobResultCondition;
 	}
@@ -193,12 +202,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	public PhaseJobsConfig(String jobName, String jobProperties,
 			boolean currParams, List<AbstractBuildParameters> configs,
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
-			boolean disableJob, boolean enableRetryStrategy,
+			boolean disableJob, boolean pretendSuccess, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
                         boolean applyConditionOnlyIfNoSCMChanges) {
             this(jobName, jobProperties, currParams, configs, killPhaseOnJobResultCondition,
-                    disableJob, enableRetryStrategy, parsingRulesPath, maxRetries, enableCondition,
+                    disableJob, pretendSuccess, enableRetryStrategy, parsingRulesPath, maxRetries, enableCondition,
                     abortAllJob, condition, buildOnlyIfSCMChanges, applyConditionOnlyIfNoSCMChanges, false);
         }
         
@@ -206,7 +215,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	public PhaseJobsConfig(String jobName, String jobProperties,
 			boolean currParams, List<AbstractBuildParameters> configs,
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
-			boolean disableJob, boolean enableRetryStrategy,
+			boolean disableJob, boolean pretendSuccess, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
                         boolean applyConditionOnlyIfNoSCMChanges, boolean aggregatedTestResults) {
@@ -215,6 +224,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.currParams = currParams;
 		this.killPhaseOnJobResultCondition = killPhaseOnJobResultCondition;
 		this.disableJob = disableJob;
+		this.pretendSuccess = pretendSuccess;
 		this.configs = Util.fixNull(configs);
 		this.enableRetryStrategy = enableRetryStrategy;
 		this.maxRetries = maxRetries;
