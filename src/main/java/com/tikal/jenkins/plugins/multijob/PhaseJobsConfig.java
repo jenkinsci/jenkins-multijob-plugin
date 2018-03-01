@@ -193,16 +193,16 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return getClass().getSimpleName();
 	}
 
-	public PhaseJobsConfig(String jobName, String jobProperties,
+	public PhaseJobsConfig(String jobName, String jobAlias,String jobProperties,
 			boolean currParams, List<AbstractBuildParameters> configs,
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
                         boolean applyConditionOnlyIfNoSCMChanges) {
-            this(jobName, jobProperties, currParams, configs, killPhaseOnJobResultCondition,
-                    disableJob, enableRetryStrategy, parsingRulesPath, maxRetries, enableCondition,
-                    abortAllJob, condition, buildOnlyIfSCMChanges, applyConditionOnlyIfNoSCMChanges, false);
+            this(jobName, jobAlias, jobProperties, currParams, configs, killPhaseOnJobResultCondition,
+				disableJob, enableRetryStrategy, parsingRulesPath, maxRetries, enableCondition,
+				abortAllJob, condition, buildOnlyIfSCMChanges, applyConditionOnlyIfNoSCMChanges, false);
         }
         
 	@DataBoundConstructor
@@ -212,7 +212,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
 			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
-                        boolean applyConditionOnlyIfNoSCMChanges, boolean aggregatedTestResults) {
+			boolean applyConditionOnlyIfNoSCMChanges, boolean aggregatedTestResults) {
 		this.jobName = jobName;
 		this.jobAlias = jobAlias;
 		this.jobProperties = jobProperties;

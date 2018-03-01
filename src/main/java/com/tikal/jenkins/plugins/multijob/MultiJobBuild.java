@@ -332,9 +332,11 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 		@Exported
 		public boolean isMultiJobBuild() {
-            if (build instanceof MultiJobBuild)
-            {
-                return true;
+            if (buildID != null) {
+                Run<?, ?> build = Run.fromExternalizableId(buildID);
+                if (build instanceof MultiJobBuild) {
+                    return true;
+                }
             }
             return false;
         }
