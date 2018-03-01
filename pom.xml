@@ -52,6 +52,13 @@
 			<artifactId>parameterized-trigger</artifactId>
 			<version>2.25</version>
 		</dependency>
+                
+                
+		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>junit</artifactId>
+			<version>1.11</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
