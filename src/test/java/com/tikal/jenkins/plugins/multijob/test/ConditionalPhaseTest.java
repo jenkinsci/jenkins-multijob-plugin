@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob.test;
 
+import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import hudson.model.Result;
 import hudson.model.TopLevelItem;
 import hudson.model.Cause.UserCause;
@@ -14,7 +15,6 @@ import org.jenkins_ci.plugins.run_condition.BuildStepRunner;
 import org.jenkins_ci.plugins.run_condition.core.AlwaysRun;
 import org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -26,18 +26,20 @@ import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig.KillPhaseOnJobResultCondition;
 import com.tikal.jenkins.plugins.multijob.views.PhaseWrapper;
 import com.tikal.jenkins.plugins.multijob.views.ProjectWrapper;
+import org.jvnet.hudson.test.RestartableJenkinsRule;
 
 /**
  * @author Bartholdi Dominik (imod)
  */
 public class ConditionalPhaseTest {
     @Rule
-    public JenkinsRule j = new JenkinsRule();
+    public RestartableJenkinsRule rr = new RestartableJenkinsRule();
 
     @Test
     public void testConditionalPhase() throws Exception {
-        j.jenkins.getInjector().injectMembers(this);
-        
+        rr.then(new RestartableJenkinsRule.Step() {
+            @Override
+            public void run(JenkinsRule j) throws Throwable {
         // MultiTop
         //  |_ FirstPhase
         //      |_ free
@@ -72,7 +74,7 @@ public class ConditionalPhaseTest {
         blist.add(secondPhaseBuilder);
         multi.getBuildersList().add(new ConditionalBuilder(new AlwaysRun(), new BuildStepRunner.Run(), blist));
 
-        j.assertBuildStatus(Result.SUCCESS, multi.scheduleBuild2(0, new UserCause()).get());
+        MultiJobBuild b = j.assertBuildStatus(Result.SUCCESS, multi.scheduleBuild2(0, new UserCause()).get());
         Assert.assertTrue("shell task writes 'hello' to log", free.getLastBuild().getLog(10).contains("hello"));
         Assert.assertTrue("shell task writes 'dude' to log", multi.getLastBuild().getLog(10).contains("dude"));
         // check for correct number of items to be displayed
@@ -94,7 +96,25 @@ public class ConditionalPhaseTest {
         Assert.assertEquals("there should be two phases", 2, numberOfPhases);
         Assert.assertEquals("there should be three projects", 3, numberOfProjects);
         Assert.assertEquals("there should be 1 conditional phase", 1, numberOfConditionalPhases);
-        
+        assertSubBuilds(b, "Free2#1", "Free#1");
+            }
+        });
+        rr.then(new RestartableJenkinsRule.Step() {
+            @Override
+            public void run(JenkinsRule j) throws Throwable {
+                MultiJobProject multi = j.jenkins.getItemByFullName("MultiTop", MultiJobProject.class);
+                MultiJobBuild b = multi.getBuildByNumber(1);
+                // JENKINS-49328: ensure that SubBuild.getBuild() works after a restart:
+                assertSubBuilds(b, "Free2#1", "Free#1");
+            }
+        });
+    }
+
+    private void assertSubBuilds(MultiJobBuild b, String... externalIDs) {
+        List<String> ids = new ArrayList<>();
+        for (MultiJobBuild.SubBuild sub : b.getSubBuilds()) {
+            ids.add(sub.getBuild().getExternalizableId());
+        }
     }
 
 }
