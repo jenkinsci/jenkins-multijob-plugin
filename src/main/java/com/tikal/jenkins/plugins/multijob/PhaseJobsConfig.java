@@ -44,11 +44,11 @@ import org.kohsuke.stapler.StaplerRequest;
 
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
-
 	private String jobName;
 	private String jobAlias;
 	private String jobProperties;
 	private boolean currParams;
+	private boolean aggregatedTestResults;
 	private boolean exposedSCM;
 	private boolean disableJob;
 	private String parsingRulesPath;
@@ -159,6 +159,14 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.currParams = currParams;
 	}
 
+	public boolean isAggregatedTestResults() {
+		return aggregatedTestResults;
+	}
+
+	public void setAggregatedTestResults(boolean aggregatedTestResults) {
+		this.aggregatedTestResults = aggregatedTestResults;
+	}
+
 	public String getJobProperties() {
 		return jobProperties;
 	}
@@ -185,13 +193,26 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		return getClass().getSimpleName();
 	}
 
+	public PhaseJobsConfig(String jobName, String jobProperties,
+			boolean currParams, List<AbstractBuildParameters> configs,
+			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
+			boolean disableJob, boolean enableRetryStrategy,
+			String parsingRulesPath, int maxRetries, boolean enableCondition,
+			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
+                        boolean applyConditionOnlyIfNoSCMChanges) {
+            this(jobName, jobProperties, currParams, configs, killPhaseOnJobResultCondition,
+                    disableJob, enableRetryStrategy, parsingRulesPath, maxRetries, enableCondition,
+                    abortAllJob, condition, buildOnlyIfSCMChanges, applyConditionOnlyIfNoSCMChanges, false);
+        }
+        
 	@DataBoundConstructor
 	public PhaseJobsConfig(String jobName, String jobAlias, String jobProperties,
 			boolean currParams, List<AbstractBuildParameters> configs,
 			KillPhaseOnJobResultCondition killPhaseOnJobResultCondition,
 			boolean disableJob, boolean enableRetryStrategy,
 			String parsingRulesPath, int maxRetries, boolean enableCondition,
-			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges, boolean applyConditionOnlyIfNoSCMChanges) {
+			boolean abortAllJob, String condition, boolean buildOnlyIfSCMChanges,
+                        boolean applyConditionOnlyIfNoSCMChanges, boolean aggregatedTestResults) {
 		this.jobName = jobName;
 		this.jobAlias = jobAlias;
 		this.jobProperties = jobProperties;
@@ -210,6 +231,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.condition = Util.fixNull(condition);
 		this.buildOnlyIfSCMChanges = buildOnlyIfSCMChanges;
 		this.applyConditionOnlyIfNoSCMChanges = applyConditionOnlyIfNoSCMChanges;
+                this.aggregatedTestResults = aggregatedTestResults;
 	}
 
 	public List<AbstractBuildParameters> getConfigs() {
@@ -256,12 +278,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 				String paramValue = null;
 				if (pdef instanceof StringParameterDefinition) {
 					StringParameterDefinition stringParameterDefinition = (StringParameterDefinition) pdef;
-					paramValue = stringParameterDefinition
-							.getDefaultParameterValue().value;
+					paramValue = (String) stringParameterDefinition
+							.getDefaultParameterValue().getValue();
 				} else if (pdef instanceof BooleanParameterDefinition) {
 					BooleanParameterDefinition booleanParameterDefinition = (BooleanParameterDefinition) pdef;
 					paramValue = String.valueOf(booleanParameterDefinition
-							.getDefaultParameterValue().value);
+							.getDefaultParameterValue().getValue());
 				}
 				sb.append(pdef.getName()).append("=").append(paramValue)
 						.append("\n");

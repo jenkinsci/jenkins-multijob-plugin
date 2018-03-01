@@ -26,17 +26,6 @@ public class MultiJobParametersAction extends ParametersAction {
         this(Arrays.asList(parameters));
     }
 
-    private Object readResolve() {
-        List<ParameterValue> superParameters = super.getParameters();
-        // Migrate the stuf if there is inconsistency
-        if (!parameters.isEmpty() && (superParameters == null || superParameters.isEmpty())) {
-            // TODO: Should it actually check if the lists are diffrerent?
-            // No use-case exception reflection/groovy
-            return new MultiJobParametersAction(parameters);
-        }
-        return this;
-    }
-    
     @Override
     public List<ParameterValue> getParameters() {
         return Collections.unmodifiableList(parameters);

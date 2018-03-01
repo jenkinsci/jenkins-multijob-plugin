@@ -31,6 +31,9 @@
                 <f:entry title="Abort all other job" field="abortAllJob" help="/plugin/jenkins-multijob-plugin/help-abort.html">
                     <f:checkbox name="abortAllJob" checked="${instance.abortAllJob}" default="true"/>
                 </f:entry>
+                <f:entry title="Aggregated Test Results" field="aggregatedTestResults">
+                    <f:checkbox name="aggregatedTestResults" checked="${instance.aggregatedTestResults}" default="false"/>
+                </f:entry>
                 <f:entry title="Current job parameters" field="currParams" help="/plugin/jenkins-multijob-plugin/help-currParams.html">
                     <f:checkbox name="currParams" checked="${instance.currParams}" default="true"/>
                 </f:entry>

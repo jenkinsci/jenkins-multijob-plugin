@@ -3,13 +3,14 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>2.9</version>
+		<version>3.2</version>
+                <relativePath />
 	</parent>
 	<!-- parent> <groupId>org.jvnet.hudson.plugins</groupId> <artifactId>hudson-plugin-parent</artifactId> 
 		<version>2.1.0</version> <relativePath>../pom.xml</relativePath> </parent -->
 
 	<artifactId>jenkins-multijob-plugin</artifactId>
-	<version>1.28-SNAPSHOT</version>
+	<version>1.29-SNAPSHOT</version>
 	<name>Jenkins Multijob plugin</name>
 	<description>Enabling full hierarchy of Jenkins jobs</description>
 	<url>http://wiki.jenkins-ci.org/display/JENKINS/Multijob+Plugin</url>
@@ -47,17 +48,16 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.jenkins-ci.main</groupId>
-			<artifactId>jenkins-war</artifactId>
-			<type>war</type>
-			<version>${project.parent.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>parameterized-trigger</artifactId>
 			<version>2.25</version>
+		</dependency>
+                
+                
+		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>junit</artifactId>
+			<version>1.11</version>
 		</dependency>
 
 		<dependency>
@@ -91,6 +91,14 @@
 					<groupId>org.apache.httpcomponents</groupId>
 					<artifactId>httpcore</artifactId>
 				</exclusion>
+                                <exclusion> <!-- TODO pending maven-plugin 3.0 -->
+                                    <groupId>org.apache.ant</groupId>
+                                    <artifactId>ant</artifactId>
+                                </exclusion>
+                                <exclusion> <!-- TODO pending maven-plugin 3.0 -->
+                                    <groupId>com.google.inject</groupId>
+                                    <artifactId>guice</artifactId>
+                                </exclusion>
 			</exclusions>
 		</dependency>
 
@@ -219,6 +227,8 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
+                <jenkins.version>1.625.3</jenkins.version>
+                <java.level>7</java.level>
 	</properties>
 
 </project>
