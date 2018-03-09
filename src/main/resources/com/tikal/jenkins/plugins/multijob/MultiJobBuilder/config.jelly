@@ -24,6 +24,9 @@
                 <f:entry title="Disable" field="disableJob">
                     <f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
                 </f:entry>
+                <f:entry title="Pretend Success" field="pretendSuccess" help="/plugin/jenkins-multijob-plugin/help-pretendSuccess.html">
+                    <f:checkbox name="pretendSuccess" checked="${instance.pretendSuccess}" default="false"/>
+                </f:entry>
                 <f:entry title="Abort all other job" field="abortAllJob" help="/plugin/jenkins-multijob-plugin/help-abort.html">
                     <f:checkbox name="abortAllJob" checked="${instance.abortAllJob}" default="true"/>
                 </f:entry>
