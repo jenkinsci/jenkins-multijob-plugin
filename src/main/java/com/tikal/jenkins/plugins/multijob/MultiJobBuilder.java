@@ -537,7 +537,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                                     listener.getLogger().println("Known failure detected, retrying this build. Try " + retry + " of " + maxRetries + ".");
                                     updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result, true);
 
-                                    subTask.generateFuture();
+                                    //subTask.generateFuture();
                                 } else {
                                     listener.getLogger().println("Known failure detected, max retries (" + maxRetries + ") exceeded.");
                                     updateSubBuild(subTask.multiJobBuild, multiJobProject, jobBuild, result);
