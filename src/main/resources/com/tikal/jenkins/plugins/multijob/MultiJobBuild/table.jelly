@@ -1,0 +1,88 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:p="/lib/hudson/project">
+	<j:forEach var="builder" items="${builders}">
+		<j:choose>
+			<j:when test="${!lastPhase.equals(builder.phaseName)}">
+				<j:set var="lastPhase" value="${builder.phaseName}"/>
+				<j:set var="indent" value="${indent - 1}"/>
+				<tr>
+					<td></td>
+					<td></td>
+					<td class="phase" style="padding-left:${indent * 20}px;font-style:italic;font-size:smaller;font-weight:bold;">
+						${builder.phaseName}
+					</td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				<j:set var="indent" value="${indent + 1}"/>
+			</j:when>
+			<tr>
+				<td class="no-wrap" align="center" width="28px">
+					<span class="job"><img src="${imagesURL}/24x24/${builder.icon}" alt=""/></span>
+				</td>
+				<td class="no-wrap" align="center" width="24px">
+					<j:choose>
+						<j:when test="${builder.isRetry()}">
+							<img src="${rootURL}/plugin/jenkins-multijob-plugin/retry.gif" title="Failure, retry this build." alt="Failure, retry this build."/>
+						</j:when>
+					</j:choose>
+				</td>
+				<td class="no-wrap" style="padding-left:${indent * 20}px" width="70%">
+					<a href="${rootURL}/${builder.url}">
+						<j:choose>
+							<j:if test="${builder.getJobAlias() != null}">
+								<j:when test="${builder.getJobAlias() != ''}">
+									${builder.jobName} (${builder.getJobAlias()})
+								</j:when>
+							</j:if>
+							<j:otherwise>
+								${builder.jobName}
+							</j:otherwise>
+						</j:choose>
+					</a>
+				</td>
+				<td class="no-wrap">
+					<j:choose>
+						<j:when test="${builder.url.length() > 0}">
+							<a href="${rootURL}/${builder.url}">
+								build #${builder.buildNumber}
+							</a>
+						</j:when>
+					</j:choose>
+				</td>
+				<td class="no-wrap">
+					<j:choose>
+						<j:when test="${builder.duration.length() > 0}">
+							( ${builder.duration} )
+						</j:when>
+					</j:choose>
+				</td>
+				<td class="no-wrap" align="center">
+					<a href="${rootURL}/${builder.url}console">
+						<img src="${imagesURL}/24x24/terminal.png" alt="Console Output" />
+					</a>
+				</td>
+			</tr>
+		</j:choose>
+		<j:choose>
+			<j:when test="${builder.isMultiJobBuild()}">
+				<j:set var="oldLastPhase" value="${lastPhase}"/>
+				<j:set var="oldBuilders" value="${builders}"/>
+				<j:set var="oldIndent" value="${indent}"/>
+
+				<j:set var="lastPhase" value=""/>
+				<j:set var="builders" value="${builder.build.getSubBuilds()}"/>
+				<j:set var="indent" value="${indent + 2}"/>
+
+				<st:include page="table.jelly" />
+
+				<j:set var="lastPhase" value="${oldLastPhase}"/>
+				<j:set var="builders" value="${oldLastBuilders}"/>
+				<j:set var="indent" value="${oldIndent}"/>
+			</j:when>
+		</j:choose>
+	</j:forEach>
+</j:jelly>

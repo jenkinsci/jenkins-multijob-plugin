@@ -4,96 +4,50 @@
 	xmlns:p="/lib/hudson/project">
 
 	<style>
-		td.phase {
-			font-size:14px;
-			padding:5px;
-			text-align:left;
-			border-bottom:1px dashed #D3DDE2;
+		.customtable tr {
+		  border: 1px solid #bbb;
+		  padding: 3px 4px 3px 4px;
 		}
-		span.job{
-			border-left:1px dashed #D3DDE2;
+
+		table.customtable.pane > tbody > tr > td:last-child {
+		  border-right: none;
 		}
-		.collapse{
-		  text-decoration: underline;
-		  cursor:pointer;
-		  display:block;
-		  color: blue;
+		.customtable tr {
+		  border: none; /* Border will be provided by the pane-frame */
 		}
-		.collapse + input{
-		  display:none;
+
+		.customtable th {
+		  font-weight: bold;
+		  border: none;
+		  background-color: #f0f0f0;
+		  padding: 6px 4px;
+		  white-space: nowrap;
 		}
-		.collapse + input + *{
-		  display:none;
-		}
-		.collapse+ input:checked + *{
-			position:absolute;
-			width:400px;
-			background-color:#ffffff;
-			height:300px;
-			border:1px dashed #D3DDE2;
-		  	display:block;
-		  	padding: 10px;
-		  	font-size: 1.2em;
-		  	overflow: auto;
-		  	overflow-x: hidden;
-		  	-ms-overflow-x: hidden;
+		.customtable td {
+		  vertical-align: middle;
+		  padding: 3px 4px 3px 4px;
 		}
 	</style>
-	
-	<table border="0" style="margin-top: 1em; margin-left:1em;" width="55%">
-    <j:set var="lastPhase" value=""/>
-	<j:forEach var="builder" items="${it.getBuilders()}">
-	<tr>
-		<td>
-			<table border="0" width="100%">
-				<j:choose>
-				<j:when test="${!lastPhase.equals(builder.phaseName)}">
-				<j:set var="lastPhase" value="${builder.phaseName}"/>
-				<tr>
-					<td colspan="6" align="center" class="phase">[Phase] - ${builder.phaseName}</td>
-				</tr>
-				</j:when>
-				<tr>
-		 			<td class="no-wrap" width="3%" >
-	           			<span class="job"><img src="${imagesURL}/24x24/${builder.icon}" alt=""/></span>
-	 				</td>
-		 			<td class="no-wrap" width="7%" >
-						<j:choose>
-                            <j:when test="${builder.isRetry()}">
-                                <img src="${rootURL}/plugin/jenkins-multijob-plugin/retry.gif" title="Failure, retry this build." alt="Failure, retry this build."/>
-                            </j:when>
-						</j:choose>
-	 				</td>
-	 				<td class="no-wrap" width="50%">
-	 					<a href="${rootURL}/${builder.url}">${builder.jobName}</a>
-	 				</td>
-					<td class="no-wrap" width="5%">
-						<j:choose>
-							<j:when test="${builder.url.length() > 0}">
-								<a href="${rootURL}/${builder.url}">
-									build #${builder.buildNumber}
-								</a>
-							</j:when>
-						</j:choose>
-					</td>
-	 				<td class="no-wrap" width="25%">
-						<j:choose>
-                            <j:when test="${builder.duration.length() > 0}">
-                                ( ${builder.duration} )
-                            </j:when>
-						</j:choose>
-                    </td>	
-	 				<td class="no-wrap" width="10%">
-                        <a href="${rootURL}/${builder.url}console">
-                            Console Output
-                        </a>
-	 				</td>			   
-				</tr>
-				</j:choose>
+
+	<div>
+		<table width="70%" style="margin-top: 1em; margin-left:1em; border-collapse: collapse;" class="customtable stripped-odd">
+			<tr class="header">
+				<th align="center">S</th>
+				<th align="left">R</th>
+				<th align="left">Job</th>
+				<th align="left">Build #</th>
+				<th align="left">Duration</th>
+				<th align="left">Console</th>
+            </tr>
+
+			<j:set var="lastPhase" value=""/>
+			<j:set var="builders" value="${it.getBuilders()}"/>
+			<j:set var="indent" value="1"/>
+
+			<st:include page="table.jelly" />
+
 			</table>
-		</td>
-	</tr>
-	</j:forEach>
-	</table>
+	</div>
+
 	<p:upstream-downstream />
 </j:jelly>
