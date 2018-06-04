@@ -36,9 +36,6 @@ import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 
 public class MultiJobView extends ListView {
 
-    private DescribableList<ListViewColumn, Descriptor<ListViewColumn>> columns = new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(
-            this, MultiJobListViewColumn.createDefaultInitialColumnList());
-
     @DataBoundConstructor
     public MultiJobView(String name) {
         super(name);
@@ -46,11 +43,6 @@ public class MultiJobView extends ListView {
 
     public MultiJobView(String name, ViewGroup owner) {
         super(name, owner);
-    }
-
-    @Override
-    public DescribableList<ListViewColumn, Descriptor<ListViewColumn>> getColumns() {
-        return columns;
     }
 
     @Extension
@@ -308,15 +300,11 @@ public class MultiJobView extends ListView {
     }
 
     protected void initColumns() {
+        super.initColumns();
         try {
-            Field field = ListView.class.getDeclaredField("columns");
-            field.setAccessible(true);
-            field.set(
-                    this,
-                    new DescribableList<ListViewColumn, Descriptor<ListViewColumn>>(
-                            this, MultiJobListViewColumn
-                                    .createDefaultInitialColumnList()));
-        } catch (Exception e) {
+            getColumns().replaceBy(MultiJobListViewColumn
+                    .createDefaultInitialColumnList());
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

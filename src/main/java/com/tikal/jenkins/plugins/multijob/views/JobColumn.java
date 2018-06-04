@@ -14,7 +14,7 @@ public class JobColumn extends MultiJobListViewColumn {
     public static class DescriptorImpl extends ListViewColumnDescriptor {
         @Override
         public String getDisplayName() {
-            return " MultiJob - Job";
+            return "MultiJob - Job";
         }
         public boolean shownByDefault() {
             return false;
