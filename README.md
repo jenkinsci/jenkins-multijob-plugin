@@ -8,4 +8,4 @@
 ### Found a bug ? require a new feature ?
 #### Feel free to open an issue: https://github.com/jenkinsci/tikal-multijob-plugin/issues
 ****
-### Plugin CI job @: https://jenkins.ci.cloudbees.com/job/plugins/job/tikal-multijob-plugin/ (https://jenkins.ci.cloudbees.com/job/plugins/job/tikal-multijob-plugin/badge/icon)](https://jenkins.ci.cloudbees.com/job/plugins/job/tikal-multijob-plugin/)
+### Plugin CI job @: https://jenkins.ci.cloudbees.com/job/plugins/job/tikal-multijob-plugin/ [https://jenkins.ci.cloudbees.com/job/plugins/job/tikal-multijob-plugin/badge/icon)](https://jenkins.ci.cloudbees.com/job/plugins/job/tikal-multijob-plugin/)
