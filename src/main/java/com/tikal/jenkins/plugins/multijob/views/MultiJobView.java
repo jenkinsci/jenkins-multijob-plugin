@@ -78,7 +78,7 @@ public class MultiJobView extends ListView {
 
     @Override
     public List<TopLevelItem> getItems() {
-        Collection<TopLevelItem> items = Hudson.getInstance().getItems();
+        Collection<? extends TopLevelItem> items = super.getItems();
         List<TopLevelItem> out = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : items) {
             if (item instanceof MultiJobProject) {
@@ -300,11 +300,6 @@ public class MultiJobView extends ListView {
                 : lastBuild.getNumber(), lastSuccessfulBuild == null ? 0
                 : lastSuccessfulBuild.getNumber(), lastFailedBuild == null ? 0
                 : lastFailedBuild.getNumber());
-    }
-
-    @Override
-    protected void submit(StaplerRequest req) throws ServletException,
-            FormException, IOException {
     }
 
     protected void initColumns() {
