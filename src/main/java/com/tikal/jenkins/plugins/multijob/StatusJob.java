@@ -99,6 +99,15 @@ public enum StatusJob {
         public boolean isBuildable() {
             return true;
         }
+    },
+    /**
+     * The job doesn't contains workspace.
+     */
+    DOESNT_CONTAINS_WORKSPACE("[%s] subjob does not contain workspace.") {
+        @Override
+        public boolean isBuildable() {
+            return true;
+        }
     };
 
     /**
