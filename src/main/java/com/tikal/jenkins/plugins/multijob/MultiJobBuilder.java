@@ -190,6 +190,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if ( lastBuild.getResult() != null && lastBuild.getResult().isWorseThan(Result.UNSTABLE) ) {
             return StatusJob.LASTBUILD_RESULT_IS_WORSE_THAN_UNSTABLE;
         }
+        if ( lastBuild.getWorkspace() == null ) {
+            return StatusJob.DOESNT_CONTAINS_WORKSPACE;
+        }
         if ( !lastBuild.getWorkspace().exists() ) {
             return StatusJob.WORKSPACE_IS_EMPTY;
         }
