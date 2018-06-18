@@ -137,6 +137,15 @@ public class MultiJobView extends ListView {
         }
     }
 
+    public static boolean equals(String a, String b) {
+        if (a == null) {
+            a = "";
+        }
+        if (b == null) {
+            b = "";
+        }
+        return a.equals(b);
+    }
 
     @SuppressWarnings("rawtypes")
     private void addProjectFromBuilder(MultiJobProject project,
@@ -170,26 +179,27 @@ public class MultiJobView extends ListView {
                 if( project.getLastBuild() != null ) {
                     for ( MultiJobBuild mjb : project.getBuilds() ) {
                     	for ( SubBuild sb : mjb.getSubBuilds() ) {
-							if (sb.getJobAlias() != null) {
-								if (sb.getJobAlias().equals(projectConfig.getJobAlias())) {
-									tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
-									if (tmp_build != null) {
-										if (latestAliasBuild == null) {
-											latestAliasBuild = tmp_build;
-										}
+                            if (!equals(sb.getJobAlias(), projectConfig.getJobAlias())) {
+                                continue;
+                            }
+                            tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
+                            if (tmp_build == null) {
+                                continue;
+                            }
 
-										if (lastFailure == 0 && tmp_build.getIconColor() == BallColor.RED) {
-											lastFailure = tmp_build.getNumber();
-										} else if (lastSuccess == 0 && tmp_build.getIconColor() == BallColor.BLUE) {
-											lastSuccess = tmp_build.getNumber();
-										}
+                            if (latestAliasBuild == null) {
+                                latestAliasBuild = tmp_build;
+                            }
 
-										if (lastFailure != 0 && lastSuccess != 0) {
-											break;
-										}
-									}
-								}
-							}
+                            if (lastFailure == 0 && tmp_build.getIconColor() == BallColor.RED) {
+                                lastFailure = tmp_build.getNumber();
+                            } else if (lastSuccess == 0 && tmp_build.getIconColor() == BallColor.BLUE) {
+                                lastSuccess = tmp_build.getNumber();
+                            }
+
+                            if (lastFailure != 0 && lastSuccess != 0) {
+                                break;
+                            }
 						}
 
 						if (lastFailure != 0 && lastSuccess != 0) {
