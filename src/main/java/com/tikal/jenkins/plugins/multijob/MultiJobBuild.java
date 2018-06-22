@@ -297,6 +297,10 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
         @Exported
         public String getJobAlias() {
+            if (jobAlias == null) {
+                return "";
+            }
+
             return jobAlias;
         }
 

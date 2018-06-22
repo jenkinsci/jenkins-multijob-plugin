@@ -152,6 +152,8 @@ public class MultiJobView extends ListView {
             Item tli = Jenkins.getInstance().getItem(projectConfig.getJobName(), project.getParent(), AbstractProject.class);
             if (tli instanceof MultiJobProject) {
                 MultiJobProject subProject = (MultiJobProject) tli;
+                // TODO: only match those that have the same Alias name
+                // subProject.getBuilds()
                 BuildState jobBuildState = createBuildState(buildState,
                         project, subProject, projectConfig.getJobAlias());
                 phaseWrapper.addChildBuildState(jobBuildState);
@@ -170,25 +172,24 @@ public class MultiJobView extends ListView {
                 if( project.getLastBuild() != null ) {
                     for ( MultiJobBuild mjb : project.getBuilds() ) {
                     	for ( SubBuild sb : mjb.getSubBuilds() ) {
-							if (sb.getJobAlias() != null) {
-								if (sb.getJobAlias().equals(projectConfig.getJobAlias())) {
-									tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
-									if (tmp_build != null) {
-										if (latestAliasBuild == null) {
-											latestAliasBuild = tmp_build;
-										}
+                            if (sb.getJobAlias().equals(projectConfig.getJobAlias()) &&
+                                    sb.getJobName().equals(projectConfig.getJobName())) {
+                                tmp_build = subProject.getBuildByNumber(sb.getBuildNumber());
+                                if (tmp_build != null) {
+                                    if (latestAliasBuild == null) {
+                                        latestAliasBuild = tmp_build;
+                                    }
 
-										if (lastFailure == 0 && tmp_build.getIconColor() == BallColor.RED) {
-											lastFailure = tmp_build.getNumber();
-										} else if (lastSuccess == 0 && tmp_build.getIconColor() == BallColor.BLUE) {
-											lastSuccess = tmp_build.getNumber();
-										}
+                                    if (lastFailure == 0 && tmp_build.getIconColor() == BallColor.RED) {
+                                        lastFailure = tmp_build.getNumber();
+                                    } else if (lastSuccess == 0 && tmp_build.getIconColor() == BallColor.BLUE) {
+                                        lastSuccess = tmp_build.getNumber();
+                                    }
 
-										if (lastFailure != 0 && lastSuccess != 0) {
-											break;
-										}
-									}
-								}
+                                    if (lastFailure != 0 && lastSuccess != 0) {
+                                        break;
+                                    }
+                                }
 							}
 						}
 
