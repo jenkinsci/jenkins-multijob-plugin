@@ -120,13 +120,11 @@ public class MultiJobView extends ListView {
         for (Builder builder : builders) {
             int phaseNestLevel = nestLevel + 1;
             if (builder instanceof MultiJobBuilder) {
-                System.out.println("MultiJobBuilder: " + builder.toString());
                 addProjectFromBuilder(project, buildState, out, builder,
                         phaseNestLevel, false);
             }
 
             else if (builder instanceof ConditionalBuilder) {
-                System.out.println("ConditionalBuilder: " + builder.toString());
                 final List<BuildStep> conditionalbuilders = ((ConditionalBuilder) builder)
                         .getConditionalbuilders();
                 for (BuildStep buildStep : conditionalbuilders) {
@@ -138,7 +136,6 @@ public class MultiJobView extends ListView {
             }
 
             else if (builder instanceof SingleConditionalBuilder) {
-                System.out.println("SingleConditionalBuilder: " + builder.toString());
                 final BuildStep buildStep = ((SingleConditionalBuilder) builder)
                         .getBuildStep();
                 if (buildStep instanceof MultiJobBuilder) {
@@ -163,13 +160,11 @@ public class MultiJobView extends ListView {
         for (Builder builder : builders) {
             int phaseNestLevel = nestLevel + 1;
             if (builder instanceof MultiJobBuilder) {
-                System.out.println("MultiJobBuilder: " + builder.toString());
                 addProjectFromBuilder(build, buildState, out, builder,
                         phaseNestLevel, false);
             }
 
             else if (builder instanceof ConditionalBuilder) {
-                System.out.println("ConditionalBuilder: " + builder.toString());
                 final List<BuildStep> conditionalbuilders = ((ConditionalBuilder) builder)
                         .getConditionalbuilders();
                 for (BuildStep buildStep : conditionalbuilders) {
@@ -181,7 +176,6 @@ public class MultiJobView extends ListView {
             }
 
             else if (builder instanceof SingleConditionalBuilder) {
-                System.out.println("SingleConditionalBuilder: " + builder.toString());
                 final BuildStep buildStep = ((SingleConditionalBuilder) builder)
                         .getBuildStep();
                 if (buildStep instanceof MultiJobBuilder) {
@@ -207,15 +201,12 @@ public class MultiJobView extends ListView {
         );
         out.add(phaseWrapper);
         for (PhaseJobsConfig projectConfig : subProjects) {
-            System.out.println("##########");
             Item tli = Jenkins.getInstance().getItem(
                     projectConfig.getJobName(),
                     project.getParent(),
                     AbstractProject.class
             );
             if (tli instanceof MultiJobProject) {
-                System.out.println("MultiJobProject");
-                System.out.println("ProjectConfig (alias): " + projectConfig.getJobName() + " (" + projectConfig.getJobAlias() + ")");
                 MultiJobProject subProject = (MultiJobProject) tli;
                 BuildState jobBuildState = createBuildState(
                         buildState,
@@ -233,8 +224,6 @@ public class MultiJobView extends ListView {
                         out
                 );
             } else {
-                System.out.println("SimpleProject");
-                System.out.println("ProjectConfig (alias): " + projectConfig.getJobName() + " (" + projectConfig.getJobAlias() + ")");
                 Job subProject = (Job) tli;
                 if (subProject == null)
                     continue;
@@ -273,23 +262,18 @@ public class MultiJobView extends ListView {
         out.add(phaseWrapper);
 
         for (PhaseJobsConfig projectConfig : subProjects) {
-            System.out.println("##########");
             Item abstractProject = Jenkins.getInstance().getItem(
                     projectConfig.getJobName(),
                     build.getParent(),
                     AbstractProject.class
             );
             if (abstractProject instanceof MultiJobProject) {
-                System.out.println("MultiJobProject");
-                System.out.println("ProjectConfig (alias): " + projectConfig.getJobName() + " (" + projectConfig.getJobAlias() + ")");
                 MultiJobBuild subBuild = null;
                 for (SubBuild sb : build.getSubBuilds()) {
-                    System.out.println("\tSubBuild: " + sb.getJobName() + " (" + sb.getJobAlias() + ") #" + sb.getBuildNumber());
                     if (!(projectConfig.getJobName().equals(sb.getJobName()) &&
                             projectConfig.getJobAlias().equals(sb.getJobAlias()))) {
                         continue;
                     }
-                    System.out.println("\t\tCorrect Build: " + sb.getJobName() + " (" + sb.getJobAlias() + ") #" + sb.getBuildNumber());
                     subBuild = (MultiJobBuild)sb.getBuild();
                     break;
                 }
@@ -326,17 +310,12 @@ public class MultiJobView extends ListView {
                     );
                 }
             } else {
-                System.out.println("SimpleProject");
-                System.out.println("ProjectConfig (alias): " + projectConfig.getJobName() + " (" + projectConfig.getJobAlias() + ")");
-
                 AbstractBuild subBuild = null;
                 for ( SubBuild sb : build.getSubBuilds() ) {
-                    System.out.println("\tSubBuild: " + sb.getJobName() + " (" + sb.getJobAlias() + ") #" + sb.getBuildNumber());
                     if (!(projectConfig.getJobName().equals(sb.getJobName()) &&
                             projectConfig.getJobAlias().equals(sb.getJobAlias()))) {
                         continue;
                     }
-                    System.out.println("\t\tCorrect Build: " + sb.getJobName() + " (" + sb.getJobAlias() + ") #" + sb.getBuildNumber());
                     subBuild = sb.getBuild();
                 }
                 if (subBuild == null) {
