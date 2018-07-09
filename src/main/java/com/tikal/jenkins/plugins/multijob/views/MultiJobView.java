@@ -100,7 +100,7 @@ public class MultiJobView extends ListView {
 
     private void addTopLevelProject(MultiJobProject project,
             List<TopLevelItem> out) {
-        if( project.getBuilds().isEmpty()) {
+        if (project.getBuilds().isEmpty()) {
             addMultiProject(null, project, createBuildState(project), 0, null, out);
         } else {
             addMultiProject(null, project.getLastBuild(), createBuildState(project), 0, out);
@@ -215,7 +215,7 @@ public class MultiJobView extends ListView {
                     null,
                     projectConfig
             );
-            // phaseWrapper.addChildBuildState(jobBuildState);
+            phaseWrapper.addChildBuildState(jobBuildState);
             if (tli instanceof MultiJobProject) {
                 MultiJobProject subProject = (MultiJobProject) tli;
                 addMultiProject(
@@ -271,7 +271,7 @@ public class MultiJobView extends ListView {
                     subBuild,
                     projectConfig
             );
-            //phaseWrapper.addChildBuildState(jobBuildState);
+            phaseWrapper.addChildBuildState(jobBuildState);
             if (abstractProject instanceof MultiJobProject) {
                 if (subBuild == null) {
                     addMultiProject(
@@ -401,14 +401,7 @@ public class MultiJobView extends ListView {
             lastBuildNumber = sb == null ? 0 : sb.getBuildNumber();
         }
 
-        String displayName = config.getJobName();
-        if (config.getJobAlias() != null)
-		{
-			if (!config.getJobAlias().equals("")) {
-				displayName += " (" + config.getJobAlias() + ")";
-			}
-		}
-        return new BuildState(displayName, previousBuildNumber,
+        return new BuildState(config.getJobName(), config.getJobAlias(), previousBuildNumber,
                 lastBuildNumber, lastSuccessBuildNumber, lastFailureBuildNumber);
     }
 
@@ -419,7 +412,7 @@ public class MultiJobView extends ListView {
                 .getPreviousBuild();
         MultiJobBuild lastSuccessfulBuild = project.getLastSuccessfulBuild();
         MultiJobBuild lastFailedBuild = project.getLastFailedBuild();
-        return new BuildState(project.getName(), previousBuild == null ? 0
+        return new BuildState(project.getName(), null, previousBuild == null ? 0
                 : previousBuild.getNumber(), lastBuild == null ? 0
                 : lastBuild.getNumber(), lastSuccessfulBuild == null ? 0
                 : lastSuccessfulBuild.getNumber(), lastFailedBuild == null ? 0

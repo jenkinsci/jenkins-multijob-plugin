@@ -52,7 +52,14 @@ public class ProjectWrapper extends AbstractWrapper {
     }
 
     public String getDisplayName() {
-        return buildState.getJobName();
+        String displayName = buildState.getJobName();
+        if (buildState.getJobAlias() != null)
+        {
+            if (!buildState.getJobAlias().equals("")) {
+                displayName += " (" + buildState.getJobAlias() + ")";
+            }
+        }
+        return displayName;
     }
 
     public String getFullDisplayName() {

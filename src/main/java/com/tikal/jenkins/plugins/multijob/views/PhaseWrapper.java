@@ -7,6 +7,7 @@ import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,33 +53,31 @@ public class PhaseWrapper extends AbstractWrapper {
     }
 
     public BallColor getIconColor() {
-        try {
-            Result result = null;
-            AbstractBuild worseBuild = null;
-            for (BuildState buildState : childrenBuildState) {
-                Job project = (Job) Jenkins.getInstance()
-                           .getItemByFullName(buildState.getJobName());
-                AbstractBuild build = (AbstractBuild) project
-                        .getBuildByNumber(buildState.getLastBuildNumber());
-                if (build != null) {
-                    if (result == null) {
-                        result = build.getResult();
-                        worseBuild = build;
-                    } else {
-                        if (build.getResult().isWorseThan(worseBuild.getResult())) {
-                            worseBuild = build;
-                        }
-                    }
+        AbstractBuild worseBuild = null;
+        for (BuildState buildState : childrenBuildState) {
+            Job project = (Job) Jenkins.getInstance()
+                        .getItemByFullName(buildState.getJobName());
+            if (project == null)
+                continue;
+
+            AbstractBuild build = (AbstractBuild) project
+                    .getBuildByNumber(buildState.getLastBuildNumber());
+            if (build == null)
+                continue;
+
+            if (worseBuild == null) {
+                worseBuild = build;
+            } else {
+                if (build.getResult().isWorseThan(worseBuild.getResult())) {
+                    worseBuild = build;
                 }
             }
-            if (worseBuild != null) {
-                return worseBuild.getIconColor();
-            }
-        } catch (Exception e) {
-            return null;
+        }
+        if (worseBuild != null) {
+            return worseBuild.getIconColor();
         }
 
-        return null;
+        return BallColor.NOTBUILT;
     }
 
     public String getCss() {
