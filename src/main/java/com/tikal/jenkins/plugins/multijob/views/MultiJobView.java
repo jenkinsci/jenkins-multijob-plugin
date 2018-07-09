@@ -17,6 +17,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -206,15 +207,17 @@ public class MultiJobView extends ListView {
                     project.getParent(),
                     AbstractProject.class
             );
+            if (tli == null)
+                continue;
+            BuildState jobBuildState = createBuildState(
+                    buildState,
+                    project,
+                    null,
+                    projectConfig
+            );
+            // phaseWrapper.addChildBuildState(jobBuildState);
             if (tli instanceof MultiJobProject) {
                 MultiJobProject subProject = (MultiJobProject) tli;
-                BuildState jobBuildState = createBuildState(
-                        buildState,
-                        project,
-                        null,
-                        projectConfig
-                );
-                // phaseWrapper.addChildBuildState(jobBuildState);
                 addMultiProject(
                         project,
                         subProject,
@@ -225,15 +228,6 @@ public class MultiJobView extends ListView {
                 );
             } else {
                 Job subProject = (Job) tli;
-                if (subProject == null)
-                    continue;
-                BuildState jobBuildState = createBuildState(
-                        buildState,
-                        project,
-                        null,
-                        projectConfig
-                );
-                // phaseWrapper.addChildBuildState(jobBuildState);
                 addSimpleProject(
                         project,
                         subProject,
@@ -267,89 +261,45 @@ public class MultiJobView extends ListView {
                     build.getParent(),
                     AbstractProject.class
             );
+            if (abstractProject == null)
+                continue;
+            SubBuild sb = searchBuildnumberFromMultijobbuild(build, projectConfig, null);
+            AbstractBuild subBuild = sb == null ? null : sb.getBuild();
+            BuildState jobBuildState = createBuildState(
+                    buildState,
+                    build.getProject(),
+                    subBuild,
+                    projectConfig
+            );
+            //phaseWrapper.addChildBuildState(jobBuildState);
             if (abstractProject instanceof MultiJobProject) {
-                MultiJobBuild subBuild = null;
-                for (SubBuild sb : build.getSubBuilds()) {
-                    if (!(projectConfig.getJobName().equals(sb.getJobName()) &&
-                            projectConfig.getJobAlias().equals(sb.getJobAlias()))) {
-                        continue;
-                    }
-                    subBuild = (MultiJobBuild)sb.getBuild();
-                    break;
-                }
                 if (subBuild == null) {
-                    BuildState jobBuildState = createBuildState(
-                            buildState,
-                            build.getProject(),
-                            null,
-                            projectConfig
-                    );
-                    // phaseWrapper.addChildBuildState(jobBuildState);
                     addMultiProject(
                             build.getProject(),
-                            (MultiJobProject)abstractProject,
+                            (MultiJobProject) abstractProject,
                             jobBuildState,
                             phaseNestLevel + 1,
                             currentPhaseName,
                             out
                     );
                 } else {
-                    BuildState jobBuildState = createBuildState(
-                            buildState,
-                            build.getProject(),
-                            subBuild,
-                            projectConfig
-                    );
-                    //phaseWrapper.addChildBuildState(jobBuildState);
                     addMultiProject(
                             build,
-                            subBuild,
+                            (MultiJobBuild)subBuild,
                             jobBuildState,
                             phaseNestLevel + 1,
                             out
                     );
                 }
             } else {
-                AbstractBuild subBuild = null;
-                for ( SubBuild sb : build.getSubBuilds() ) {
-                    if (!(projectConfig.getJobName().equals(sb.getJobName()) &&
-                            projectConfig.getJobAlias().equals(sb.getJobAlias()))) {
-                        continue;
-                    }
-                    subBuild = sb.getBuild();
-                }
-                if (subBuild == null) {
-                    BuildState jobBuildState = createBuildState(
-                            buildState,
-                            build.getProject(),
-                            null,
-                            projectConfig
-                    );
-                    addSimpleProject(
-                            build.getProject(),
-                            ((Job)abstractProject),
-                            jobBuildState,
-                            phaseNestLevel + 1,
-                            out,
-                            null
-                    );
-                } else {
-                    BuildState jobBuildState = createBuildState(
-                            buildState,
-                            build.getProject(),
-                            subBuild,
-                            projectConfig
-                    );
-                    //phaseWrapper.addChildBuildState(jobBuildState);
-                    addSimpleProject(
-                            build.getProject(),
-                            subBuild.getProject(),
-                            jobBuildState,
-                            phaseNestLevel + 1,
-                            out,
-                            subBuild
-                    );
-                }
+                addSimpleProject(
+                        build.getProject(),
+                        subBuild == null ? ((Job) abstractProject) : subBuild.getProject(),
+                        jobBuildState,
+                        phaseNestLevel + 1,
+                        out,
+                        subBuild
+                );
             }
         }
     }
@@ -361,17 +311,21 @@ public class MultiJobView extends ListView {
         out.add(new ProjectWrapper(parent, project, buildState, nestLevel, build));
     }
 
-    private int searchBuildnumberFromMultijobbuild(MultiJobBuild multiJobBuild, Result result, PhaseJobsConfig config) {
+    private SubBuild searchBuildnumberFromMultijobbuild(MultiJobBuild multiJobBuild, PhaseJobsConfig config, Result result) {
         for (SubBuild subBuild : multiJobBuild.getSubBuilds()) {
             if (!(subBuild.getJobName().equals(config.getJobName()) &&
                     subBuild.getJobAlias().equals(config.getJobAlias()))) {
                 continue;
             }
-            if (result.equals(subBuild.getResult())) {
-                return subBuild.getBuildNumber();
+            if (result != null) {
+                if (result.equals(subBuild.getResult())) {
+                    return subBuild;
+                }
+            } else {
+                return subBuild;
             }
         }
-        return 0;
+        return null;
     }
 
     @SuppressWarnings({ "rawtypes" })
@@ -395,15 +349,17 @@ public class MultiJobView extends ListView {
                 lastSuccessBuildNumber = abstractBuild.getNumber();
 
                 if (lastParentFailureBuild != null) {
-                    lastFailureBuildNumber = searchBuildnumberFromMultijobbuild(
-                            lastParentFailureBuild, Result.FAILURE, config);
+                    SubBuild sb = searchBuildnumberFromMultijobbuild(
+                            lastParentFailureBuild, config, Result.FAILURE);
+                    lastFailureBuildNumber = sb == null ? 0 : sb.getBuildNumber();
                 }
                 if (lastFailureBuildNumber ==  0) {
                     // TODO: not quite correct yet
                     // need to go back to TopMultiJobItem recursively....
                     for (MultiJobBuild multiJobBuild : multiJobProject.getBuilds()) {
-                        lastFailureBuildNumber = searchBuildnumberFromMultijobbuild(
-                                multiJobBuild, Result.FAILURE, config);
+                        SubBuild sb = searchBuildnumberFromMultijobbuild(
+                                multiJobBuild, config, Result.FAILURE);
+                        lastFailureBuildNumber = sb == null ? 0 : sb.getBuildNumber();
                         if (lastFailureBuildNumber != 0) {
                             break;
                         }
@@ -415,15 +371,17 @@ public class MultiJobView extends ListView {
                 lastFailureBuildNumber = abstractBuild.getNumber();
 
                 if (lastParentSuccessBuild != null) {
-                    lastSuccessBuildNumber = searchBuildnumberFromMultijobbuild(
-                            lastParentSuccessBuild, Result.FAILURE, config);
+                    SubBuild sb = searchBuildnumberFromMultijobbuild(
+                            lastParentSuccessBuild, config, Result.SUCCESS);
+                    lastSuccessBuildNumber = sb == null ? 0 : sb.getBuildNumber();
                 }
                 if (lastSuccessBuildNumber == 0) {
                     // TODO: not quite correct yet
                     // need to go back to TopMultiJobItem recursively....
                     for (MultiJobBuild multiJobBuild : multiJobProject.getBuilds()) {
-                        lastSuccessBuildNumber = searchBuildnumberFromMultijobbuild(
-                                multiJobBuild, Result.FAILURE, config);
+                        SubBuild sb = searchBuildnumberFromMultijobbuild(
+                                multiJobBuild, config, Result.SUCCESS);
+                        lastSuccessBuildNumber = sb == null ? 0 : sb.getBuildNumber();
                         if (lastSuccessBuildNumber != 0) {
                             break;
                         }
@@ -433,26 +391,20 @@ public class MultiJobView extends ListView {
         }
 
         if (previousParentBuild != null) {
-            for (SubBuild subBuild : previousParentBuild.getSubBuilds()) {
-                if (subBuild.getJobName().equals(config.getJobName()) &&
-                        subBuild.getJobAlias().equals(config.getJobAlias())) {
-                    previousBuildNumber = subBuild.getBuildNumber();
-                }
-            }
+            SubBuild sb = searchBuildnumberFromMultijobbuild(
+                    previousParentBuild, config, null);
+            previousBuildNumber = sb == null ? 0 : sb.getBuildNumber();
         }
         if (lastParentBuild != null) {
-            for (SubBuild subBuild : lastParentBuild.getSubBuilds()) {
-                if (subBuild.getJobName().equals(config.getJobName()) &&
-                        subBuild.getJobAlias().equals(config.getJobAlias())) {
-                    lastBuildNumber = subBuild.getBuildNumber();
-                }
-            }
+            SubBuild sb = searchBuildnumberFromMultijobbuild(
+                    lastParentBuild, config, null);
+            lastBuildNumber = sb == null ? 0 : sb.getBuildNumber();
         }
 
         String displayName = config.getJobName();
-        if( config.getJobAlias() != null )
+        if (config.getJobAlias() != null)
 		{
-			if( !config.getJobAlias().equals("") ) {
+			if (!config.getJobAlias().equals("")) {
 				displayName += " (" + config.getJobAlias() + ")";
 			}
 		}
