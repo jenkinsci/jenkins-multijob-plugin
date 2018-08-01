@@ -181,7 +181,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.jobName = jobName;
 	}
 
-	public String getJobAlias() { return jobAlias; }
+	public String getJobAlias() {
+		if (jobAlias == null) {
+			return "";
+		}
+		return jobAlias;
+	}
 
 	public void setJobAlias(String jobAlias) { this.jobAlias = jobAlias; }
 
