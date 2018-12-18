@@ -259,12 +259,12 @@ public class MultiJobView extends ListView {
             Item abstractProject = Jenkins.getInstance().getItem(
                     projectConfig.getJobName(),
                     build.getParent(),
-                    AbstractProject.class
+                    Job.class
             );
             if (abstractProject == null)
                 continue;
             SubBuild sb = searchBuildnumberFromMultijobbuild(build, projectConfig, null);
-            AbstractBuild subBuild = sb == null ? null : sb.getBuild();
+            Run subBuild = sb == null ? null : sb.getBuild();
             BuildState jobBuildState = createBuildState(
                     buildState,
                     build.getProject(),
@@ -294,7 +294,7 @@ public class MultiJobView extends ListView {
             } else {
                 addSimpleProject(
                         build.getProject(),
-                        subBuild == null ? ((Job) abstractProject) : subBuild.getProject(),
+                        subBuild == null ? ((Job) abstractProject) : subBuild.getParent(),
                         jobBuildState,
                         phaseNestLevel + 1,
                         out,
@@ -330,7 +330,7 @@ public class MultiJobView extends ListView {
 
     @SuppressWarnings({ "rawtypes" })
     private BuildState createBuildState(BuildState parentBuildState,
-            MultiJobProject multiJobProject, AbstractBuild abstractBuild, PhaseJobsConfig config) {
+            MultiJobProject multiJobProject, Run abstractBuild, PhaseJobsConfig config) {
         int previousBuildNumber = 0;
         int lastBuildNumber = 0;
         int lastSuccessBuildNumber = 0;

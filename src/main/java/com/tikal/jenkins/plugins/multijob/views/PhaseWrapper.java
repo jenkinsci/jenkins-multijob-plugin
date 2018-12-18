@@ -4,7 +4,7 @@ import hudson.model.BallColor;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Result;
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.Job;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.ObjectUtils;
@@ -53,14 +53,14 @@ public class PhaseWrapper extends AbstractWrapper {
     }
 
     public BallColor getIconColor() {
-        AbstractBuild worseBuild = null;
+        Run worseBuild = null;
         for (BuildState buildState : childrenBuildState) {
             Job project = (Job) Jenkins.getInstance()
                         .getItemByFullName(buildState.getJobName());
             if (project == null)
                 continue;
 
-            AbstractBuild build = (AbstractBuild) project
+            Run build = (Run) project
                     .getBuildByNumber(buildState.getLastBuildNumber());
             if (build == null)
                 continue;

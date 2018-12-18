@@ -15,7 +15,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
-import hudson.model.AbstractBuild;
+import hudson.model.Run;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -214,7 +214,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, String jobAlias, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
-                AbstractBuild<?, ?> build) {
+                Run<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
@@ -233,7 +233,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public SubBuild(String parentJobName, int parentBuildNumber,
                 String jobName, String jobAlias, int buildNumber, String phaseName,
                 Result result, String icon, String duration, String url,
-                boolean retry, boolean aborted, AbstractBuild<?, ?> build) {
+                boolean retry, boolean aborted, Run<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
@@ -324,11 +324,11 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
 		@Exported
         @CheckForNull
-		public AbstractBuild<?,?> getBuild() {
+		public Run<?,?> getBuild() {
             if (buildID != null) {
                 Run<?, ?> build = Run.fromExternalizableId(buildID);
-                if (build instanceof AbstractBuild) {
-                    return (AbstractBuild) build;
+                if (build instanceof Run) {
+                    return (Run) build;
                 }
             } // else null if loaded from historical data prior to JENKINS-49328
 			return null;
