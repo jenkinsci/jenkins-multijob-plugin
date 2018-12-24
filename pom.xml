@@ -36,6 +36,11 @@
 			<name>Chen Cohen</name>
 			<email>chenc@tikalk.com</email>
 		</developer>
+		<developer>
+			<id>yorammi</id>
+			<name>Yoram Michaeli</name>
+			<email>yorammi@tikalk.com</email>
+		</developer>
 	</developers>
 
 	<scm>
