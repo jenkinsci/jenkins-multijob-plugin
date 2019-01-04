@@ -3,6 +3,7 @@ package com.tikal.jenkins.plugins.multijob;
 import hudson.model.*;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
+import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -20,7 +21,7 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
     }
 
     public String getIconFileName() {
-        return Jenkins.getInstance().hasPermission(Job.BUILD) ? "plugin/jenkins-multijob-plugin/tool32.png" : null;
+        return isAvailable() ? "plugin/jenkins-multijob-plugin/tool32.png" : null;
 	}
 
     public String getDisplayName() {
@@ -70,7 +71,26 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
 
     @Override
     public Object getTarget() {
-        Jenkins.getInstance().checkPermission(Job.BUILD);
-        return this;
+        return isAvailable() ? this : null;
+    }
+
+    private boolean isAvailable() {
+        Job project = getProject();
+        return project != null
+                && project.hasPermission(Item.BUILD)
+                && project.isBuildable()
+                && project instanceof Queue.Task;
+    }
+
+    private Job getProject() {
+        if (run != null) {
+            return run.getParent();
+        }
+        Job currentProject = null;
+        StaplerRequest request = Stapler.getCurrentRequest();
+        if (request != null) {
+            currentProject = request.findAncestorObject(Job.class);
+        }
+        return currentProject;
     }
 }
