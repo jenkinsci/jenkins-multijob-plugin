@@ -2,6 +2,7 @@ package com.tikal.jenkins.plugins.multijob.views;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import hudson.model.*;
@@ -18,10 +19,13 @@ abstract public class AbstractWrapper implements TopLevelItem {
 
     protected final int nestLevel;
     protected final Job project;
+    protected final String id;
+    protected final List<AbstractWrapper> childWrappers = new ArrayList<>();
 
-    public AbstractWrapper(Job project, int nestLevel) {
+    public AbstractWrapper(Job project, int nestLevel, int index) {
         this.project = project;
         this.nestLevel = nestLevel;
+        this.id = "@" + index;
     }
 
     @Nonnull
@@ -109,4 +113,41 @@ abstract public class AbstractWrapper implements TopLevelItem {
         return false;
     }
 
+    public void addChildWrapper(AbstractWrapper childWrapper) {
+        childWrappers.add(childWrapper);
+    }
+
+    public String getDirectChilds() {
+        StringBuilder directChilds = new StringBuilder();
+        for (AbstractWrapper childWrapper : childWrappers) {
+            if (directChilds.length() != 0) {
+                directChilds.append(",");
+            }
+            directChilds.append(childWrapper.getId());
+        }
+        return directChilds.toString();
+    }
+
+    public String getChildIds() {
+        StringBuilder childIds = new StringBuilder();
+        getChildIds01(childWrappers, childIds);
+        return childIds.toString();
+    }
+
+    public void getChildIds01(List<AbstractWrapper> subWrapper, StringBuilder childIds) {
+        for (AbstractWrapper childWrapper : subWrapper) {
+            if (childIds.length() != 0) {
+                childIds.append(",");
+            }
+            childIds.append(childWrapper.getId());
+
+            if (childWrapper.childWrappers.size() > 0) {
+                getChildIds01(childWrapper.childWrappers, childIds);
+            }
+        }
+    }
+
+    public String getId() {
+        return id;
+    }
 }

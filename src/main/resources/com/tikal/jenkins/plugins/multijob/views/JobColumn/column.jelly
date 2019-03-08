@@ -2,7 +2,28 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
 	xmlns:i="jelly:fmt">
-	<td style="${job.getCss()}">
+	<j:set var="firstId" value="@1" />
+	<td style="${job.getCss()}" id="${job.id}" directChildIds="${job.getDirectChilds()}"
+		childIds="${job.getChildIds()}" isExpand="true"
+		expandSrc="${imagesURL}/../plugin/jenkins-multijob-plugin/images/collapse.png"
+		collpaseSrc="${imagesURL}/../plugin/jenkins-multijob-plugin/images/expand.png">
+		<j:choose>
+			<j:when test="${job.id == firstId}">
+				<script type="text/javascript" src="${imagesURL}/../plugin/jenkins-multijob-plugin/js/explandCollapse.js"/>
+			</j:when>
+			<j:otherwise>
+			</j:otherwise>
+		</j:choose>
+
+		<j:choose>
+			<j:when test="${job.getDirectChilds()!=''}">
+				<img title="expandCollapse" border="0" onclick="expandCollapse(this)"
+					 src="${imagesURL}/../plugin/jenkins-multijob-plugin/images/expand.png"/>
+			</j:when>
+			<j:otherwise>
+			</j:otherwise>
+		</j:choose>
+
 		<j:choose>
 			<j:when test="${job.phase}">
 				${job.isConditional() ? "[?]" : ""} ${job.displayName}

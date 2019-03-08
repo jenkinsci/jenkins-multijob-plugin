@@ -31,8 +31,8 @@ public class ProjectWrapper extends AbstractWrapper {
     final BuildState buildState;
 
     public ProjectWrapper(MultiJobProject multijob, Job project,
-            BuildState buildState, int nestLevel) {
-        super(project, nestLevel);
+            BuildState buildState, int nestLevel, int index) {
+        super(project, nestLevel, index);
         this.multijob = multijob;
         this.buildState = buildState;
     }

@@ -108,19 +108,23 @@ public class MultiJobView extends ListView {
 
     private void addTopLevelProject(MultiJobProject project,
             List<TopLevelItem> out) {
-        addMultiProject(null, project, createBuildState(project), 0, null, out);
+        addMultiProject(null,null, project, createBuildState(project), 0, 0,null, out);
     }
 
-    private void addMultiProject(MultiJobProject parent,
-            MultiJobProject project, BuildState buildState, int nestLevel,
+    private int addMultiProject(AbstractWrapper parentWrapper, MultiJobProject parent,
+            MultiJobProject project, BuildState buildState, int nestLevel, int index,
             String phaseName, List<TopLevelItem> out) {
-        out.add(new ProjectWrapper(parent, project, buildState, nestLevel));
+        AbstractWrapper projectWrapper = new ProjectWrapper(parent, project, buildState, nestLevel, ++index);
+        if (parentWrapper != null) {
+            parentWrapper.addChildWrapper(projectWrapper);
+        }
+        out.add(projectWrapper);
         List<Builder> builders = project.getBuilders();
         for (Builder builder : builders) {
             int phaseNestLevel = nestLevel + 1;
             if (builder instanceof MultiJobBuilder) {
-                addProjectFromBuilder(project, buildState, out, builder,
-                        phaseNestLevel, false);
+                index = addProjectFromBuilder(projectWrapper, project, buildState, out, builder,
+                        phaseNestLevel, index, false);
             }
 
             else if (builder instanceof ConditionalBuilder) {
@@ -128,8 +132,8 @@ public class MultiJobView extends ListView {
                         .getConditionalbuilders();
                 for (BuildStep buildStep : conditionalbuilders) {
                     if (buildStep instanceof MultiJobBuilder) {
-                        addProjectFromBuilder(project, buildState, out,
-                                buildStep, phaseNestLevel, true);
+                        index = addProjectFromBuilder(projectWrapper, project, buildState, out,
+                                buildStep, phaseNestLevel, index, true);
                     }
                 }
             }
@@ -138,23 +142,25 @@ public class MultiJobView extends ListView {
                 final BuildStep buildStep = ((SingleConditionalBuilder) builder)
                         .getBuildStep();
                 if (buildStep instanceof MultiJobBuilder) {
-                    addProjectFromBuilder(project, buildState, out, buildStep,
-                            phaseNestLevel, true);
+                    index = addProjectFromBuilder(projectWrapper, project, buildState, out, buildStep,
+                            phaseNestLevel, index, true);
                 }
             }
         }
+        return index;
     }
 
 
     @SuppressWarnings("rawtypes")
-    private void addProjectFromBuilder(MultiJobProject project,
+    private int addProjectFromBuilder(AbstractWrapper parentWrapper, MultiJobProject project,
             BuildState buildState, List<TopLevelItem> out, BuildStep builder,
-            int phaseNestLevel, boolean isConditional) {
+            int phaseNestLevel, int index, boolean isConditional) {
         MultiJobBuilder reactorBuilder = (MultiJobBuilder) builder;
         List<PhaseJobsConfig> subProjects = reactorBuilder.getPhaseJobs();
         String currentPhaseName = reactorBuilder.getPhaseName();
-        PhaseWrapper phaseWrapper = new PhaseWrapper(project, phaseNestLevel,
+        PhaseWrapper phaseWrapper = new PhaseWrapper(project, phaseNestLevel, ++index,
                 currentPhaseName, isConditional);
+        parentWrapper.addChildWrapper(phaseWrapper);
         out.add(phaseWrapper);
         for (PhaseJobsConfig projectConfig : subProjects) {
             Item tli = Jenkins.getInstance().getItem(projectConfig.getJobName(), project.getParent(), AbstractProject.class);
@@ -163,8 +169,8 @@ public class MultiJobView extends ListView {
                 BuildState jobBuildState = createBuildState(buildState,
                         project, subProject);
                 phaseWrapper.addChildBuildState(jobBuildState);
-                addMultiProject(project, subProject, jobBuildState,
-                        phaseNestLevel + 1, currentPhaseName, out);
+                index = addMultiProject(phaseWrapper, project, subProject, jobBuildState,
+                        phaseNestLevel + 1, index, currentPhaseName, out);
             } else {
                 Job subProject = (Job) tli;
                 if (subProject == null)
@@ -172,16 +178,20 @@ public class MultiJobView extends ListView {
                 BuildState jobBuildState = createBuildState(buildState,
                         project, subProject);
                 phaseWrapper.addChildBuildState(jobBuildState);
-                addSimpleProject(project, subProject, jobBuildState,
-                        phaseNestLevel + 1, out);
+                index = addSimpleProject(phaseWrapper, project, subProject, jobBuildState,
+                        phaseNestLevel + 1, index, out);
             }
         }
+        return index;
     }
 
     @SuppressWarnings("rawtypes")
-    private void addSimpleProject(MultiJobProject parent, Job project,
-            BuildState buildState, int nestLevel, List<TopLevelItem> out) {
-        out.add(new ProjectWrapper(parent, project, buildState, nestLevel));
+    private int addSimpleProject(AbstractWrapper parentWrapper, MultiJobProject parent, Job project,
+            BuildState buildState, int nestLevel, int index, List<TopLevelItem> out) {
+        ProjectWrapper subWrapper = new ProjectWrapper(parent, project, buildState, nestLevel, ++index);
+        parentWrapper.addChildWrapper(subWrapper);
+        out.add(subWrapper);
+        return index;
     }
 
     @SuppressWarnings({ "rawtypes" })

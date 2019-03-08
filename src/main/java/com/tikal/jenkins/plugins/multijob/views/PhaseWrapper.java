@@ -20,8 +20,8 @@ public class PhaseWrapper extends AbstractWrapper {
 
     final boolean isConditional;
 
-    public PhaseWrapper(Job project, int nestLevel, String phaseName, boolean isConditional) {
-        super(project, nestLevel);
+    public PhaseWrapper(Job project, int nestLevel, int index, String phaseName, boolean isConditional) {
+        super(project, nestLevel, index);
         this.phaseName = phaseName;
         this.isConditional = isConditional;
     }
