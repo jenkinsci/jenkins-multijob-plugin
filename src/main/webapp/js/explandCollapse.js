@@ -85,4 +85,5 @@ $("jenkins").onload = function (ev) {
         }
     }
     expandCollapse(img);
+    expandCollapse(img);
 }

@@ -8,10 +8,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import jenkins.model.Jenkins;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @SuppressWarnings("rawtypes")
 public class PhaseWrapper extends AbstractWrapper {
@@ -19,6 +16,7 @@ public class PhaseWrapper extends AbstractWrapper {
     final String phaseName;
 
     final boolean isConditional;
+    List<BuildState> childrenBuildState = new ArrayList<BuildState>();
 
     public PhaseWrapper(Job project, int nestLevel, int index, String phaseName, boolean isConditional) {
         super(project, nestLevel, index);
@@ -52,32 +50,72 @@ public class PhaseWrapper extends AbstractWrapper {
     }
 
     public BallColor getIconColor() {
-        try {
-            Result result = null;
-            AbstractBuild worseBuild = null;
-            for (BuildState buildState : childrenBuildState) {
-                Job project = (Job) Jenkins.getInstance()
-                           .getItemByFullName(buildState.getJobName());
-                AbstractBuild build = (AbstractBuild) project
-                        .getBuildByNumber(buildState.getLastBuildNumber());
-                if (build != null) {
-                    if (result == null) {
-                        result = build.getResult();
-                        worseBuild = build;
-                    } else {
-                        if (build.getResult().isWorseThan(worseBuild.getResult())) {
-                            worseBuild = build;
-                        }
-                    }
-                }
+        BallColor iconColor01 = getIconColor01(childWrappers, null);
+        return iconColor01;
+    }
+
+    public BallColor getIconColor01(List<AbstractWrapper> subWrapper, BallColor worseBallColor) {
+
+        for (AbstractWrapper childWrapper : subWrapper) {
+
+            if (childWrapper instanceof ProjectWrapper) {
+                /**
+                 * ProjectWrapper时，获取Job的状态
+                 */
+                ProjectWrapper projectWrapper = (ProjectWrapper) childWrapper;
+                BallColor wrapperIconColor = projectWrapper.getIconColor();
+                worseBallColor = getWorseIconColor(worseBallColor, wrapperIconColor);
+            } else {
+                /**
+                 * PhaseWrapper时，获取下级wrapper的最差构建状态。
+                 */
+                worseBallColor = getIconColor01(childWrapper.childWrappers, worseBallColor);
             }
-            if (worseBuild != null) {
-                return worseBuild.getIconColor();
-            }
-        } catch (Exception e) {
-            return null;
         }
-        return null;
+
+        return worseBallColor;
+    }
+
+    public BallColor getWorseIconColor(BallColor oldBallColor, BallColor newBallColor) {
+        if (oldBallColor == null) {
+            return newBallColor;
+        }
+
+        if (newBallColor == null) {
+            return oldBallColor;
+        }
+
+        EnumMap<BallColor, Integer> ballMap = new EnumMap<>(BallColor.class);
+        ballMap.put(BallColor.RED_ANIME, 0);
+        ballMap.put(BallColor.YELLOW_ANIME, 1);
+        ballMap.put(BallColor.BLUE_ANIME, 2);
+        ballMap.put(BallColor.GREY_ANIME, 3);
+        ballMap.put(BallColor.DISABLED_ANIME, 4);
+        ballMap.put(BallColor.ABORTED_ANIME, 5);
+        ballMap.put(BallColor.NOTBUILT_ANIME, 6);
+        ballMap.put(BallColor.RED, 7);
+        ballMap.put(BallColor.YELLOW, 8);
+        ballMap.put(BallColor.BLUE, 9);
+        ballMap.put(BallColor.GREY, 10);
+        ballMap.put(BallColor.DISABLED, 11);
+        ballMap.put(BallColor.ABORTED, 12);
+        ballMap.put(BallColor.NOTBUILT, 13);
+
+        Integer oldOrder = ballMap.get(oldBallColor);
+        if (oldOrder == null) {
+            return newBallColor;
+        }
+
+        Integer newOrder = ballMap.get(newBallColor);
+        if (newOrder == null) {
+            return oldBallColor;
+        } else {
+            if (oldOrder - newOrder > 0) {
+                return newBallColor;
+            }
+        }
+
+        return oldBallColor;
     }
 
     public String getCss() {
@@ -96,8 +134,6 @@ public class PhaseWrapper extends AbstractWrapper {
     public boolean isPhase() {
         return true;
     }
-
-    List<BuildState> childrenBuildState = new ArrayList<BuildState>();
 
     public void addChildBuildState(BuildState jobBuildState) {
         childrenBuildState.add(jobBuildState);
