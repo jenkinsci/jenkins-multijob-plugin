@@ -9,10 +9,12 @@
 		collpaseSrc="${imagesURL}/../plugin/jenkins-multijob-plugin/images/expand.png">
 		<j:choose>
 			<j:when test="${job.id == firstId}">
+                <j:set var="target" value="_self" />
 				<script type="text/javascript" src="${imagesURL}/../plugin/jenkins-multijob-plugin/js/explandCollapse.js"/>
-			</j:when>
-			<j:otherwise>
-			</j:otherwise>
+            </j:when>
+            <j:otherwise>
+                <j:set var="target" value="_blank" />
+            </j:otherwise>
 		</j:choose>
 
 		<j:choose>
@@ -29,7 +31,7 @@
 				${job.isConditional() ? "[?]" : ""} ${job.displayName}
 			</j:when>
 			<j:when test="${!job.phase}">
-				<a href="${job.absoluteUrl}">${job.displayName}</a>
+				<a href="${job.absoluteUrl}" target="${target}">${job.displayName}</a>
 			</j:when>
 		</j:choose>
 	</td>
