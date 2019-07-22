@@ -29,7 +29,7 @@
                     <f:checkbox name="disableJob" checked="${instance.disableJob}" default="false"/>
                 </f:entry>
                 <f:entry title="Abort all other job" field="abortAllJob" help="/plugin/jenkins-multijob-plugin/help-abort.html">
-                    <f:checkbox name="abortAllJob" checked="${instance.abortAllJob}" default="true"/>
+                    <f:checkbox name="abortAllJob" checked="${instance.abortAllJob}" default="false"/>
                 </f:entry>
                 <f:entry title="Aggregated Test Results" field="aggregatedTestResults">
                     <f:checkbox name="aggregatedTestResults" checked="${instance.aggregatedTestResults}" default="false"/>
