@@ -1,0 +1,15 @@
+<div>
+    <p>
+        Enter a Groovy snipped that calculates a quiet period for a sub-job by it's index. The index is available
+        as a variable named <i>index</i>. The resulting number is set as the quiet period in seconds.
+    </p>
+    <p>
+        Examples:
+    <ul>
+        <li><code>0</code>: no quiet period for all sub-jobs</li>
+        <li><code>index &lt; 5 ? 0 : 2 * 60</code>: start 4 jobs immediately, the other ones with a quiet time of 2
+            minutes.
+        </li>
+    </ul>
+    </p>
+</div>

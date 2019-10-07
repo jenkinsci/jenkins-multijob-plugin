@@ -62,7 +62,7 @@ public class PhaseWrapper extends AbstractWrapper {
 
             Run build = (Run) project
                     .getBuildByNumber(buildState.getLastBuildNumber());
-            if (build == null)
+            if (build == null || build.getResult() == null)
                 continue;
 
             if (worseBuild == null) {
