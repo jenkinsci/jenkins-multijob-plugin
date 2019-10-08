@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 public class QuietPeriodCalculator {
 
 	private final static Logger LOG = Logger.getLogger(QuietPeriodCalculator.class.getName());
+	private static final String INDEX = "index";
 	private final BuildListener listener;
 	private final String displayName;
 
@@ -27,9 +28,7 @@ public class QuietPeriodCalculator {
 			return 0;
 		}
 
-		if (index < 0) {
-			throw new IllegalArgumentException("positive index expected, got " + index);
-		}
+		assertPositiveIndex(index);
 
 		try {
 			return calculateOrThrow(quietPeriodGroovy, index);
@@ -46,9 +45,17 @@ public class QuietPeriodCalculator {
 
 	public int calculateOrThrow(final String quietPeriodGroovy, final int index) {
 
-		final Integer quietPeriod = (Integer) Eval.me("index", index, quietPeriodGroovy);
+		assertPositiveIndex(index);
+
+		final Integer quietPeriod = (Integer) Eval.me(INDEX, index, quietPeriodGroovy);
 		log(displayName + "Quiet period groovy=[" + quietPeriodGroovy + "], index=" + index + " -> quietPeriodGroovy=" + quietPeriod);
 		return quietPeriod;
+	}
+
+	private static void assertPositiveIndex(final int index) {
+		if (index < 0) {
+			throw new IllegalArgumentException("positive index expected, got " + index);
+		}
 	}
 
 	private void log(final String s) {

@@ -41,6 +41,15 @@ public class QuietPeriodCalculatorTest {
 	@Test
 	public void testCalculate_NegativeIndexThrows() {
 		try {
+			calculator.calculate(CALC, -1);
+			fail("IllegalArgumentException expected");
+		} catch (IllegalArgumentException iae) {
+			// expected
+		}
+	}
+	@Test
+	public void testCalculateOrThrow_NegativeIndexThrows() {
+		try {
 			calculator.calculateOrThrow(CALC, -1);
 			fail("IllegalArgumentException expected");
 		} catch (IllegalArgumentException iae) {
