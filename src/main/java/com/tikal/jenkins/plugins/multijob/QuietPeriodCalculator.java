@@ -6,13 +6,13 @@ import hudson.model.BuildListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class QuietPeriodCalculator {
+public class QuietPeriodCalculator {
 
 	private final static Logger LOG = Logger.getLogger(QuietPeriodCalculator.class.getName());
 	private final BuildListener listener;
 	private final String displayName;
 
-	QuietPeriodCalculator() {
+	public QuietPeriodCalculator() {
 		this(null, null);
 	}
 
@@ -21,11 +21,16 @@ class QuietPeriodCalculator {
 		this.displayName = displayNameOrNull == null ? "" : displayNameOrNull + ": ";
 	}
 
-	int calculate(String quietPeriodGroovy, int index) {
+	public int calculate(String quietPeriodGroovy, int index) {
 
 		if (quietPeriodGroovy == null) {
 			return 0;
 		}
+
+		if (index < 0) {
+			throw new IllegalArgumentException("positive index expected, got " + index);
+		}
+
 		try {
 			return calculateOrThrow(quietPeriodGroovy, index);
 		} catch (Throwable t) {
@@ -39,7 +44,7 @@ class QuietPeriodCalculator {
 
 	}
 
-	int calculateOrThrow(final String quietPeriodGroovy, final int index) {
+	public int calculateOrThrow(final String quietPeriodGroovy, final int index) {
 
 		final Integer quietPeriod = (Integer) Eval.me("index", index, quietPeriodGroovy);
 		log(displayName + "Quiet period groovy=[" + quietPeriodGroovy + "], index=" + index + " -> quietPeriodGroovy=" + quietPeriod);
