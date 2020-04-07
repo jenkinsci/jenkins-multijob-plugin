@@ -11,7 +11,6 @@
                      help="/plugin/jenkins-multijob-plugin/help-jobName.html">
                 <f:textbox />
             </f:entry>
-        
             <f:advanced>
                 <f:entry title="Job alias" field="jobAlias"
                          help="/plugin/jenkins-multijob-plugin/help-jobAlias.html">
@@ -84,6 +83,10 @@
         <f:enum field="executionType">
             ${it.getLabel()}
         </f:enum>
+      </f:entry>
+
+      <f:entry title="Quiet period calculator" field="quietPeriodGroovy" help="/plugin/jenkins-multijob-plugin/help-quiet-period-calculator.html">
+        <f:textbox name="quietPeriodGroovy" default="index &lt; 5 ? 0 : 2 * 60" />
       </f:entry>
 
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"

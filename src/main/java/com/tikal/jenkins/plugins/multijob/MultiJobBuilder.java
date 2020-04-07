@@ -27,21 +27,17 @@ import hudson.model.Queue.QueueAction;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.queue.QueueTaskFuture;
-import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import jenkins.model.Jenkins;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileNotFoundException;
 
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.lib.envinject.EnvInjectException;
 import org.jenkinsci.lib.envinject.EnvInjectLogger;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
@@ -50,10 +46,10 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -67,14 +63,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
-
-import org.jenkinsci.plugins.tokenmacro.TokenMacro;
-
-import groovy.util.*;
-import hudson.plugins.parameterizedtrigger.AbstractBuildParameters.DontTriggerException;
-import java.util.concurrent.CancellationException;
-import jenkins.model.CauseOfInterruption;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     /**
@@ -82,11 +73,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      * of scm changes.
      */
     public static final String BUILD_ALWAYS_KEY = "hudson.scm.multijob.build.always";
+    private static final String DEFAULT_QUIET_PERIOD_GROOVY = "0";
 
     private String phaseName;
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
     private ExecutionType executionType;
+    private String quietPeriodGroovy = DEFAULT_QUIET_PERIOD_GROOVY;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
 
@@ -121,16 +114,18 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @Deprecated
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
                            ContinuationCondition continuationCondition) {
-        this(phaseName, phaseJobs, continuationCondition, ExecutionType.PARALLEL);
+        this(phaseName, phaseJobs, continuationCondition, ExecutionType.PARALLEL, DEFAULT_QUIET_PERIOD_GROOVY);
     }
 
     @DataBoundConstructor
     public MultiJobBuilder(String phaseName, List<PhaseJobsConfig> phaseJobs,
-            ContinuationCondition continuationCondition, ExecutionType executionType) {
+            ContinuationCondition continuationCondition, ExecutionType executionType,
+                           String quietPeriodGroovy) {
         this.phaseName = phaseName;
         this.phaseJobs = Util.fixNull(phaseJobs);
         this.continuationCondition = continuationCondition;
         this.executionType = executionType;
+        this.quietPeriodGroovy = quietPeriodGroovy == null ? "0" : quietPeriodGroovy;
     }
 
     public String expandToken(String toExpand, final AbstractBuild<?,?> build, final BuildListener listener) {
@@ -287,7 +282,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 aggragatedTestResults = true;
             }
         }
-        
+
         if (aggragatedTestResults) {
             multiJobBuild.addTestsResult();
         }
@@ -392,7 +387,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 continue;
             } else {
                 boolean shouldTrigger = null == successBuildMap.get(subJob.getUrl()) ? true : false;
-                subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild, shouldTrigger));
+                subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild, shouldTrigger, index,
+                        quietPeriodGroovy, listener));
             }
         }
 
@@ -1037,6 +1033,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @Extension
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
+        private final static Logger LOG = Logger.getLogger(DescriptorImpl.class.getName());
+
+        private static final String BR = "<br/>";
+
         @SuppressWarnings("rawtypes")
         @Override
         public boolean isApplicable(Class<? extends AbstractProject> jobType) {
@@ -1059,6 +1059,30 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             save();
             return true;
         }
+
+        public FormValidation doCheckQuietPeriodGroovy(@QueryParameter String value) {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            if (Util.fixEmptyAndTrim(value) == null) {
+                return FormValidation.ok();
+            }
+
+            StringBuilder builder = new StringBuilder("Calculated quiet period:" + BR);
+            for (int index = 0; index < 20; index++) {
+                builder.append("Index ");
+                builder.append(index);
+                builder.append(": quiet period=");
+                try {
+                    builder.append(new QuietPeriodCalculator().calculateOrThrow(value, index));
+                    builder.append(BR);
+                } catch (Throwable t) {
+                    LOG.log(Level.INFO, "Found error while validating [" + value + "]", t);
+                    return FormValidation.error("Script error: " + t.getMessage());
+                }
+            }
+
+            return FormValidation.okWithMarkup(builder.toString());
+        }
+
     }
 
     @SuppressWarnings("rawtypes")

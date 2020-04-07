@@ -43,30 +43,30 @@ public class ConditionalPhaseTest {
         // MultiTop
         //  |_ FirstPhase
         //      |_ free
-        //  |_ [?] SecondPhase 
+        //  |_ [?] SecondPhase
         //          |_ free2
 
         final FreeStyleProject free = j.jenkins.createProject(FreeStyleProject.class, "Free");
         free.getBuildersList().add(new Shell("echo hello"));
         final FreeStyleProject free2 = j.jenkins.createProject(FreeStyleProject.class, "Free2");
         free2.getBuildersList().add(new Shell("echo hello2"));
-        
+
         final MultiJobProject multi = j.jenkins.createProject(MultiJobProject.class, "MultiTop");
 
         // create 'FirstPhase' containing job 'free'
         PhaseJobsConfig firstPhase = new PhaseJobsConfig("free", "freeAlias", null, true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false, false);
         List<PhaseJobsConfig> configTopList = new ArrayList<PhaseJobsConfig>();
         configTopList.add(firstPhase);
-        MultiJobBuilder firstPhaseBuilder = new MultiJobBuilder("FirstPhase", configTopList, ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL);
-        
-        
+        MultiJobBuilder firstPhaseBuilder = new MultiJobBuilder("FirstPhase", configTopList, ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL, null);
+
+
         // create 'SecondPhase' containing job 'free2'
         PhaseJobsConfig secondPhase = new PhaseJobsConfig("free2", "free2Alias", null, true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false, false);
         List<PhaseJobsConfig> configTopList2 = new ArrayList<PhaseJobsConfig>();
         configTopList.add(secondPhase);
-        MultiJobBuilder secondPhaseBuilder = new MultiJobBuilder("SecondPhase", configTopList2, ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL);
-        
-        
+        MultiJobBuilder secondPhaseBuilder = new MultiJobBuilder("SecondPhase", configTopList2, ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL, null);
+
+
         multi.getBuildersList().add(firstPhaseBuilder);
         multi.getBuildersList().add(new Shell("echo dude"));
         // wrap second phase in condition
@@ -91,7 +91,7 @@ public class ConditionalPhaseTest {
                 }
             }
         }
-       
+
         Assert.assertEquals("there should be two phases and three projects", 5, multi.getView().getRootItem(multi).size());
         Assert.assertEquals("there should be two phases", 2, numberOfPhases);
         Assert.assertEquals("there should be three projects", 3, numberOfProjects);
