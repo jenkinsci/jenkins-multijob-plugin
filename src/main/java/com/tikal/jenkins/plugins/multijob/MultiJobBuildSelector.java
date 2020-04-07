@@ -41,6 +41,12 @@ public class MultiJobBuildSelector extends BuildSelector {
             // Matrix run is triggered by its parent project, so check causes of parent build:
             for (Cause cause : parent instanceof MatrixRun
                     ? ((MatrixRun)parent).getParentBuild().getCauses() : parent.getCauses()) {
+                if (cause instanceof UpstreamCause) {
+                    // We need only builds with upstream cause
+                } else {
+                    LOGGER.warning(String.format("'%s' Has no upstream build.", parent.getFullDisplayName()));
+                    break;
+                }
                 UpstreamCause upstreamCause = (UpstreamCause)cause;
                 Job upstreamJob = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), Job.class);
                 Run upstreamRun = upstreamJob.getBuildByNumber(upstreamCause.getUpstreamBuild());
@@ -48,6 +54,8 @@ public class MultiJobBuildSelector extends BuildSelector {
                 if (upstreamRun != null && upstreamRun instanceof MultiJobBuild) {
                     multiJobBuild = (MultiJobBuild)upstreamRun;
                 }
+                // We need only first cause, don't care about the previous
+                break;
             }
         }
         if (multiJobBuild == null) {
