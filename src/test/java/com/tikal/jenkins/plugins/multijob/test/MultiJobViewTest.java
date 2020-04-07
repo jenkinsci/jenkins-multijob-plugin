@@ -4,6 +4,9 @@ import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuilder.ContinuationCondition;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuilder.ExecutionType;
+
 import hudson.model.Cause;
 import hudson.model.queue.QueueTaskFuture;
 import org.junit.Rule;
@@ -16,7 +19,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class MultiJobViewTest {
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
 
     @Rule
     public LoggerRule logging = new LoggerRule();
@@ -29,8 +33,9 @@ public class MultiJobViewTest {
         // create 'FirstPhase' containing job 'free'
         List<PhaseJobsConfig> jobs = new ArrayList<PhaseJobsConfig>();
         jobs.add(new PhaseJobsConfig("job1", "job1Alias", null, true, null, PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false, false));
-        jobs.add(new PhaseJobsConfig("job2", "job1Alias", null, true, null, PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false, false));
-        MultiJobBuilder phase1Builder = new MultiJobBuilder("FirstPhase", jobs, MultiJobBuilder.ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL);
+        jobs.add(new PhaseJobsConfig("josb2", "job1Alias", null, true, null, PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "",false, false));
+        MultiJobBuilder phase1Builder = new MultiJobBuilder("FirstPhase", jobs, MultiJobBuilder.ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL,
+                null);
         mj.getBuildersList().add(phase1Builder);
 
         JenkinsRule.WebClient client = j.createWebClient();
@@ -43,5 +48,9 @@ public class MultiJobViewTest {
         client.getPage(multiJobBuild); // MultiJob project page, assert it opens with no errors
 
         client.getPage(mj); // Check job page again after build
+    }
+
+    private void MultiJobBuilder(String string, List<PhaseJobsConfig> jobs, ContinuationCondition successful,
+            ExecutionType parallel, Object object) {
     }
 }
