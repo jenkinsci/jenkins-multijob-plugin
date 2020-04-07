@@ -1,6 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 
 /**
  * The different statuses of the job which may or not triggered the build.
@@ -139,7 +139,7 @@ public enum StatusJob {
      * @param subjob the job associated to this status job.
      * @return a text with the formatted message.
      */
-    public String getMessage(AbstractProject subjob) {
+    public String getMessage(Job subjob) {
         return String.format(this.getMessage(), subjob.getName());
     }
 }

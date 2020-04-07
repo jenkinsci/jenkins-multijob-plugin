@@ -12,6 +12,7 @@ import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.BooleanParameterDefinition;
 import hudson.model.ChoiceParameterDefinition;
 import hudson.model.Descriptor;
@@ -181,7 +182,12 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		this.jobName = jobName;
 	}
 
-	public String getJobAlias() { return jobAlias; }
+	public String getJobAlias() {
+		if (jobAlias == null) {
+			return "";
+		}
+		return jobAlias;
+	}
 
 	public void setJobAlias(String jobAlias) { this.jobAlias = jobAlias; }
 
@@ -424,17 +430,17 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	 * 			throws InterruptedException
 	 */
 	public List<Action> getActions(AbstractBuild build, TaskListener listener,
-			AbstractProject project, boolean isCurrentInclude)
+			Job project, boolean isCurrentInclude)
 			throws IOException, InterruptedException {
 		List<Action> actions = new ArrayList<Action>();
 		MultiJobParametersAction params = null;
 		LinkedList<ParameterValue> paramsValuesList = new LinkedList<ParameterValue>();
 
-		List originalActions = project.getActions();
+		Map originalActions = project.getProperties();
 
 		// Check to see if the triggered project has Parameters defined.
 		ParametersDefinitionProperty parameters = null;
-		for (Object object : originalActions) {
+		for (Object object : originalActions.values()) {
 			if (object instanceof hudson.model.ParametersDefinitionProperty)
 				parameters = (ParametersDefinitionProperty) object;
 		}
