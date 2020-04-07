@@ -1,22 +1,11 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:set var="lfBuild" value="${job.getLastFailedBuild()}"/>
-  <td data="${lfBuild.startTimeInMillis()  ?: '0'}">
-  	<j:choose>
- 	 <j:when test="${lfBuild!=null}">
- 	   ${lfBuild.timestampString}
- 	 </j:when>
- 	 <j:otherwise>
- 	   <j:choose>
- 	     <j:when test="${job.phase}"/>
- 	     <j:otherwise>
- 	       ${%N/A}
- 	     </j:otherwise>
- 		
-      </j:choose>
- 		
-    </j:otherwise>
- 	
-  </j:choose>
-  </td>
+	<j:choose>
+		<j:when test="${job.phase}">
+			<td data="0"/>
+		</j:when>
+		<j:otherwise>
+			<st:include class="hudson.views.LastFailureColumn" page="column.jelly"/>
+		</j:otherwise>
+	</j:choose>
  </j:jelly>
