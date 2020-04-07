@@ -247,9 +247,9 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
-				<workflow.version>1.4</workflow.version>
-                <jenkins.version>2.31</jenkins.version>
-                <java.level>7</java.level>
+				<workflow.version>1.6</workflow.version>
+                <jenkins.version>2.120</jenkins.version>
+                <java.level>8</java.level>
 	</properties>
 
 </project>
