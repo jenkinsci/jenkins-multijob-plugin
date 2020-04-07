@@ -6,3 +6,7 @@
 .project
 .idea
 *.iml
+.factorypath
+pom.xml.releaseBackup
+release.properties
+
