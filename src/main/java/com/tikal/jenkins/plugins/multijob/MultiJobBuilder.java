@@ -79,6 +79,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     private List<PhaseJobsConfig> phaseJobs;
     private ContinuationCondition continuationCondition = ContinuationCondition.SUCCESSFUL;
     private ExecutionType executionType;
+
     private String quietPeriodGroovy = DEFAULT_QUIET_PERIOD_GROOVY;
 
     final static Pattern PATTERN = Pattern.compile("(\\$\\{.+?\\})", Pattern.CASE_INSENSITIVE);
@@ -1223,6 +1224,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     public ExecutionType getExecutionType() {
         return executionType;
     }
+    public String getQuietPeriodGroovy() {
+        return quietPeriodGroovy;
+    }
+
 
     public boolean prebuild(Build build, BuildListener listener) {
         boolean resume = false;
