@@ -290,6 +290,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
         List<SubTask> subTasks = new ArrayList<SubTask>();
         int index = 0;
+        int enabledIndex = 0;
         for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
             index++;
 
@@ -385,10 +386,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
             if ( jobStatus == StatusJob.IS_DISABLED_AT_PHASECONFIG ) {
                 phaseCounters.processSkipped();
+                listener.getLogger().println(String.format("Skipping %s. enabledIndex=%s", subJob.getName(), enabledIndex));
                 continue;
             } else {
+                enabledIndex++;
+                listener.getLogger().println(String.format("Counting %s. enabledIndex=%s", subJob.getName(), enabledIndex));
                 boolean shouldTrigger = null == successBuildMap.get(subJob.getUrl()) ? true : false;
-                subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild, shouldTrigger, index,
+                subTasks.add(new SubTask(subJob, phaseConfig, actions, multiJobBuild, shouldTrigger, enabledIndex,
                         quietPeriodGroovy, listener));
             }
         }
@@ -750,9 +754,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			jobDisplayName += " (" + phaseConfig.getJobAlias() + ")";
 		}
         listener.getLogger().printf(
-                "Starting build job %s.\n",
+                "Starting build job %s at %tT.\n",
                 HyperlinkNote.encodeTo('/' + subJob.getUrl(),
-						jobDisplayName));
+						jobDisplayName), new Date());
     }
 
     private void reportFinish(BuildListener listener, Run jobBuild,
@@ -762,16 +766,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			jobDisplayName += " (" + phaseConfig.getJobAlias() + ")";
 		}
 
-        listener.getLogger().println(
-                "Finished Build : "
-                        + HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",
-                                String.valueOf(jobBuild.getDisplayName()))
-                        + " of Job : "
-                        + HyperlinkNote.encodeTo('/' + jobBuild.getParent()
-                                .getUrl(), jobDisplayName)
-                        + " with status : "
-                        + HyperlinkNote.encodeTo('/' + jobBuild.getUrl()
-                                + "/console", result.toString()));
+        listener.getLogger().printf("Finished Build : %s of Job : %s with status : %s at %tT%n",
+                HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/", String.valueOf(jobBuild.getDisplayName())),
+                HyperlinkNote.encodeTo('/' + jobBuild.getParent().getUrl(), jobDisplayName),
+                HyperlinkNote.encodeTo('/' + jobBuild.getUrl() + "/console", result.toString()), new Date());
     }
 
     private void updateSubBuild(MultiJobBuild multiJobBuild,
