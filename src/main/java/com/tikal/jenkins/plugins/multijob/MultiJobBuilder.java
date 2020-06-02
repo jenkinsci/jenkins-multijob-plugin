@@ -763,14 +763,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
         listener.getLogger().println(
                 "Finished Build : "
-                        + HyperlinkNote.encodeTo("/" + jobBuild.getUrl() + "/",
+                        + HyperlinkNote.encodeTo("/" + jobBuild.getUrl(),
                                 String.valueOf(jobBuild.getDisplayName()))
                         + " of Job : "
                         + HyperlinkNote.encodeTo('/' + jobBuild.getParent()
                                 .getUrl(), jobDisplayName)
                         + " with status : "
                         + HyperlinkNote.encodeTo('/' + jobBuild.getUrl()
-                                + "/console", result.toString()));
+                                + "console", result.toString()));
     }
 
     private void updateSubBuild(MultiJobBuild multiJobBuild,
