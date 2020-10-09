@@ -21,7 +21,7 @@ public final class SubTask {
     final public List<Action> actions;
     public QueueTaskFuture<? extends Executable> future;
     final public MultiJobBuild multiJobBuild;
-    private final int index;
+    private final int enabledIndex;
     private final String quietPeriodGroovy;
     private final BuildListener listener;
     public Result result;
@@ -29,12 +29,12 @@ public final class SubTask {
     private boolean isShouldTrigger;
 
     SubTask(Job subJob, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild,
-            boolean isShouldTrigger, final int index, final String quietPeriodGroovy, final BuildListener listener) {
+            boolean isShouldTrigger, final int enabledIndex, final String quietPeriodGroovy, final BuildListener listener) {
         this.subJob = subJob;
         this.phaseConfig = phaseConfig;
         this.actions = actions;
         this.multiJobBuild = multiJobBuild;
-        this.index = index;
+        this.enabledIndex = enabledIndex;
         this.quietPeriodGroovy = quietPeriodGroovy;
         this.listener = listener;
         this.cancel = false;
@@ -69,8 +69,10 @@ public final class SubTask {
                 }
             };
 
-
-            final int quietPeriod = new QuietPeriodCalculator(listener, subJob.getName()).calculate(quietPeriodGroovy, index);
+            ((ParameterizedJobMixIn.ParameterizedJob) subJob).isDisabled();
+            final String subJobName = subJob.getName();
+            final int quietPeriod = new QuietPeriodCalculator(listener, subJobName).calculate(quietPeriodGroovy, enabledIndex);
+            listener.getLogger().printf("quiet period for %s is %d seconds.", subJobName, quietPeriod);
             this.future = parameterizedJobMixIn.scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
         }
     }
