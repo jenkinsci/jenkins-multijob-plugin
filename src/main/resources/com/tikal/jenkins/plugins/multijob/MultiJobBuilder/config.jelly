@@ -86,7 +86,7 @@
       </f:entry>
 
       <f:entry title="Quiet period calculator" field="quietPeriodGroovy" help="/plugin/jenkins-multijob-plugin/help-quiet-period-calculator.html">
-        <f:textbox name="quietPeriodGroovy" default="index &lt; 5 ? 0 : 2 * 60" />
+        <f:textbox />
       </f:entry>
 
       <f:entry title="Continuation condition to next phase &lt;br&gt; when jobs' statuses are:"
