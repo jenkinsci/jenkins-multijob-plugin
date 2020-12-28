@@ -10,7 +10,7 @@
 		<version>2.1.0</version> <relativePath>../pom.xml</relativePath> </parent -->
 
 	<artifactId>jenkins-multijob-plugin</artifactId>
-	<version>1.36-SNAPSHOT</version>
+	<version>1.36</version>
 	<name>Jenkins Multijob plugin</name>
 	<description>Enabling full hierarchy of Jenkins jobs</description>
 	<url>https://github.com/jenkinsci/tikal-multijob-plugin/</url>
@@ -37,7 +37,7 @@
 		<connection>scm:git:git://github.com:jenkinsci/tikal-multijob-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:jenkinsci/tikal-multijob-plugin.git</developerConnection>
 		<url>https://github.com/jenkinsci/tikal-multijob-plugin.git</url>
-		<tag>jenkins-multijob-plugin-1.33</tag>
+		<tag>jenkins-multijob-plugin-1.36</tag>
 	</scm>
 
 
