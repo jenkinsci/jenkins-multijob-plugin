@@ -7,7 +7,7 @@
 		<j:choose>
 			<j:when test="${lBuild!=null}">
 				<a href="${job.absoluteUrl}${job.getBuildNumber()}/console">
-					<l:icon class="icon-terminal icon-${subIconSize}" title="${%Console output}"
+					<l:icon class="icon-terminal icon-${subIconSizeClass}" title="${%Console output}"
 						alt="${%Console output}" border="0" />
 				</a>
 			</j:when>
