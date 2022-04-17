@@ -6,13 +6,10 @@
 		<version>3.2</version>
                 <relativePath />
 	</parent>
-	<!-- parent> <groupId>org.jvnet.hudson.plugins</groupId> <artifactId>hudson-plugin-parent</artifactId> 
-		<version>2.1.0</version> <relativePath>../pom.xml</relativePath> </parent -->
 
 	<artifactId>jenkins-multijob-plugin</artifactId>
-	<version>1.37-SNAPSHOT</version>
+	<version>${changelist}</version>
 	<name>Jenkins Multijob plugin</name>
-	<description>Enabling full hierarchy of Jenkins jobs</description>
 	<url>https://github.com/jenkinsci/tikal-multijob-plugin/</url>
 
 	<developers>
@@ -33,13 +30,20 @@
 		</developer>
 	</developers>
 
+	<licenses>
+		<license>
+			<name>The MIT license</name>
+			<url>https://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<scm>
-		<connection>scm:git:git://github.com:jenkinsci/tikal-multijob-plugin.git</connection>
+		<connection>scm:git:https://github.com:jenkinsci/tikal-multijob-plugin.git</connection>
 		<developerConnection>scm:git:git@github.com:jenkinsci/tikal-multijob-plugin.git</developerConnection>
 		<url>https://github.com/jenkinsci/tikal-multijob-plugin.git</url>
-		<tag>jenkins-multijob-plugin-1.33</tag>
+		<tag>${scmTag}</tag>
 	</scm>
-
 
 	<dependencies>
 		<dependency>
@@ -249,7 +253,8 @@
 		<findbugs.failOnError>false</findbugs.failOnError>
 				<workflow.version>1.6</workflow.version>
                 <jenkins.version>2.120</jenkins.version>
-                <java.level>8</java.level>
+		<java.level>8</java.level>
+		<changelist>999999-SNAPSHOT</changelist>
 	</properties>
 
 </project>
