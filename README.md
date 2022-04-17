@@ -1,7 +1,6 @@
-## Does anyone want to become a maintainer of this plugin?
+## Deprecation Note
 This plugin was very popular for many years, but since most of Jenkins usage now is based on Jenkins Pipeline, and the 'parallel' step along with 'BlueOcean' can basically do whatever this plugin does, it is no longer in [Tikal's radar](https://fullstackradar.tikalk.com/tikal/radar/index.html).
 Also, we published the [parallelPhase library class](https://github.com/TikalCI/tci-library/blob/master/src/tci/pipeline/parallelPhase.groovy) that can do in pipelines what the plugin does.
-Still, there are many users of the plugin that asked for fixes and new features, so we'll appreciate anyone willing to become a maintainer of the plugin.
 
 ## When to use MultiJob (tikal-multijob-plugin) plugin ?
 - If you'd like to stop the mess with downstream / upstream jobs chains definitions
