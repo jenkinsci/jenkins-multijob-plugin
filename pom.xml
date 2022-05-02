@@ -123,7 +123,7 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>matrix-project</artifactId>
-			<version>1.7.1</version>
+			<version>771.v574584b_39e60</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Workflow plugin imports are used to test compatibility -->
