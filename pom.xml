@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>3.2</version>
+		<version>4.40</version>
                 <relativePath />
 	</parent>
 
@@ -45,6 +45,26 @@
 		<tag>${scmTag}</tag>
 	</scm>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.jenkins-ci.main</groupId>
+				<artifactId>jenkins-bom</artifactId>
+				<version>${jenkins.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+
+			<dependency>
+				<groupId>io.jenkins.tools.bom</groupId>
+				<artifactId>bom-2.319.x</artifactId>
+				<version>1409.v7659b_c072f18</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
@@ -56,7 +76,11 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>junit</artifactId>
-			<version>1.11</version>
+			<!--
+				1.25 and earlier are vulnerable
+				https://www.jenkins.io/security/advisory/2018-09-25/
+			-->
+			<version>1.26</version>
 		</dependency>
 
 		<dependency>
@@ -80,13 +104,17 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>mailer</artifactId>
-			<version>1.13</version>
+			<version>1.32.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jenkins-ci.main</groupId>
 			<artifactId>maven-plugin</artifactId>
-			<version>2.6</version>
+			<!--
+				3.3 and earlier are vulnerable
+				https://www.jenkins.io/security/advisory/2019-07-31/
+			-->
+			<version>3.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.httpcomponents</groupId>
@@ -145,6 +173,21 @@
 			<version>${workflow.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!--
+			this is here to resolve a RequireUpperBoundDeps failure
+			between maven-plugin (3.6) and jenkins-test-harness (3.8)
+		 -->
+		 <dependency>
+			<groupId>org.jenkins-ci.main</groupId>
+			<artifactId>jenkins-test-harness</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-net</groupId>
+					<artifactId>commons-net</artifactId>
+				</exclusion>
+			</exclusions>
+		 </dependency>
 
 	</dependencies>
 
@@ -252,7 +295,7 @@
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
 				<workflow.version>1.6</workflow.version>
-                <jenkins.version>2.120</jenkins.version>
+                <jenkins.version>2.319.3</jenkins.version>
 		<java.level>8</java.level>
 		<changelist>999999-SNAPSHOT</changelist>
 	</properties>

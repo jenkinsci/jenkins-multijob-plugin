@@ -326,10 +326,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         @CheckForNull
 		public Run<?,?> getBuild() {
             if (buildID != null) {
-                Run<?, ?> build = Run.fromExternalizableId(buildID);
-                if (build instanceof Run) {
-                    return (Run) build;
-                }
+                return Run.fromExternalizableId(buildID);
             } // else null if loaded from historical data prior to JENKINS-49328
 			return null;
 		}

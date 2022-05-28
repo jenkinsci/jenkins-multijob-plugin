@@ -187,7 +187,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if ( lastBuild == null ) {
             return StatusJob.DOESNT_CONTAINS_LASTBUILD;
         }
-        if ( lastBuild.getResult() != null && lastBuild.getResult().isWorseThan(Result.UNSTABLE) ) {
+        Result result = lastBuild.getResult();
+        if ( result != null && result.isWorseThan(Result.UNSTABLE) ) {
             return StatusJob.LASTBUILD_RESULT_IS_WORSE_THAN_UNSTABLE;
         }
 
@@ -291,13 +292,13 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         List<SubTask> subTasks = new ArrayList<SubTask>();
         int index = 0;
         int enabledIndex = 0;
-        for (PhaseSubJob phaseSubJob : phaseSubJobs.keySet()) {
+        for (Map.Entry<PhaseSubJob, PhaseJobsConfig> entry : phaseSubJobs.entrySet()) {
             index++;
-
+            PhaseSubJob phaseSubJob = entry.getKey();
             Job subJob = phaseSubJob.job;
 
             // To be coherent with final results, we need to do this here.
-            PhaseJobsConfig phaseConfig = phaseSubJobs.get(phaseSubJob);
+            PhaseJobsConfig phaseConfig = entry.getValue();
             StatusJob jobStatus = getScmChange(subJob,phaseConfig,multiJobBuild ,listener,launcher );
             listener.getLogger().println(jobStatus.getMessage(subJob));
             // We are ready to inject vars about scm status. It is useful at condition level.
@@ -546,8 +547,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         }
                         Thread.sleep(2500);
                     }
-                    if (jobBuild != null && !finish) {
-                        result = jobBuild.getResult();
+                    result = Optional.ofNullable(jobBuild).map(Run::getResult).orElse(null);
+                    if (result != null && !finish) {
                         reportFinish(listener, jobBuild, result, subTask.phaseConfig);
 
                         if (result.isWorseOrEqualTo(Result.UNSTABLE) && result.isCompleteBuild() && subTask.phaseConfig.getEnableRetryStrategy()) {
@@ -754,7 +755,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 			jobDisplayName += " (" + phaseConfig.getJobAlias() + ")";
 		}
         listener.getLogger().printf(
-                "Starting build job %s at %tT.\n",
+                "Starting build job %s at %tT.%n",
                 HyperlinkNote.encodeTo('/' + subJob.getUrl(),
 						jobDisplayName), new Date());
     }
@@ -776,7 +777,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             MultiJobProject multiJobProject, PhaseJobsConfig phaseConfig) {
         SubBuild subBuild = new SubBuild(multiJobProject.getName(),
                 multiJobBuild.getNumber(), phaseConfig.getJobName(), phaseConfig.getJobAlias(), 0,
-                phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "", null);
+                phaseName, null, BallColor.NOTBUILT.getImage(), "not built", "", multiJobBuild);
         multiJobBuild.addSubBuild(subBuild);
     }
 
@@ -847,7 +848,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         String jobNameSafe = jobName.replaceAll("[^A-Za-z0-9]", "_")
                 .toUpperCase();
         String buildNumber = Integer.toString(jobBuild.getNumber());
-        String buildResult = jobBuild.getResult().toString();
+        String buildResult = Optional.of(jobBuild).map(Run::getResult).map(Result::toString).orElse(null);
         String buildName = jobBuild.getDisplayName().toString();
 
         // If the job is run a second time, store the first job's number and result with unique keys
@@ -1239,7 +1240,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     AbstractProject childProject = (AbstractProject) item;
                     AbstractBuild childBuild = childProject.getBuildByNumber(subBuild.getBuildNumber());
                     if (null != childBuild) {
-                        if (childBuild.getResult().equals(Result.FAILURE)) {
+                        if (Result.FAILURE.equals(childBuild.getResult())) {
                             resume = true;
                         }
                     }
@@ -1251,9 +1252,10 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 try {
                     Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(prevBuild, logger);
                     Map<String, String> persistentEnvVars = new HashMap<String, String>();
-                    for (String key : previousEnvVars.keySet()) {
-                        if(key.startsWith(PERSISTENT_VARS_PREFIX)) {
-                            persistentEnvVars.put(key, previousEnvVars.get(key));
+                    for (Map.Entry<String, String> entry : previousEnvVars.entrySet()) {
+                        String key = entry.getKey();
+                        if (key.startsWith(PERSISTENT_VARS_PREFIX)) {
+                            persistentEnvVars.put(key, entry.getValue());
                         }
                     }
                     persistentEnvVars.put("RESUMED_BUILD", "true");

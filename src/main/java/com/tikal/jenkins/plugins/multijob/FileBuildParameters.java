@@ -13,6 +13,7 @@ import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,11 @@ public class FileBuildParameters extends AbstractBuildParameters {
         EnvVars env = build.getEnvironment(listener);
 
         String resolvedPropertiesFile = env.expand(propertiesFile);
-        FilePath f = build.getWorkspace().child(resolvedPropertiesFile);
+        FilePath workspace = build.getWorkspace();
+        if (workspace == null) {
+            return null;
+        }
+        FilePath f = workspace.child(resolvedPropertiesFile);
         if (!f.exists()) {
             listener
                     .getLogger()
@@ -50,7 +55,9 @@ public class FileBuildParameters extends AbstractBuildParameters {
         String s = f.readToString();
         s = env.expand(s);
         Properties p = new Properties();
-        p.load(new StringInputStream(s));
+        try (StringInputStream is = new StringInputStream(s)) {
+            p.load(is);
+        }
 
         List<ParameterValue> values = new ArrayList<ParameterValue>();
         for (Map.Entry<Object, Object> entry : p.entrySet()) {
