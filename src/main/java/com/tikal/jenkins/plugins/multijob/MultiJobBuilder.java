@@ -608,17 +608,12 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 try {
                     listener.getLogger().println("Scanning failed job console output using parsing rule file " + subTask.phaseConfig.getParsingRulesPath() + ".");
                     final File rulesFile = new File(subTask.phaseConfig.getParsingRulesPath());
-                    FileInputStream fis = new FileInputStream(rulesFile.getAbsoluteFile());
-                    InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-                    final BufferedReader reader = new BufferedReader(isr);
-                    try {
+                    try (FileInputStream fis = new FileInputStream(rulesFile.getAbsoluteFile());
+                         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                         BufferedReader reader = new BufferedReader(isr)) {
                         String line;
                         while ((line = reader.readLine()) != null) {
                             compiledPatterns.add(Pattern.compile(line));
-                        }
-                    } finally {
-                        if (reader != null) {
-                            reader.close();
                         }
                     }
                 } catch (Exception e) {
@@ -679,10 +674,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             try {
                 final List<Pattern> patterns = getCompiledPattern();
                 final File logFile = build.getLogFile();
-                FileInputStream fis = new FileInputStream(logFile);
-                InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-                final BufferedReader reader = new BufferedReader(isr);
-                try {
+                try (FileInputStream fis = new FileInputStream(logFile);
+                     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                     BufferedReader reader = new BufferedReader(isr)) {
                     int numberOfThreads = 10; // Todo : Add this in Configure section
                     if (numberOfThreads < 0) {
                         numberOfThreads = 1;
@@ -708,10 +702,6 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         }
                     }
                     executorAnalyser.shutdownNow();
-                } finally {
-                    if (reader != null) {
-                        reader.close();
-                    }
                 }
             } catch (Exception e) {
                 if (e instanceof InterruptedException) {
