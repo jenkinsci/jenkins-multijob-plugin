@@ -68,6 +68,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class MultiJobBuilder extends Builder implements DependecyDeclarer {
+    private final static Logger LOG = Logger.getLogger(MultiJobBuilder.class.getName());
     /**
      * The name of the parameter in the build.getBuildVariables() to enable the job build, regardless
      * of scm changes.
@@ -605,26 +606,20 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         private List<Pattern> getCompiledPattern() throws FileNotFoundException, InterruptedException {
             if (compiledPatterns == null) {
                 compiledPatterns = new ArrayList<Pattern>();
-                try {
-                    listener.getLogger().println("Scanning failed job console output using parsing rule file " + subTask.phaseConfig.getParsingRulesPath() + ".");
-                    final File rulesFile = new File(subTask.phaseConfig.getParsingRulesPath());
-                    try (FileInputStream fis = new FileInputStream(rulesFile.getAbsoluteFile());
-                         InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-                         BufferedReader reader = new BufferedReader(isr)) {
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            compiledPatterns.add(Pattern.compile(line));
-                        }
+                String parsingRulesPath = subTask.phaseConfig.getParsingRulesPath();
+                listener.getLogger().println("Scanning failed job console output using parsing rule file " + parsingRulesPath + ".");
+                try (FileInputStream fis = new FileInputStream(new File(parsingRulesPath).getAbsoluteFile());
+                     InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+                     BufferedReader reader = new BufferedReader(isr)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        compiledPatterns.add(Pattern.compile(line));
                     }
+                } catch (FileNotFoundException e) {
+                    throw new FileNotFoundException();
                 } catch (Exception e) {
-                    if (e instanceof InterruptedException) {
-                        throw new InterruptedException();
-                    } else if (e instanceof FileNotFoundException) {
-                        throw new FileNotFoundException();
-                    } else {
-                        listener.getLogger().println(e.toString());
-                        e.printStackTrace();
-                    }
+                    listener.getLogger().println(e.toString());
+                    LOG.log(Level.WARNING, "Failed to get compiled patterns", e);
                 }
             }
             return compiledPatterns;
@@ -661,7 +656,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         // Nothing
                     } else {
                         listener.getLogger().println(e.toString());
-                        e.printStackTrace();
+                        LOG.log(Level.WARNING, "Failed to analyze line", e);
                     }
                 } finally {
                     finishQueue.add(new LineQueue(errorFound));
@@ -703,16 +698,14 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                     }
                     executorAnalyser.shutdownNow();
                 }
+            } catch (InterruptedException e) {
+                throw new InterruptedException();
+            } catch (FileNotFoundException e) {
+                listener.getLogger().println("Parser rules file not found.");
+                failure = false;
             } catch (Exception e) {
-                if (e instanceof InterruptedException) {
-                    throw new InterruptedException();
-                } else if (e instanceof FileNotFoundException) {
-                    listener.getLogger().println("Parser rules file not found.");
-                    failure = false;
-                } else {
-                    listener.getLogger().println(e.toString());
-                    e.printStackTrace();
-                }
+                listener.getLogger().println(e.toString());
+                LOG.log(Level.WARNING, "Failed to determine if known random failure", e);
             }
             return failure;
         }
@@ -917,7 +910,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                         .println(
                                 "[MultiJob] - [ERROR] - Problems occurs on injecting env vars as a build step: "
                                         + throwable.getMessage());
-                throwable.printStackTrace();
+                LOG.log(Level.WARNING, "Problems on injecting env vars as build step", throwable);
             }
         }
     }
@@ -1253,7 +1246,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
                 } catch (Throwable throwable) {
                     listener.getLogger().println("[MultiJob] - [ERROR] - Problems occurs on injecting env vars in prebuild: "
                                             + throwable.getMessage());
-                    throwable.printStackTrace();
+                    LOG.log(Level.WARNING, "Problem injecting env vars in prebuild", throwable);
                 }
             }
         }

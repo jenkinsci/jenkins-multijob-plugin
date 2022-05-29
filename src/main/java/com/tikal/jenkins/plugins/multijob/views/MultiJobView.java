@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -38,6 +40,7 @@ import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 
 public class MultiJobView extends ListView {
+    private final static Logger LOG = Logger.getLogger(MultiJobView.class.getName());
 
     @DataBoundConstructor
     public MultiJobView(String name) {
@@ -427,7 +430,7 @@ public class MultiJobView extends ListView {
             getColumns().replaceBy(MultiJobListViewColumn
                     .createDefaultInitialColumnList());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING, "Failed to initialize columns", e);
         }
     }
 
