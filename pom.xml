@@ -287,7 +287,6 @@
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
                 <jenkins.version>2.319.3</jenkins.version>
-		<java.level>8</java.level>
 		<changelist>999999-SNAPSHOT</changelist>
 	</properties>
 
