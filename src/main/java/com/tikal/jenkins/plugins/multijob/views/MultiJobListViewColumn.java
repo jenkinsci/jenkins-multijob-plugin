@@ -5,6 +5,7 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.views.BuildButtonColumn;
 import hudson.views.ListViewColumn;
+import net.sf.json.JSONObject;
 import org.jenkins.plugins.builton.BuiltOnColumn;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ abstract public class MultiJobListViewColumn extends ListViewColumn {
             Descriptor<ListViewColumn> des = all.find(d);
             if (des != null) {
                 try {
-                    r.add(des.newInstance(null, null));
+                    r.add(des.newInstance(null, new JSONObject()));
                 } catch (FormException e) {
                     LOGGER.log(Level.WARNING, "Failed to instantiate " + des.clazz, e);
                 }

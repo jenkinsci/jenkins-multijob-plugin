@@ -39,7 +39,9 @@ public class PredefinedBuildParameters extends AbstractBuildParameters {
 //
 //        }
         Properties pProp = new Properties();
-        pProp.load(new StringInputStream(jobProperties));
+        try (StringInputStream is = new StringInputStream(jobProperties)) {
+            pProp.load(is);
+        }
         LinkedHashMap<String,ParameterValue> params = new LinkedHashMap<String,ParameterValue>();
 
 //        if (parameters !=null){

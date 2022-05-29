@@ -1,5 +1,6 @@
 package com.tikal.jenkins.plugins.multijob;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import hudson.matrix.MatrixRun;
@@ -49,7 +50,7 @@ public class MultiJobBuildSelector extends BuildSelector {
                 }
                 UpstreamCause upstreamCause = (UpstreamCause)cause;
                 Job upstreamJob = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), Job.class);
-                Run upstreamRun = upstreamJob.getBuildByNumber(upstreamCause.getUpstreamBuild());
+                Run upstreamRun = Optional.ofNullable(upstreamJob).map(j -> j.getBuildByNumber(upstreamCause.getUpstreamBuild())).orElse(null);
 
                 if (upstreamRun != null && upstreamRun instanceof MultiJobBuild) {
                     multiJobBuild = (MultiJobBuild)upstreamRun;

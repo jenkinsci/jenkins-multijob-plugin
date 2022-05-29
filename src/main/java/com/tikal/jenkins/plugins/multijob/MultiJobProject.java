@@ -101,7 +101,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
                 return result;
             }
             List<AbstractProject> downProjs = getDownstreamProjects();
-            PollingResult tmpResult = new PollingResult(PollingResult.Change.NONE);
+            PollingResult tmpResult;
             //return when we get changes to save resources
             //If we don't get changes, return the most significant result
             for (AbstractProject downProj : downProjs) {

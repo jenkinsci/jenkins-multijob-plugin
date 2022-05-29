@@ -16,8 +16,12 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -36,6 +40,7 @@ import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 
 public class MultiJobView extends ListView {
+    private final static Logger LOG = Logger.getLogger(MultiJobView.class.getName());
 
     @DataBoundConstructor
     public MultiJobView(String name) {
@@ -149,7 +154,10 @@ public class MultiJobView extends ListView {
                 nestLevel,
                 build)
         );
-        List<Builder> builders = build.getProject().getBuilders();
+        List<Builder> builders = Optional.ofNullable(build)
+                .map(AbstractBuild::getProject)
+                .map(Project::getBuilders)
+                .orElseGet(Collections::emptyList);
         for (Builder builder : builders) {
             int phaseNestLevel = nestLevel + 1;
             if (builder instanceof MultiJobBuilder) {
@@ -422,7 +430,7 @@ public class MultiJobView extends ListView {
             getColumns().replaceBy(MultiJobListViewColumn
                     .createDefaultInitialColumnList());
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.log(Level.WARNING, "Failed to initialize columns", e);
         }
     }
 

@@ -30,6 +30,7 @@ import hudson.tasks.Builder;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -365,7 +366,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 
 		public ParserRuleFile[] getParsingRulesGlobal() {
-			return parsingRulesGlobal;
+			return Arrays.copyOf(parsingRulesGlobal, parsingRulesGlobal.length);
 		}
 
 		@Override
@@ -384,11 +385,11 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		ParametersAction action = build.getAction(ParametersAction.class);
 		List<ParameterValue> values = new ArrayList<ParameterValue>(action
 				.getParameters().size());
-		if (action != null) {
-			for (ParameterValue value : action.getParameters())
-				// FileParameterValue is currently not reusable, so omit these:
-				if (!(value instanceof FileParameterValue))
-					values.add(value);
+		for (ParameterValue value : action.getParameters()) {
+			// FileParameterValue is currently not reusable, so omit these:
+			if (!(value instanceof FileParameterValue)) {
+				values.add(value);
+			}
 		}
 
 		return values;
