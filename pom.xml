@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version>3.2</version>
+		<version>4.40</version>
                 <relativePath />
 	</parent>
 
@@ -45,6 +45,26 @@
 		<tag>${scmTag}</tag>
 	</scm>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.jenkins-ci.main</groupId>
+				<artifactId>jenkins-bom</artifactId>
+				<version>${jenkins.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+
+			<dependency>
+				<groupId>io.jenkins.tools.bom</groupId>
+				<artifactId>bom-2.319.x</artifactId>
+				<version>1409.v7659b_c072f18</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
@@ -56,13 +76,13 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>junit</artifactId>
-			<version>1.11</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>envinject</artifactId>
-			<version>1.90</version>
+			<!-- 1.90 and earlier vulnerable: https://www.jenkins.io/security/advisory/2018-02-26/ -->
+			<version>1.91</version>
 		</dependency>
 
 		<dependency>
@@ -74,20 +94,23 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>token-macro</artifactId>
-			<version>1.10</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>mailer</artifactId>
-			<version>1.13</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jenkins-ci.main</groupId>
 			<artifactId>maven-plugin</artifactId>
-			<version>2.6</version>
+			<!-- 3.3 and earlier vulnerable: https://www.jenkins.io/security/advisory/2019-07-31/ -->
+			<version>3.4</version>
 			<exclusions>
+				<exclusion>
+					<groupId>org.apache.commons</groupId>
+					<artifactId>commons-lang3</artifactId>
+				</exclusion>
 				<exclusion>
 					<groupId>org.apache.httpcomponents</groupId>
 					<artifactId>httpclient</artifactId>
@@ -110,7 +133,8 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>copyartifact</artifactId>
-			<version>1.31</version>
+			<!-- 1.43.1 and earlier vulnerable: https://www.jenkins.io/security/advisory/2020-05-06/ -->
+			<version>1.44</version>
 			<optional>true</optional>
 		</dependency>
 
@@ -123,28 +147,39 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>matrix-project</artifactId>
-			<version>1.7.1</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Workflow plugin imports are used to test compatibility -->
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-job</artifactId>
-			<version>${workflow.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-cps</artifactId>
-			<version>${workflow.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins.workflow</groupId>
 			<artifactId>workflow-basic-steps</artifactId>
-			<version>${workflow.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!--
+			this is here to resolve a RequireUpperBoundDeps failure
+			between maven-plugin (3.6) and jenkins-test-harness (3.8)
+		 -->
+		 <dependency>
+			<groupId>org.jenkins-ci.main</groupId>
+			<artifactId>jenkins-test-harness</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-net</groupId>
+					<artifactId>commons-net</artifactId>
+				</exclusion>
+			</exclusions>
+		 </dependency>
 
 	</dependencies>
 
@@ -251,9 +286,7 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
-				<workflow.version>1.6</workflow.version>
-                <jenkins.version>2.120</jenkins.version>
-		<java.level>8</java.level>
+                <jenkins.version>2.349</jenkins.version>
 		<changelist>999999-SNAPSHOT</changelist>
 	</properties>
 
