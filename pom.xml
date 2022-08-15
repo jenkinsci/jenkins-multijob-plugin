@@ -126,7 +126,7 @@
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>copyartifact</artifactId>
 			<!-- 1.43.1 and earlier vulnerable: https://www.jenkins.io/security/advisory/2020-05-06/ -->
-			<version>1.44</version>
+			<version>1.47</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
