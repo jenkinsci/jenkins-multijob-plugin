@@ -62,7 +62,7 @@
 				</td>
 				<td class="no-wrap" align="center">
 					<a href="${rootURL}/${builder.url}console">
-						<l:icon class="icon-terminal icon-md" alt="Console Output" />
+						<l:icon src="symbol-terminal-outline plugin-ionicons-api" class="icon-md" alt="Console Output" />
 					</a>
 				</td>
 			</tr>
