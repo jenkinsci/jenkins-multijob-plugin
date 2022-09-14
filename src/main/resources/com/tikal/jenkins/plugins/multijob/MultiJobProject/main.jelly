@@ -26,17 +26,10 @@
 				${act.displayName}
             </t:summary>
 		</j:forEach>
-		<t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
-			${%Workspace}
-        </t:summary>
 
 		<t:artifactList caption="${%Last Successful Artifacts}"
 			build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
 			permission="${it.lastSuccessfulBuild.ARTIFACTS}" />
-
-		<t:summary icon="notepad.gif" href="changes">
-			${%Recent Changes}
-		</t:summary>
 
 		<j:set var="tr" value="${it.testResultAction}" />
 		<j:if test="${tr!=null}">
