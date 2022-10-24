@@ -276,7 +276,7 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
-		<jenkins.version>2.346.1</jenkins.version>
+		<jenkins.version>2.374</jenkins.version>
 		<changelist>999999-SNAPSHOT</changelist>
 	</properties>
 
