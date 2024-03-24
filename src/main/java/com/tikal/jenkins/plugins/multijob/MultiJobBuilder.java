@@ -168,11 +168,9 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
      */
     private StatusJob getScmChange(Job subjob,PhaseJobsConfig phaseConfig,AbstractBuild build, BuildListener listener,Launcher launcher)
     throws IOException, InterruptedException {
-        /* https://issues.jenkins-ci.org/browse/JENKINS-33821
-        if ( subjob.disabled ) {
+        if ( ! subjob.isBuildable() ) {
             return StatusJob.IS_DISABLED;
         }
-        */
         if( phaseConfig.isDisableJob() ) {
             return StatusJob.IS_DISABLED_AT_PHASECONFIG;
         }
