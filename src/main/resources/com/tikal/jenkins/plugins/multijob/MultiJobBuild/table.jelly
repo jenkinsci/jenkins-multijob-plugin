@@ -21,7 +21,7 @@
 			</j:when>
 			<tr>
 				<td class="no-wrap" align="center" width="28px">
-					<span class="job"><img src="${imagesURL}/24x24/${builder.icon}" alt=""/></span>
+					<l:icon class="icon-md ${icons.toNormalizedIconNameClass(builder.icon)}"/>
 				</td>
 				<td class="no-wrap" align="center" width="24px">
 					<j:choose>
