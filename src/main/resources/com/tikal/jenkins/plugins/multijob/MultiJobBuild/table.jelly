@@ -21,7 +21,7 @@
 			</j:when>
 			<tr>
 				<td class="no-wrap" align="center" width="28px">
-					<span class="job"><img src="${imagesURL}/24x24/${builder.icon}" alt=""/></span>
+					<l:icon class="icon-md ${icons.toNormalizedIconNameClass(builder.icon)}"/>
 				</td>
 				<td class="no-wrap" align="center" width="24px">
 					<j:choose>
@@ -68,7 +68,7 @@
 			</tr>
 		</j:choose>
 		<j:choose>
-			<j:when test="${builder.isMultiJobBuild()}">
+			<j:when test="${builder.isMultiJobBuild() and not parents.contains(builder.buildID)}">
 				<j:set var="oldLastPhase" value="${lastPhase}"/>
 				<j:set var="oldBuilders" value="${builders}"/>
 				<j:set var="oldIndent" value="${indent}"/>
@@ -76,9 +76,13 @@
 				<j:set var="lastPhase" value=""/>
 				<j:set var="builders" value="${builder.build.getSubBuilds()}"/>
 				<j:set var="indent" value="${indent + 2}"/>
+				<j:invoke on="${parents}" method="push">
+					<j:arg value="${builder.buildID}"/>
+				</j:invoke>
 
 				<st:include page="table.jelly" />
 
+				<j:invoke on="${parents}" method="pop"/>
 				<j:set var="lastPhase" value="${oldLastPhase}"/>
 				<j:set var="builders" value="${oldLastBuilders}"/>
 				<j:set var="indent" value="${oldIndent}"/>

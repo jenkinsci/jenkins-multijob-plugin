@@ -322,7 +322,12 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
                     + ", buildNumber=" + buildNumber + "]";
         }
 
-		@Exported
+        @Exported
+        public String getBuildID() {
+            return buildID;
+        }
+
+        @Exported
         @CheckForNull
 		public Run<?,?> getBuild() {
             if (buildID != null) {

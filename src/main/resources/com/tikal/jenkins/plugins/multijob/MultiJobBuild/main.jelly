@@ -43,6 +43,10 @@
 			<j:set var="lastPhase" value=""/>
 			<j:set var="builders" value="${it.getBuilders()}"/>
 			<j:set var="indent" value="1"/>
+			<j:new var="parents" className="java.util.ArrayDeque"/>
+			<j:invoke on="${parents}" method="push">
+				<j:arg value="${it.getExternalizableId()}"/>
+			</j:invoke>
 
 			<st:include page="table.jelly" />
 
