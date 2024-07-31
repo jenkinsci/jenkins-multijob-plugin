@@ -98,7 +98,7 @@
 			<groupId>org.jenkins-ci.main</groupId>
 			<artifactId>maven-plugin</artifactId>
 			<!-- 3.3 and earlier vulnerable: https://www.jenkins.io/security/advisory/2019-07-31/ -->
-			<version>3.7</version>
+			<version>3.16</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.commons</groupId>
@@ -126,7 +126,7 @@
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>copyartifact</artifactId>
 			<!-- 1.43.1 and earlier vulnerable: https://www.jenkins.io/security/advisory/2020-05-06/ -->
-			<version>1.44</version>
+			<version>686.v6fd37018d7c2</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -137,6 +137,7 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>matrix-project</artifactId>
+			<version>785.v06b_7f47b_c631</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Workflow plugin imports are used to test compatibility -->
@@ -276,7 +277,7 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
-		<jenkins.version>2.346.3</jenkins.version>
+		<jenkins.version>2.361.4</jenkins.version>
 		<changelist>999999-SNAPSHOT</changelist>
 	</properties>
 
