@@ -98,7 +98,7 @@
 			<groupId>org.jenkins-ci.main</groupId>
 			<artifactId>maven-plugin</artifactId>
 			<!-- 3.3 and earlier vulnerable: https://www.jenkins.io/security/advisory/2019-07-31/ -->
-			<version>3.16</version>
+			<version>3.21</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.commons</groupId>
@@ -120,6 +120,10 @@
                                     <groupId>com.google.inject</groupId>
                                     <artifactId>guice</artifactId>
                                 </exclusion>
+				<exclusion>
+					<groupId>javax.annotation</groupId>
+					<artifactId>javax.annotation-api</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
