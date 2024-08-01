@@ -43,7 +43,6 @@ import org.jenkinsci.plugins.envinject.EnvInjectBuilder;
 import org.jenkinsci.plugins.envinject.EnvInjectBuilderContributionAction;
 import org.jenkinsci.plugins.envinject.service.EnvInjectActionSetter;
 import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
-import org.jenkinsci.plugins.envinject.service.EnvInjectVariableGetter;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -810,9 +809,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         try {
 
             EnvInjectLogger logger = new EnvInjectLogger(listener);
-            EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-            Map<String, String> previousEnvVars = variableGetter
-                    .getEnvVarsPreviousSteps(thisBuild, logger);
+            Map<String, String> previousEnvVars = EnvInjectRunHelper.getEnvVarsPreviousSteps(thisBuild, logger);
 
             // Get current envVars
             variables = new HashMap<String, String>(
@@ -883,9 +880,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             EnvInjectEnvVars envInjectEnvVarsService = new EnvInjectEnvVars( logger );
 
             try {
-                EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
-                Map<String, String> previousEnvVars = variableGetter
-                        .getEnvVarsPreviousSteps(build, logger);
+                Map<String, String> previousEnvVars = EnvInjectRunHelper.getEnvVarsPreviousSteps(build, logger);
 
                 // Get current envVars
                 Map<String, String> variables = new HashMap<String, String>(previousEnvVars);
@@ -1229,9 +1224,8 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
             if (resume) {
                 EnvInjectLogger logger = new EnvInjectLogger(listener);
-                EnvInjectVariableGetter variableGetter = new EnvInjectVariableGetter();
                 try {
-                    Map<String, String> previousEnvVars = variableGetter.getEnvVarsPreviousSteps(prevBuild, logger);
+                    Map<String, String> previousEnvVars = EnvInjectRunHelper.getEnvVarsPreviousSteps(prevBuild, logger);
                     Map<String, String> persistentEnvVars = new HashMap<String, String>();
                     for (Map.Entry<String, String> entry : previousEnvVars.entrySet()) {
                         String key = entry.getKey();
