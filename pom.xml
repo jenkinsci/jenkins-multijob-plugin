@@ -57,8 +57,8 @@
 
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.346.x</artifactId>
-				<version>1763.v092b_8980a_f5e</version>
+				<artifactId>bom-2.401.x</artifactId>
+				<version>2745.vc7b_fe4c876fa_</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -281,7 +281,7 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
-		<jenkins.version>2.393</jenkins.version>
+		<jenkins.version>2.401.3</jenkins.version>
 		<changelist>999999-SNAPSHOT</changelist>
 	</properties>
 
