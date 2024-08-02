@@ -57,8 +57,8 @@
 
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.346.x</artifactId>
-				<version>1763.v092b_8980a_f5e</version>
+				<artifactId>bom-2.401.x</artifactId>
+				<version>2745.vc7b_fe4c876fa_</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -141,7 +141,7 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>matrix-project</artifactId>
-			<version>785.v06b_7f47b_c631</version>
+			<version>822.824.v14451b_c0fd42</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- Workflow plugin imports are used to test compatibility -->
@@ -281,7 +281,7 @@
 
 	<properties>
 		<findbugs.failOnError>false</findbugs.failOnError>
-		<jenkins.version>2.393</jenkins.version>
+		<jenkins.version>2.401.3</jenkins.version>
 		<changelist>999999-SNAPSHOT</changelist>
 	</properties>
 
