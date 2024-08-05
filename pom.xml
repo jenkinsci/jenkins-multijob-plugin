@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>parameterized-trigger</artifactId>
-			<version>2.43.1</version>
+			<version>806.vf6fff3e28c3e</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jenkins-ci.plugins</groupId>
