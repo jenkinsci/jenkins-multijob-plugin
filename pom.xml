@@ -130,7 +130,7 @@
 			<groupId>org.jenkins-ci.plugins</groupId>
 			<artifactId>copyartifact</artifactId>
 			<!-- 1.43.1 and earlier vulnerable: https://www.jenkins.io/security/advisory/2020-05-06/ -->
-			<version>686.v6fd37018d7c2</version>
+			<version>749.vfb_dca_a_9b_6549</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
