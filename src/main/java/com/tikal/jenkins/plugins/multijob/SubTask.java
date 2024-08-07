@@ -19,7 +19,7 @@ public final class SubTask {
     final public Job subJob;
     final public PhaseJobsConfig phaseConfig;
     final public List<Action> actions;
-    public QueueTaskFuture<? extends Executable> future;
+    QueueTaskFuture<? extends Executable> future;
     final public MultiJobBuild multiJobBuild;
     private final int enabledIndex;
     private final String quietPeriodGroovy;
