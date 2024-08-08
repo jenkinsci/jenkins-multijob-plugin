@@ -921,7 +921,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
 
     }
 
-    private class MultiJobAction implements Action, QueueAction {
+    private static class MultiJobAction implements Action, QueueAction {
         public int buildNumber;
         public int index;
 
