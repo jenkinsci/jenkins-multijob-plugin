@@ -55,7 +55,7 @@ public class PhaseWrapper extends AbstractWrapper {
     public BallColor getIconColor() {
         Run worseBuild = null;
         for (BuildState buildState : childrenBuildState) {
-            Job project = (Job) Jenkins.getInstance()
+            Job project = (Job) Jenkins.get()
                         .getItemByFullName(buildState.getJobName());
             if (project == null)
                 continue;

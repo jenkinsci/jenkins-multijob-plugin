@@ -193,7 +193,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 	public void setJobAlias(String jobAlias) { this.jobAlias = jobAlias; }
 
 	public Descriptor<PhaseJobsConfig> getDescriptor() {
-		return Hudson.getInstance().getDescriptorOrDie(getClass());
+		return Jenkins.get().getDescriptorOrDie(getClass());
 	}
 
 	public String getDisplayName() {
@@ -259,8 +259,8 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 
 		public List<Descriptor<AbstractBuildParameters>> getBuilderConfigDescriptors() {
-			return Hudson
-					.getInstance()
+			return Jenkins
+					.get()
 					.<AbstractBuildParameters, Descriptor<AbstractBuildParameters>> getDescriptorList(
 							AbstractBuildParameters.class);
 		}
@@ -268,7 +268,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		public AutoCompletionCandidates doAutoCompleteJobName(
 				@QueryParameter String value) {
 			AutoCompletionCandidates c = new AutoCompletionCandidates();
-			for (String localJobName : Hudson.getInstance().getJobNames()) {
+			for (String localJobName : Jenkins.get().getJobNames()) {
 				if (localJobName.toLowerCase().startsWith(value.toLowerCase()))
 					c.add(localJobName);
 			}
@@ -276,7 +276,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 
 		private void savePhaseJobConfigParameters(String localJobName) {
-			AbstractProject project = ((AbstractProject) Jenkins.getInstance()
+			AbstractProject project = ((AbstractProject) Jenkins.get()
 					.getItemByFullName(localJobName));
 			List<ParameterDefinition> parameterDefinitions = getParameterDefinition(project);
 			StringBuilder sb = new StringBuilder();
@@ -333,7 +333,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 
 		private static AbstractProject getCurrentJob() {
 			String jobName = getCurrentJobName();
-			return (AbstractProject) Jenkins.getInstance().getItemByFullName(
+			return (AbstractProject) Jenkins.get().getItemByFullName(
 					jobName);
 		}
 

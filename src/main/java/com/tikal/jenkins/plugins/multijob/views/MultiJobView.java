@@ -7,18 +7,13 @@ import hudson.model.*;
 import hudson.model.Descriptor.FormException;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Builder;
-import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-import hudson.util.RunList;
-import hudson.views.ListViewColumn;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +71,7 @@ public class MultiJobView extends ListView {
 
     @Override
     public List<TopLevelItem> getItems() {
-        Collection<TopLevelItem> items = Jenkins.getInstance().getItems();
+        Collection<TopLevelItem> items = Jenkins.get().getItems();
         List<TopLevelItem> out = new ArrayList<TopLevelItem>();
         for (TopLevelItem item : items) {
             if (item instanceof MultiJobProject) {
@@ -202,7 +197,7 @@ public class MultiJobView extends ListView {
         );
         out.add(phaseWrapper);
         for (PhaseJobsConfig projectConfig : subProjects) {
-            Item tli = Jenkins.getInstance().getItem(
+            Item tli = Jenkins.get().getItem(
                     projectConfig.getJobName(),
                     project.getParent(),
                     AbstractProject.class
@@ -256,7 +251,7 @@ public class MultiJobView extends ListView {
         out.add(phaseWrapper);
 
         for (PhaseJobsConfig projectConfig : subProjects) {
-            Item abstractProject = Jenkins.getInstance().getItem(
+            Item abstractProject = Jenkins.get().getItem(
                     projectConfig.getJobName(),
                     build.getParent(),
                     Job.class

@@ -18,7 +18,7 @@ public class MultiJobTestResults extends AggregatedTestResultAction {
 
     @Override
     public AbstractBuild<?, ?> resolveChild(Child child) {
-        AbstractProject<?, ?> project = Jenkins.getInstance().getItemByFullName(child.name, AbstractProject.class);
+        AbstractProject<?, ?> project = Jenkins.get().getItemByFullName(child.name, AbstractProject.class);
         if (project != null) {
             return project.getBuildByNumber(child.build);
         }

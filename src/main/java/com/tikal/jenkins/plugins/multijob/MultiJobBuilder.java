@@ -18,7 +18,6 @@ import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Build;
 import hudson.model.BuildListener;
-import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Executor;
@@ -30,6 +29,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
@@ -66,7 +66,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-public class MultiJobBuilder extends Builder implements DependecyDeclarer {
+public class MultiJobBuilder extends Builder implements DependencyDeclarer {
     private final static Logger LOG = Logger.getLogger(MultiJobBuilder.class.getName());
     /**
      * The name of the parameter in the build.getBuildVariables() to enable the job build, regardless
@@ -220,7 +220,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean perform(final AbstractBuild<?, ? > build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         MultiJobBuild multiJobBuild = (MultiJobBuild) build;
         MultiJobProject thisProject = multiJobBuild.getProject();
 
@@ -246,7 +246,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             }
             if(willResumeBuild) {
                 for (SubBuild subBuild : prevBuild.getSubBuilds()) {
-                    Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
+                    Item item = jenkins.getItem(subBuild.getJobName(), prevBuild.getParent(),
                         AbstractProject.class);
                     if (item instanceof AbstractProject) {
                         AbstractProject childProject = (AbstractProject) item;
@@ -373,7 +373,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
             if (resume) {
                 SubBuild subBuild = resumeBuildMap.get(subJob.getUrl());
                 if (null != subBuild) {
-                    AbstractProject prj = Jenkins.getInstance().getItem(subBuild.getJobName(), multiJobBuild.getParent(),
+                    AbstractProject prj = Jenkins.get().getItem(subBuild.getJobName(), multiJobBuild.getParent(),
                         AbstractProject.class);
                     AbstractBuild childBuild = prj.getBuildByNumber(subBuild.getBuildNumber());
                     MultiJobResumeControl childControl = new MultiJobResumeControl(childBuild);
@@ -1037,7 +1037,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         }
 
         public FormValidation doCheckQuietPeriodGroovy(@QueryParameter String value) {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             if (Util.fixEmptyAndTrim(value) == null) {
                 return FormValidation.ok();
             }
@@ -1064,7 +1064,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
     @SuppressWarnings("rawtypes")
     public void buildDependencyGraph(AbstractProject owner,
             DependencyGraph graph) {
-        Jenkins jenkins = Jenkins.getInstance();
+        Jenkins jenkins = Jenkins.get();
         List<PhaseJobsConfig> phaseJobsConfigs = getPhaseJobs();
 
         if (phaseJobsConfigs == null)
@@ -1210,7 +1210,7 @@ public class MultiJobBuilder extends Builder implements DependecyDeclarer {
         if (null != control) {
             MultiJobBuild prevBuild = (MultiJobBuild) control.getRun();
             for (SubBuild subBuild : prevBuild.getSubBuilds()) {
-                Item item = Jenkins.getInstance().getItem(subBuild.getJobName(), prevBuild.getParent(),
+                Item item = Jenkins.get().getItem(subBuild.getJobName(), prevBuild.getParent(),
                         AbstractProject.class);
                 if (item instanceof AbstractProject) {
                     AbstractProject childProject = (AbstractProject) item;
