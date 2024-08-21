@@ -246,7 +246,7 @@ public class MultiJobBuilder extends Builder implements DependencyDeclarer {
             }
             if(willResumeBuild) {
                 for (SubBuild subBuild : prevBuild.getSubBuilds()) {
-                    Item item = jenkins.getItem(subBuild.getJobName(), prevBuild.getParent(),
+                    Item item = Jenkins.get().getItem(subBuild.getJobName(), prevBuild.getParent(),
                         AbstractProject.class);
                     if (item instanceof AbstractProject) {
                         AbstractProject childProject = (AbstractProject) item;
