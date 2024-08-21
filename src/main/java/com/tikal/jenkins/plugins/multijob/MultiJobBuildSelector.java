@@ -49,7 +49,7 @@ public class MultiJobBuildSelector extends BuildSelector {
                     break;
                 }
                 UpstreamCause upstreamCause = (UpstreamCause)cause;
-                Job upstreamJob = Jenkins.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), Job.class);
+                Job upstreamJob = Jenkins.get().getItemByFullName(upstreamCause.getUpstreamProject(), Job.class);
                 Run upstreamRun = Optional.ofNullable(upstreamJob).map(j -> j.getBuildByNumber(upstreamCause.getUpstreamBuild())).orElse(null);
 
                 if (upstreamRun != null && upstreamRun instanceof MultiJobBuild) {

@@ -23,7 +23,7 @@ public class MultiJobListener extends ItemListener {
 
     @Override
     public void onRenamed(Item renamedItem, String oldName, String newName) {
-        Collection<TopLevelItem> items = Jenkins.getInstance().getItems();
+        Collection<TopLevelItem> items = Jenkins.get().getItems();
         for (TopLevelItem item : items) {
             if (item instanceof MultiJobProject) {
                 boolean changed = false;
@@ -59,7 +59,7 @@ public class MultiJobListener extends ItemListener {
     @Override
     public void onDeleted(Item deletedItem) {
         String oldName = deletedItem.getName();
-        Collection<TopLevelItem> items = Jenkins.getInstance().getItems();
+        Collection<TopLevelItem> items = Jenkins.get().getItems();
         for (TopLevelItem item : items) {
             if (item instanceof MultiJobProject) {
                 boolean changed = false;

@@ -5,6 +5,7 @@ import hudson.model.Result;
 import hudson.model.TopLevelItem;
 import hudson.model.Cause.UserCause;
 import hudson.model.FreeStyleProject;
+import hudson.tasks.BatchFile;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Shell;
 
@@ -47,9 +48,15 @@ public class ConditionalPhaseTest {
         //          |_ free2
 
         final FreeStyleProject free = j.jenkins.createProject(FreeStyleProject.class, "Free");
-        free.getBuildersList().add(new Shell("echo hello"));
         final FreeStyleProject free2 = j.jenkins.createProject(FreeStyleProject.class, "Free2");
-        free2.getBuildersList().add(new Shell("echo hello2"));
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            free.getBuildersList().add(new BatchFile("echo hello"));
+            free2.getBuildersList().add(new BatchFile("echo hello2"));
+        }
+        else {
+            free.getBuildersList().add(new Shell("echo hello"));
+            free2.getBuildersList().add(new Shell("echo hello"));
+        }
 
         final MultiJobProject multi = j.jenkins.createProject(MultiJobProject.class, "MultiTop");
 
@@ -68,7 +75,13 @@ public class ConditionalPhaseTest {
 
 
         multi.getBuildersList().add(firstPhaseBuilder);
-        multi.getBuildersList().add(new Shell("echo dude"));
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            multi.getBuildersList().add(new BatchFile("echo dude"));
+        }
+        else {
+            multi.getBuildersList().add(new Shell("echo dude"));
+        }
+
         // wrap second phase in condition
         List<BuildStep> blist = new ArrayList<BuildStep>();
         blist.add(secondPhaseBuilder);

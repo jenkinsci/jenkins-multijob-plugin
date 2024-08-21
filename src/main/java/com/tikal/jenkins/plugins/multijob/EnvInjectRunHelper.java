@@ -106,7 +106,7 @@ public class EnvInjectRunHelper {
             result.put("EXECUTOR_NUMBER", String.valueOf(e.getNumber()));
         }
 
-        String rootUrl = Jenkins.getActiveInstance().getRootUrl();
+        String rootUrl = Jenkins.get().getRootUrl();
         if (rootUrl != null) {
             result.put("BUILD_URL", rootUrl + run.getUrl());
             result.put("JOB_URL", rootUrl + run.getParent().getUrl());

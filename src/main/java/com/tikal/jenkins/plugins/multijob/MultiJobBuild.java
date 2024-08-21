@@ -83,7 +83,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
     public String getBuildParams(SubBuild subBuild) {
         try {
-            AbstractProject project = (AbstractProject) Jenkins.getInstance()
+            AbstractProject project = (AbstractProject) Jenkins.get()
             		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
             Run build = project.getBuildByNumber(subBuild.getBuildNumber());
             ParametersAction action = build.getAction(ParametersAction.class);

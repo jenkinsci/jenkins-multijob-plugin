@@ -41,8 +41,8 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
         List<Action> actions = copyBuildCauses();
         actions.add(control);
         actions.add(new CauseAction(new ResumeCause(run)));
-        Jenkins.getInstance().getQueue().schedule2((Queue.Task) run.getParent(), 0, actions);
-        rsp.sendRedirect2(Jenkins.getInstance().getRootUrl() + run.getParent().getUrl());
+        Jenkins.get().getQueue().schedule2((Queue.Task) run.getParent(), 0, actions);
+        rsp.sendRedirect2(Jenkins.get().getRootUrl() + run.getParent().getUrl());
     }
 
     public void onAttached(Run<?, ?> run) {

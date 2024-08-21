@@ -4,7 +4,6 @@ import java.util.List;
 import java.io.IOException;
 import javax.servlet.ServletException;
 
-import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import jenkins.model.Jenkins;
 import hudson.Extension;
@@ -18,7 +17,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Descriptor.FormException;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.scm.PollingResult;
-import hudson.scm.PollingResult.*;
 
 import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 
@@ -85,7 +83,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 	}
 
 	public String getRootUrl() {
-		return Jenkins.getInstance().getRootUrl();
+		return Jenkins.get().getRootUrl();
 	}
 
         @Override
