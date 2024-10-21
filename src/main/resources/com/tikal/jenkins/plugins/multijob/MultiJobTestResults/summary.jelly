@@ -37,8 +37,7 @@
             <!-- Show failures link -->
             <j:if test="${displayedCount &lt; failedTests.size() }">
                 <a id="showLink" name="editFailuresLink"
-                   href="#showFailuresLink">
-                   ${%Show all failed tests} ${">>>"}</a>
+                   href="#showFailuresLink">${%Show all failed tests} ${">>>"}</a>
             </j:if>
         </j:if>
 
