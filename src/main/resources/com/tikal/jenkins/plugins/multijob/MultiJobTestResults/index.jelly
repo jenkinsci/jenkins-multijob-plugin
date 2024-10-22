@@ -116,6 +116,7 @@
                                           <l:icon src="symbol-remove-outline plugin-ionicons-api" class="icon-sm"/>
                                         </a>
                                         <st:nbsp/>
+                                        
                                         <a href="${rootURL}/${report.child.url}testReport/${f.getRelativePathFrom(report.result)}">
                                             <st:out value="${f.fullName}"/>
                                             <st:nbsp/>
@@ -123,6 +124,7 @@
                                                 <st:include it="${badge}" page="badge.jelly" optional="true"/>
                                             </j:forEach>
                                         </a>
+                                        
                                         <div id="test-${id}" class="failure-summary" style="display: none;">
                                           ${%Loading...}
                                         </div>
