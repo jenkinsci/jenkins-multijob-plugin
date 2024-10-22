@@ -109,7 +109,7 @@
                                 <tr>
                                     <td class="pane">
                                         <j:set var="id" value="${h.jsStringEscape(f.url)}${h.jsStringEscape(report.child.fullDisplayName)}"/>
-                                        <a id="test-${id}-showlink" query-url-data='${rootURL}/${report.child.url}testReport/${f.getRelativePathFrom(report.result)}/summary' title="${%Show details}">
+                                        <a id="test-${id}-showlink" data-query-url='${rootURL}/${report.child.url}testReport/${f.getRelativePathFrom(report.result)}/summary' title="${%Show details}">
                                           <l:icon src="symbol-add-outline plugin-ionicons-api" class="icon-sm"/>
                                         </a>
                                         <a id="test-${id}-hidelink" title="${%Hide details}" style="display:none">

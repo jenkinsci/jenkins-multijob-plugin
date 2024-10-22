@@ -41,7 +41,7 @@ function handleShowHideClick(event) {
 
     let link = event.target.closest('a[id$="-showlink"], a[id$="-hidelink"]');
     const id = link.id.replace(/-showlink$/, '').replace(/-hidelink$/, '');
-    const queryUrl = link.getAttribute('query-url-data');
+    const queryUrl = link.dataset.queryUrl;
 
     if (link.id.endsWith('-showlink')) {
         showFailureSummary(id, queryUrl);
