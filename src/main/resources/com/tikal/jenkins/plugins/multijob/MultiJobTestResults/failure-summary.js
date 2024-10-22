@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", function() {
     const showLink = document.getElementById("showLink");
-    if (showLink) {
-        showLink.addEventListener("click", showFailures);
-    }
+    showLink.addEventListener("click", showFailures);
 });
 
 function showFailures() {

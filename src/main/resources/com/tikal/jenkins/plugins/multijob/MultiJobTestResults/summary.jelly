@@ -1,6 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <st:adjunct includes="com.tikal.jenkins.plugins.multijob.MultiJobTestResults.failure-summary" />
     <!-- summary -->
     <t:summary icon="clipboard.png">
         <a href="${it.urlName}/">${it.displayName}</a>
@@ -37,6 +36,7 @@
 
             <!-- Show failures link -->
             <j:if test="${displayedCount &lt; failedTests.size() }">
+                <st:adjunct includes="com.tikal.jenkins.plugins.multijob.MultiJobTestResults.failure-summary" />
                 <a id="showLink" name="editFailuresLink"
                    href="#showFailuresLink">${%Show all failed tests} ${">>>"}</a>
             </j:if>
