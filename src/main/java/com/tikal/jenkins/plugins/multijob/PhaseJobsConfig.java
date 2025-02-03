@@ -42,7 +42,7 @@ import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 //import com.tikal.jenkins.plugins.multijob.scm.MultiJobScm;
 public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
@@ -370,7 +370,7 @@ public class PhaseJobsConfig implements Describable<PhaseJobsConfig> {
 		}
 
 		@Override
-		public boolean configure(final StaplerRequest req, final JSONObject json)
+		public boolean configure(final StaplerRequest2 req, final JSONObject json)
 				throws FormException {
 			parsingRulesGlobal = req.bindParametersToList(ParserRuleFile.class,
 					"jenkins-multijob-plugin.").toArray(new ParserRuleFile[0]);

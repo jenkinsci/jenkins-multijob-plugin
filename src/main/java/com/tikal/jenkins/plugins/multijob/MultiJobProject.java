@@ -2,7 +2,7 @@ package com.tikal.jenkins.plugins.multijob;
 
 import java.util.List;
 import java.io.IOException;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import hudson.model.Cause;
 import jenkins.model.Jenkins;
@@ -23,8 +23,8 @@ import com.tikal.jenkins.plugins.multijob.views.MultiJobView;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
 		implements TopLevelItem {
@@ -135,7 +135,7 @@ public class MultiJobProject extends Project<MultiJobProject, MultiJobBuild>
         }
 
     @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    protected void submit(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
         JSONObject json = req.getSubmittedForm();
         String k = "multijob";
