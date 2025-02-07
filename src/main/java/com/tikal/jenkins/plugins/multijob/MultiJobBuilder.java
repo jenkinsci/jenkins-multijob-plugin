@@ -46,7 +46,7 @@ import org.jenkinsci.plugins.envinject.service.EnvInjectEnvVars;
 import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -1025,13 +1025,13 @@ public class MultiJobBuilder extends Builder implements DependencyDeclarer {
         }
 
         @Override
-        public Builder newInstance(StaplerRequest req, JSONObject formData)
+        public Builder newInstance(StaplerRequest2 req, JSONObject formData)
                 throws FormException {
             return req.bindJSON(MultiJobBuilder.class, formData);
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject formData) {
+        public boolean configure(StaplerRequest2 req, JSONObject formData) {
             save();
             return true;
         }

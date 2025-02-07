@@ -5,8 +5,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
 		return "Resume build";
 	}
 
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         final MultiJobResumeControl control = new MultiJobResumeControl(run);
         List<Action> actions = copyBuildCauses();
         actions.add(control);
@@ -87,7 +87,7 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
             return run.getParent();
         }
         Job currentProject = null;
-        StaplerRequest request = Stapler.getCurrentRequest();
+        StaplerRequest2 request = Stapler.getCurrentRequest2();
         if (request != null) {
             currentProject = request.findAncestorObject(Job.class);
         }
