@@ -23,24 +23,24 @@
  */
 package com.tikal.jenkins.plugins.multijob.test;
 
-import hudson.model.AbstractProject;
-
-import org.jvnet.hudson.test.HudsonTestCase;
+import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-//import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
-//import com.tikal.jenkins.plugins.multijob.MultiJobProject;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CompatibilityTest {//extends MultiJobProjectTestCase {
+@WithJenkins
+class CompatibilityTest {
 
-/*
-	@LocalData
-	public void test() throws Exception {
-		AbstractProject p = (AbstractProject) hudson.getItem("old");
-		MultiJobProject multiJobprojects = (MultiJobProject) p;
-		assertEquals(2, multiJobprojects.getBuilders().size());
-		MultiJobBuilder builder = (MultiJobBuilder)multiJobprojects.getBuilders().get(0);
-		assertEquals(2, builder.getPhaseJobs().size());
-	}
-*/
+    @LocalData
+    @Test
+    void test(JenkinsRule j) {
+        MultiJobProject multiJobProjects = (MultiJobProject) j.jenkins.getItem("old");
+        assertEquals(2, multiJobProjects.getBuilders().size());
+        MultiJobBuilder builder = (MultiJobBuilder) multiJobProjects.getBuilders().get(0);
+        assertEquals(2, builder.getPhaseJobs().size());
+    }
 }
