@@ -7,6 +7,7 @@ import hudson.views.BuildButtonColumn;
 import hudson.views.ListViewColumn;
 import net.sf.json.JSONObject;
 import org.jenkins.plugins.builton.BuiltOnColumn;
+import org.kohsuke.stapler.StaplerRequest2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +26,7 @@ abstract public class MultiJobListViewColumn extends ListViewColumn {
             Descriptor<ListViewColumn> des = all.find(d);
             if (des != null) {
                 try {
-                    r.add(des.newInstance(null, new JSONObject()));
+                    r.add(des.newInstance((StaplerRequest2) null, new JSONObject()));
                 } catch (FormException e) {
                     LOGGER.log(Level.WARNING, "Failed to instantiate " + des.clazz, e);
                 }

@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import javax.servlet.ServletException;
-
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -57,12 +53,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     public MultiJobBuild(MultiJobProject project, File buildDir)
             throws IOException {
         super(project, buildDir);
-    }
-
-    @Override
-    public synchronized void doStop(StaplerRequest req, StaplerResponse rsp)
-            throws IOException, ServletException {
-        super.doStop(req, rsp);
     }
 
     @Override
