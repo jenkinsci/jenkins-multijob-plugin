@@ -205,6 +205,7 @@
 		<jenkins.baseline>2.479</jenkins.baseline>
 		<jenkins.version>${jenkins.baseline}.3</jenkins.version>
 		<changelist>999999-SNAPSHOT</changelist>
+        <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
 	</properties>
 
 </project>
