@@ -7,6 +7,7 @@ import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
 		return "Resume build";
 	}
 
+    @RequirePOST
     public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         final MultiJobResumeControl control = new MultiJobResumeControl(run);
         List<Action> actions = copyBuildCauses();
@@ -74,7 +76,7 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
         return isAvailable() ? this : null;
     }
 
-    private boolean isAvailable() {
+    public boolean isAvailable() {
         Job project = getProject();
         return project != null
                 && project.hasPermission(Item.BUILD)
