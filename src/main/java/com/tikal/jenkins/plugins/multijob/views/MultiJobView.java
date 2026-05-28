@@ -423,7 +423,7 @@ public class MultiJobView extends ListView {
         super.initColumns();
         try {
             getColumns().replaceBy(MultiJobListViewColumn
-                    .createDefaultInitialColumnList());
+                    .createDefaultMultiJobInitialColumnList());
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Failed to initialize columns", e);
         }

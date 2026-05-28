@@ -16,7 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 abstract public class MultiJobListViewColumn extends ListViewColumn {
-    public static List<ListViewColumn> createDefaultInitialColumnList() {
+    public static List<ListViewColumn> createDefaultMultiJobInitialColumnList() {
         // OK, set up default list of columns:
         // create all instances
         ArrayList<ListViewColumn> r = new ArrayList<ListViewColumn>();
