@@ -1,16 +1,28 @@
-# Note: additional setup is required, see https://www.jenkins.io/redirect/continuous-delivery-of-plugins
-
+---
 name: cd
 on:
   workflow_dispatch:
+    inputs:
+      validate_only:
+        required: false
+        type: boolean
+        description: |
+          Run validation with release drafter only
+          → Skip the release job
+        default: true
   check_run:
     types:
       - completed
 
+permissions:
+  checks: read
+  contents: write
+
 jobs:
   maven-cd:
     uses: jenkins-infra/github-reusable-workflows/.github/workflows/maven-cd.yml@v1
+    with:
+      validate_only: ${{ inputs.validate_only == true || github.event_name == 'check_run' }}
     secrets:
       MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
       MAVEN_TOKEN: ${{ secrets.MAVEN_TOKEN }}
-
