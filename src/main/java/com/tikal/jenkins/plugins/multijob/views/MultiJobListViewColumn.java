@@ -5,17 +5,16 @@ import hudson.model.Descriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.views.BuildButtonColumn;
 import hudson.views.ListViewColumn;
-import net.sf.json.JSONObject;
-import org.jenkins.plugins.builton.BuiltOnColumn;
-import org.kohsuke.stapler.StaplerRequest2;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.sf.json.JSONObject;
+import org.jenkins.plugins.builton.BuiltOnColumn;
+import org.kohsuke.stapler.StaplerRequest2;
 
-abstract public class MultiJobListViewColumn extends ListViewColumn {
+public abstract class MultiJobListViewColumn extends ListViewColumn {
     public static List<ListViewColumn> createDefaultMultiJobInitialColumnList() {
         // OK, set up default list of columns:
         // create all instances
@@ -36,8 +35,16 @@ abstract public class MultiJobListViewColumn extends ListViewColumn {
     }
 
     @SuppressWarnings("unchecked")
-    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(StatusColumn.class, WeatherColumn.class, JobColumn.class,
-            LastSuccessColumn.class, LastFailureColumn.class, LastDurationColumn.class, ConsoleColumn.class, BuildButtonColumn.class, BuiltOnColumn.class);
+    private static final List<Class<? extends ListViewColumn>> DEFAULT_COLUMNS = Arrays.asList(
+            StatusColumn.class,
+            WeatherColumn.class,
+            JobColumn.class,
+            LastSuccessColumn.class,
+            LastFailureColumn.class,
+            LastDurationColumn.class,
+            ConsoleColumn.class,
+            BuildButtonColumn.class,
+            BuiltOnColumn.class);
 
     private static final Logger LOGGER = Logger.getLogger(MultiJobListViewColumn.class.getName());
 }

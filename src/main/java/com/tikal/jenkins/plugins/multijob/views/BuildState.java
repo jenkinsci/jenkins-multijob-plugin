@@ -1,7 +1,5 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
-import hudson.model.AbstractProject;
-
 public class BuildState {
 
     final String jobName;
@@ -16,8 +14,13 @@ public class BuildState {
 
     final int lastFailureBuildNumber;
 
-    public BuildState(String jobName, String jobAlias, int previousBuildNumber,
-                      int lastBuildNumber, int lastSuccessBuildNumber, int lastFailureBuildNumber) {
+    public BuildState(
+            String jobName,
+            String jobAlias,
+            int previousBuildNumber,
+            int lastBuildNumber,
+            int lastSuccessBuildNumber,
+            int lastFailureBuildNumber) {
         this.jobName = jobName;
         this.jobAlias = jobAlias;
         this.previousBuildNumber = previousBuildNumber;
@@ -30,7 +33,9 @@ public class BuildState {
         return jobName;
     }
 
-    public String getJobAlias() { return jobAlias; }
+    public String getJobAlias() {
+        return jobAlias;
+    }
 
     public int getPreviousBuildNumber() {
         return previousBuildNumber;

@@ -1,9 +1,8 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import java.util.Iterator;
-
 import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogSet;
+import java.util.Iterator;
 
 public class MultiJobChangeLogSet extends ChangeLogSet<ChangeLogSet.Entry> {
 
@@ -27,5 +26,4 @@ public class MultiJobChangeLogSet extends ChangeLogSet<ChangeLogSet.Entry> {
         // TODO Auto-generated method stub
 
     }
-
 }

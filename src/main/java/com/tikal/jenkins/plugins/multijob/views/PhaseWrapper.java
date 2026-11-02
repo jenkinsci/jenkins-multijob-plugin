@@ -3,16 +3,13 @@ package com.tikal.jenkins.plugins.multijob.views;
 import hudson.model.BallColor;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
-import hudson.model.Result;
-import hudson.model.Run;
 import hudson.model.Job;
-import jenkins.model.Jenkins;
-import org.apache.commons.lang.ObjectUtils;
-
+import hudson.model.Run;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 @SuppressWarnings("rawtypes")
 public class PhaseWrapper extends AbstractWrapper {
@@ -55,15 +52,11 @@ public class PhaseWrapper extends AbstractWrapper {
     public BallColor getIconColor() {
         Run worseBuild = null;
         for (BuildState buildState : childrenBuildState) {
-            Job project = (Job) Jenkins.get()
-                        .getItemByFullName(buildState.getJobName());
-            if (project == null)
-                continue;
+            Job project = (Job) Jenkins.get().getItemByFullName(buildState.getJobName());
+            if (project == null) continue;
 
-            Run build = (Run) project
-                    .getBuildByNumber(buildState.getLastBuildNumber());
-            if (build == null || build.getResult() == null)
-                continue;
+            Run build = (Run) project.getBuildByNumber(buildState.getLastBuildNumber());
+            if (build == null || build.getResult() == null) continue;
 
             if (worseBuild == null) {
                 worseBuild = build;

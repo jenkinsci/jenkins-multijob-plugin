@@ -23,17 +23,16 @@
  */
 package com.tikal.jenkins.plugins.multijob.test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.tikal.jenkins.plugins.multijob.MultiJobParametersAction;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersAction;
 import hudson.model.StringParameterValue;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
-
-import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for {@link MultiJobParametersAction}
@@ -57,41 +56,62 @@ class MultiJobParametersActionTest {
     @Test
     @Issue("JENKINS-38850")
     void shouldMergeSameParameters() {
-        MultiJobParametersAction params = new MultiJobParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
+        MultiJobParametersAction params = new MultiJobParametersAction(
+                new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
         assertShouldSchedule(params, new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
     }
 
     @Test
     @Issue("JENKINS-38850")
     void shouldNotMergeDifferentParameters() {
-        MultiJobParametersAction params = new MultiJobParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
+        MultiJobParametersAction params = new MultiJobParametersAction(
+                new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
 
         assertShouldNotSchedule(params, new StringParameterValue("A", "aValue"));
-        assertShouldNotSchedule(params, new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue2"));
-        assertShouldNotSchedule(params, new StringParameterValue("A", "aValue"), new StringParameterValue("C", "bValue"));
-        assertShouldNotSchedule(params, new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"), new StringParameterValue("B", "cValue"));
+        assertShouldNotSchedule(
+                params, new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue2"));
+        assertShouldNotSchedule(
+                params, new StringParameterValue("A", "aValue"), new StringParameterValue("C", "bValue"));
+        assertShouldNotSchedule(
+                params,
+                new StringParameterValue("A", "aValue"),
+                new StringParameterValue("B", "bValue"),
+                new StringParameterValue("B", "cValue"));
     }
 
     @Test
     @Issue("JENKINS-38850")
     void shouldNotMergeEmptyParameters() {
-        MultiJobParametersAction params1 = new MultiJobParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
+        MultiJobParametersAction params1 = new MultiJobParametersAction(
+                new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
         MultiJobParametersAction params2 = new MultiJobParametersAction();
-        ParametersAction params3 = new ParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
+        ParametersAction params3 =
+                new ParametersAction(new StringParameterValue("A", "aValue"), new StringParameterValue("B", "bValue"));
         ParametersAction params4 = new ParametersAction();
 
         // Empty MultiJob
-        assertTrue(params1.shouldSchedule(Collections.singletonList(params2)), "MultiJob Parameters set should not allow merge with empty MultiJob parameters");
-        assertTrue(params2.shouldSchedule(Collections.singletonList(params1)), "Empty parameters MultiJob should not allow merge with non-empty MultiJob parameter set");
+        assertTrue(
+                params1.shouldSchedule(Collections.singletonList(params2)),
+                "MultiJob Parameters set should not allow merge with empty MultiJob parameters");
+        assertTrue(
+                params2.shouldSchedule(Collections.singletonList(params1)),
+                "Empty parameters MultiJob should not allow merge with non-empty MultiJob parameter set");
 
         // Empty ParametersAction
-        assertTrue(params1.shouldSchedule(Collections.singletonList(params4)), "Parameters set should not allow merge with empty parameters");
-        assertTrue(params4.shouldSchedule(Collections.singletonList(params1)), "Empty parameters should not allow merge with non-empty MultiJob parameter set");
+        assertTrue(
+                params1.shouldSchedule(Collections.singletonList(params4)),
+                "Parameters set should not allow merge with empty parameters");
+        assertTrue(
+                params4.shouldSchedule(Collections.singletonList(params1)),
+                "Empty parameters should not allow merge with non-empty MultiJob parameter set");
 
         // ParametersAction with empty MultiJob
-        assertTrue(params3.shouldSchedule(Collections.singletonList(params2)), "Parameters set should not allow merge with empty MultiJob parameters");
-        assertTrue(params2.shouldSchedule(Collections.singletonList(params3)), "Empty parameters MultiJob should not allow merge with non-empty parameter set");
-
+        assertTrue(
+                params3.shouldSchedule(Collections.singletonList(params2)),
+                "Parameters set should not allow merge with empty MultiJob parameters");
+        assertTrue(
+                params2.shouldSchedule(Collections.singletonList(params3)),
+                "Empty parameters MultiJob should not allow merge with non-empty parameter set");
     }
 
     private static void assertShouldNotSchedule(MultiJobParametersAction current, ParameterValue... scheduled)
@@ -99,10 +119,13 @@ class MultiJobParametersActionTest {
         assertShouldNotSchedule(current, false, scheduled);
     }
 
-    private static void assertShouldNotSchedule(MultiJobParametersAction current, boolean multiJob, ParameterValue... scheduled)
-            throws AssertionError {
-        ParametersAction toSchedule = multiJob ? new MultiJobParametersAction(scheduled) : new ParametersAction(scheduled);
-        assertTrue(current.shouldSchedule(Collections.singletonList(toSchedule)), "Different parameter sets should not be merged");
+    private static void assertShouldNotSchedule(
+            MultiJobParametersAction current, boolean multiJob, ParameterValue... scheduled) throws AssertionError {
+        ParametersAction toSchedule =
+                multiJob ? new MultiJobParametersAction(scheduled) : new ParametersAction(scheduled);
+        assertTrue(
+                current.shouldSchedule(Collections.singletonList(toSchedule)),
+                "Different parameter sets should not be merged");
     }
 
     private static void assertShouldSchedule(MultiJobParametersAction current, ParameterValue... scheduled)
@@ -110,9 +133,11 @@ class MultiJobParametersActionTest {
         assertShouldSchedule(current, false, scheduled);
     }
 
-    private static void assertShouldSchedule(MultiJobParametersAction current, boolean multiJob, ParameterValue... scheduled)
-            throws AssertionError {
-        ParametersAction toSchedule = multiJob ? new MultiJobParametersAction(scheduled) : new ParametersAction(scheduled);
-        assertFalse(current.shouldSchedule(Collections.singletonList(toSchedule)), "Same parameter sets should be merged");
+    private static void assertShouldSchedule(
+            MultiJobParametersAction current, boolean multiJob, ParameterValue... scheduled) throws AssertionError {
+        ParametersAction toSchedule =
+                multiJob ? new MultiJobParametersAction(scheduled) : new ParametersAction(scheduled);
+        assertFalse(
+                current.shouldSchedule(Collections.singletonList(toSchedule)), "Same parameter sets should be merged");
     }
 }

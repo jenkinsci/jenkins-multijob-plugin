@@ -1,5 +1,9 @@
 package com.tikal.jenkins.plugins.multijob.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder.ContinuationCondition;
@@ -16,20 +20,15 @@ import hudson.model.TopLevelItem;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Shell;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.jenkins_ci.plugins.run_condition.BuildStepRunner;
 import org.jenkins_ci.plugins.run_condition.core.AlwaysRun;
 import org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Bartholdi Dominik (imod)
@@ -59,21 +58,56 @@ class ConditionalPhaseTest {
         MultiJobProject multi = j.jenkins.createProject(MultiJobProject.class, "MultiTop");
 
         // create 'FirstPhase' containing job 'free'
-        PhaseJobsConfig firstPhase = new PhaseJobsConfig("free", "freeAlias", null, true, null,
-                KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-                false, false, "", false, false);
+        PhaseJobsConfig firstPhase = new PhaseJobsConfig(
+                "free",
+                "freeAlias",
+                null,
+                true,
+                null,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
         List<PhaseJobsConfig> configTopList = new ArrayList<>();
         configTopList.add(firstPhase);
-        MultiJobBuilder firstPhaseBuilder = new MultiJobBuilder("FirstPhase", configTopList, ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL, null);
-
+        MultiJobBuilder firstPhaseBuilder = new MultiJobBuilder(
+                "FirstPhase",
+                configTopList,
+                ContinuationCondition.SUCCESSFUL,
+                MultiJobBuilder.ExecutionType.PARALLEL,
+                null);
 
         // create 'SecondPhase' containing job 'free2'
-        PhaseJobsConfig secondPhase = new PhaseJobsConfig("free2", "free2Alias", null, true, null,
-                KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-                false, false, "", false, false);
+        PhaseJobsConfig secondPhase = new PhaseJobsConfig(
+                "free2",
+                "free2Alias",
+                null,
+                true,
+                null,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
         List<PhaseJobsConfig> configTopList2 = new ArrayList<>();
         configTopList.add(secondPhase);
-        MultiJobBuilder secondPhaseBuilder = new MultiJobBuilder("SecondPhase", configTopList2, ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL, null);
+        MultiJobBuilder secondPhaseBuilder = new MultiJobBuilder(
+                "SecondPhase",
+                configTopList2,
+                ContinuationCondition.SUCCESSFUL,
+                MultiJobBuilder.ExecutionType.PARALLEL,
+                null);
 
         multi.getBuildersList().add(firstPhaseBuilder);
         if (Functions.isWindows()) {
@@ -87,7 +121,8 @@ class ConditionalPhaseTest {
         blist.add(secondPhaseBuilder);
         multi.getBuildersList().add(new ConditionalBuilder(new AlwaysRun(), new BuildStepRunner.Run(), blist));
 
-        MultiJobBuild b = j.assertBuildStatus(Result.SUCCESS, multi.scheduleBuild2(0, new UserCause()).get());
+        MultiJobBuild b = j.assertBuildStatus(
+                Result.SUCCESS, multi.scheduleBuild2(0, new UserCause()).get());
         assertTrue(free.getLastBuild().getLog(10).contains("hello"), "shell task writes 'hello' to log");
         assertTrue(multi.getLastBuild().getLog(10).contains("dude"), "shell task writes 'dude' to log");
         // check for correct number of items to be displayed
@@ -122,8 +157,9 @@ class ConditionalPhaseTest {
 
     private static void assertSubBuilds(MultiJobBuild b, String... externalIDs) {
         List<String> ids = b.getSubBuilds().stream()
-                .map(sub -> sub.getBuild().getExternalizableId()).sorted().toList();
+                .map(sub -> sub.getBuild().getExternalizableId())
+                .sorted()
+                .toList();
         assertIterableEquals(ids, Arrays.stream(externalIDs).sorted().toList());
     }
-
 }

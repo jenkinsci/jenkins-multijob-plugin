@@ -1,17 +1,5 @@
 package com.tikal.jenkins.plugins.multijob;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
-import hudson.model.Run;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -23,8 +11,17 @@ import hudson.model.Run;
 import hudson.model.StringParameterValue;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.CheckForNull;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 @ExportedBean(defaultVisibility = 999)
 public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
@@ -33,7 +30,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     private MultiJobChangeLogSet changeSets = new MultiJobChangeLogSet(this);
     private Map<String, SubBuild> subBuildsMap = new HashMap<String, SubBuild>();
     private MultiJobTestResults multiJobTestResults;
-    
 
     public MultiJobBuild(MultiJobProject project) throws IOException {
         super(project);
@@ -50,8 +46,7 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         }
     }
 
-    public MultiJobBuild(MultiJobProject project, File buildDir)
-            throws IOException {
+    public MultiJobBuild(MultiJobProject project, File buildDir) throws IOException {
         super(project, buildDir);
     }
 
@@ -73,8 +68,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
     public String getBuildParams(SubBuild subBuild) {
         try {
-            AbstractProject project = (AbstractProject) Jenkins.get()
-            		.getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
+            AbstractProject project = (AbstractProject)
+                    Jenkins.get().getItem(subBuild.getJobName(), this.getParent(), AbstractProject.class);
             Run build = project.getBuildByNumber(subBuild.getBuildNumber());
             ParametersAction action = build.getAction(ParametersAction.class);
             List<ParameterValue> parameters = action.getParameters();
@@ -104,8 +99,8 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
     }
 
     public void addSubBuild(SubBuild subBuild) {
-        String key = subBuild.getPhaseName().concat(subBuild.getJobName())
-                .concat(String.valueOf(subBuild.getBuildNumber()));
+        String key =
+                subBuild.getPhaseName().concat(subBuild.getJobName()).concat(String.valueOf(subBuild.getBuildNumber()));
         if (subBuildsMap.containsKey(key)) {
             SubBuild e = subBuildsMap.get(key);
             Collections.replaceAll(getSubBuilds(), e, subBuild);
@@ -117,22 +112,20 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
     @Exported
     public List<SubBuild> getSubBuilds() {
-        if (subBuilds == null)
-            subBuilds = new CopyOnWriteArrayList<SubBuild>();
+        if (subBuilds == null) subBuilds = new CopyOnWriteArrayList<SubBuild>();
         return subBuilds;
     }
-    
+
     public MultiJobTestResults getMultiJobTestResults() {
         return multiJobTestResults;
     }
-    
+
     public void addTestsResult() {
         multiJobTestResults = new MultiJobTestResults();
         this.addAction(multiJobTestResults);
     }
 
-    protected class MultiJobRunnerImpl extends
-            Build<MultiJobProject, MultiJobBuild>.BuildExecution {
+    protected class MultiJobRunnerImpl extends Build<MultiJobProject, MultiJobBuild>.BuildExecution {
         @Override
         public Result run(BuildListener listener) throws Exception {
             Result result = super.run(listener);
@@ -201,9 +194,17 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         private final boolean aborted;
         private String buildID;
 
-        public SubBuild(String parentJobName, int parentBuildNumber,
-                String jobName, String jobAlias, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url,
+        public SubBuild(
+                String parentJobName,
+                int parentBuildNumber,
+                String jobName,
+                String jobAlias,
+                int buildNumber,
+                String phaseName,
+                Result result,
+                String icon,
+                String duration,
+                String url,
                 Run<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
@@ -220,10 +221,20 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
             buildID = build.getExternalizableId();
         }
 
-        public SubBuild(String parentJobName, int parentBuildNumber,
-                String jobName, String jobAlias, int buildNumber, String phaseName,
-                Result result, String icon, String duration, String url,
-                boolean retry, boolean aborted, Run<?, ?> build) {
+        public SubBuild(
+                String parentJobName,
+                int parentBuildNumber,
+                String jobName,
+                String jobAlias,
+                int buildNumber,
+                String phaseName,
+                Result result,
+                String icon,
+                String duration,
+                String url,
+                boolean retry,
+                boolean aborted,
+                Run<?, ?> build) {
             this.parentJobName = parentJobName;
             this.parentBuildNumber = parentBuildNumber;
             this.jobName = jobName;
@@ -248,7 +259,6 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
         public boolean isRetry() {
             return retry;
         }
-
 
         @Exported
         public boolean isAbort() {
@@ -319,15 +329,15 @@ public class MultiJobBuild extends Build<MultiJobProject, MultiJobBuild> {
 
         @Exported
         @CheckForNull
-		public Run<?,?> getBuild() {
+        public Run<?, ?> getBuild() {
             if (buildID != null) {
                 return Run.fromExternalizableId(buildID);
             } // else null if loaded from historical data prior to JENKINS-49328
-			return null;
-		}
+            return null;
+        }
 
-		@Exported
-		public boolean isMultiJobBuild() {
+        @Exported
+        public boolean isMultiJobBuild() {
             if (buildID != null) {
                 Run<?, ?> build = Run.fromExternalizableId(buildID);
                 if (build instanceof MultiJobBuild) {

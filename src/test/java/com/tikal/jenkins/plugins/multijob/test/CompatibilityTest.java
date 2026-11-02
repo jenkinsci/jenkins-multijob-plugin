@@ -23,14 +23,14 @@
  */
 package com.tikal.jenkins.plugins.multijob.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.tikal.jenkins.plugins.multijob.MultiJobBuilder;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.jvnet.hudson.test.recipes.LocalData;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @WithJenkins
 class CompatibilityTest {
@@ -40,7 +40,8 @@ class CompatibilityTest {
     void test(JenkinsRule j) {
         MultiJobProject multiJobProjects = (MultiJobProject) j.jenkins.getItem("old");
         assertEquals(2, multiJobProjects.getBuilders().size());
-        MultiJobBuilder builder = (MultiJobBuilder) multiJobProjects.getBuilders().get(0);
+        MultiJobBuilder builder =
+                (MultiJobBuilder) multiJobProjects.getBuilders().get(0);
         assertEquals(2, builder.getPhaseJobs().size());
     }
 }

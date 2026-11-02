@@ -29,5 +29,4 @@ public class ParserRuleFile {
     public void setPath(final String path) {
         this.path = path;
     }
-
 }

@@ -3,11 +3,11 @@ Similar to build-flow-test-aggregator (https://github.com/zeroturnaround/build-f
 */
 package com.tikal.jenkins.plugins.multijob;
 
-import jenkins.model.Jenkins;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction;
+import jenkins.model.Jenkins;
 
 public class MultiJobTestResults extends AggregatedTestResultAction {
 

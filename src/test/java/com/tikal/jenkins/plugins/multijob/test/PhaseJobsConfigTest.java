@@ -23,6 +23,9 @@
  */
 package com.tikal.jenkins.plugins.multijob.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobParametersAction;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
@@ -42,18 +45,14 @@ import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TaskListener;
 import hudson.plugins.parameterizedtrigger.AbstractBuildParameters;
-import jenkins.model.Jenkins;
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import jenkins.model.Jenkins;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * @author Chris Johnson
@@ -61,30 +60,53 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @WithJenkins
 class PhaseJobsConfigTest {
 
-    private static final Map<String, String> DEFAULT_KEY_VALUES = new HashMap<>() {{
-        put("key1", "value1");
-        put("key2", "value2");
-        put("key3", "value3");
-    }};
-    private static final Map<String, String> CURRENT_KEY_VALUES = new HashMap<>() {{
-        put("key4", "value4");
-        put("key5", "value5");
-        put("key6", "value6");
-    }};
-    private static final Map<String, String> OVERRIDES_KEY_VALUES = new HashMap<>() {{
-        put("key2", "value4");
-        put("key3", "value5");
-    }};
-    private static final Map<String, String> CONFIG_OVERRIDES_KEY_VALUES = new HashMap<>() {{
-        put("key3", "value9");
-    }};
+    private static final Map<String, String> DEFAULT_KEY_VALUES = new HashMap<>() {
+        {
+            put("key1", "value1");
+            put("key2", "value2");
+            put("key3", "value3");
+        }
+    };
+    private static final Map<String, String> CURRENT_KEY_VALUES = new HashMap<>() {
+        {
+            put("key4", "value4");
+            put("key5", "value5");
+            put("key6", "value6");
+        }
+    };
+    private static final Map<String, String> OVERRIDES_KEY_VALUES = new HashMap<>() {
+        {
+            put("key2", "value4");
+            put("key3", "value5");
+        }
+    };
+    private static final Map<String, String> CONFIG_OVERRIDES_KEY_VALUES = new HashMap<>() {
+        {
+            put("key3", "value9");
+        }
+    };
 
     @Test
     void testNoParameters(JenkinsRule j) throws Exception {
         AbstractProject projectB = createTriggeredProject(j, null);
         MultiJobBuild mjb = createTriggeringBuild(null);
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true, null, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0, false, false, "", true, false);
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                null,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                true,
+                false);
 
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
         // check single ParametersAction created
@@ -96,9 +118,22 @@ class PhaseJobsConfigTest {
         AbstractProject projectB = createTriggeredProject(j, DEFAULT_KEY_VALUES);
         MultiJobBuild mjb = createTriggeringBuild(null);
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true, null,
-				KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-				false, false, "", false, false);
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                null,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
         // check single ParametersAction created
@@ -116,9 +151,22 @@ class PhaseJobsConfigTest {
         AbstractProject projectB = createTriggeredProject(j, DEFAULT_KEY_VALUES);
         MultiJobBuild mjb = createTriggeringBuild(createParametersAction(CURRENT_KEY_VALUES));
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true, null,
-				KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-				false, false, "", false, false);
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                null,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
 
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
@@ -140,9 +188,22 @@ class PhaseJobsConfigTest {
         AbstractProject projectB = createTriggeredProject(j, DEFAULT_KEY_VALUES);
         MultiJobBuild mjb = createTriggeringBuild(createParametersAction(OVERRIDES_KEY_VALUES));
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true, null,
-				KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-				false, false, "", false, false);
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                null,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
 
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
@@ -164,9 +225,22 @@ class PhaseJobsConfigTest {
         AbstractProject projectB = createTriggeredProject(j, DEFAULT_KEY_VALUES);
         MultiJobBuild mjb = createTriggeringBuild(createParametersAction(OVERRIDES_KEY_VALUES));
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true, null,
-				KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-				false, false, "", false, false);
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                null,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);
 
         // check single ParametersAction created
@@ -189,10 +263,22 @@ class PhaseJobsConfigTest {
         configs.add(new TestParametersConfig());
         configs.add(new TestParametersConfig(OVERRIDES_KEY_VALUES));
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true,
-				configs, KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-				false, false, "", false, false);
-
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                configs,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
 
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
@@ -200,7 +286,7 @@ class PhaseJobsConfigTest {
         assertEquals(2, actions.size());
         MultiJobParametersAction pa = getParametersAction(actions);
 
-        //check that expected parameter is listed
+        // check that expected parameter is listed
         HashMap<String, String> combined = new HashMap<>(DEFAULT_KEY_VALUES);
         combined.putAll(OVERRIDES_KEY_VALUES);
 
@@ -220,9 +306,22 @@ class PhaseJobsConfigTest {
         configs.add(new TestParametersConfig());
         configs.add(new TestParametersConfig(CONFIG_OVERRIDES_KEY_VALUES));
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true, configs,
-				KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-				false, false, "", false, false);
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                configs,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
 
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, true);
 
@@ -250,10 +349,22 @@ class PhaseJobsConfigTest {
         configs.add(new TestParametersConfig());
         configs.add(new TestParametersConfig(CONFIG_OVERRIDES_KEY_VALUES));
 
-        PhaseJobsConfig pjc = new PhaseJobsConfig("dummy", "dummyAlias", "", true, configs,
-				KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-				false, false, "", false, false);
-
+        PhaseJobsConfig pjc = new PhaseJobsConfig(
+                "dummy",
+                "dummyAlias",
+                "",
+                true,
+                configs,
+                KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false);
 
         List<Action> actions = pjc.getActions(mjb, TaskListener.NULL, projectB, false);
 
@@ -277,7 +388,8 @@ class PhaseJobsConfigTest {
         return mjb;
     }
 
-    private static AbstractProject createTriggeredProject(JenkinsRule j, Map<String, String> defaultParameters) throws Exception {
+    private static AbstractProject createTriggeredProject(JenkinsRule j, Map<String, String> defaultParameters)
+            throws Exception {
         // set up the project to be triggered
         FreeStyleProject projectB = j.createFreeStyleProject();
         if (defaultParameters != null) {

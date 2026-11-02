@@ -1,11 +1,9 @@
 package com.tikal.jenkins.plugins.multijob.counters;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import hudson.model.Result;
-
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A manager for the different counters that can exist in a phase.
@@ -65,8 +63,9 @@ public final class CounterManager {
     private Result phaseResult = Result.SUCCESS;
 
     public CounterManager() {
-        final Map<CounterKey, AtomicInteger> counters = new HashMap<CounterKey, AtomicInteger>(CounterKey.values().length);
-        for(final CounterKey key: CounterKey.values()) {
+        final Map<CounterKey, AtomicInteger> counters =
+                new HashMap<CounterKey, AtomicInteger>(CounterKey.values().length);
+        for (final CounterKey key : CounterKey.values()) {
             counters.put(key, new AtomicInteger(0));
         }
 
@@ -84,7 +83,7 @@ public final class CounterManager {
      * @param result the result of the job to be processed.
      */
     public void process(Result result) {
-        for(final CounterKey key: CounterKey.values()) {
+        for (final CounterKey key : CounterKey.values()) {
             if (key.appliesTo(result)) {
                 this.counters.get(key).incrementAndGet();
             }
@@ -116,7 +115,7 @@ public final class CounterManager {
         final Map<String, String> map = new HashMap<String, String>(this.counters.size());
         map.put(PHASE_RESULT, phaseResult.toString());
 
-        for(CounterKey key: CounterKey.values()) {
+        for (CounterKey key : CounterKey.values()) {
             map.put(key.name(), String.valueOf(this.counters.get(key)));
         }
         return map;

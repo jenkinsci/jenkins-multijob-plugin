@@ -1,5 +1,9 @@
 package com.tikal.jenkins.plugins.multijob.test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.tikal.jenkins.plugins.multijob.MultiJobBuild;
 import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.MultiJobResumeBuild;
@@ -7,6 +11,8 @@ import com.tikal.jenkins.plugins.multijob.MultiJobResumeControl;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.security.csrf.DefaultCrumbIssuer;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.htmlunit.HttpMethod;
@@ -20,13 +26,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 @WithJenkins
 class MultiJobResumeBuildTest {
 
@@ -39,14 +38,19 @@ class MultiJobResumeBuildTest {
         multi.setQuietPeriod(0);
         multi.getBuildersList().add(new FailureBuilder());
 
-        MultiJobBuild failedBuild = j.assertBuildStatus(Result.FAILURE, multi.scheduleBuild2(0).get());
+        MultiJobBuild failedBuild =
+                j.assertBuildStatus(Result.FAILURE, multi.scheduleBuild2(0).get());
         assertNotNull(failedBuild.getAction(MultiJobResumeBuild.class));
 
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ).everywhere().to(VICTIM)
-                .grant(Item.READ, Item.BUILD).onItems(multi).to(VICTIM));
+                .grant(Jenkins.READ)
+                .everywhere()
+                .to(VICTIM)
+                .grant(Item.READ, Item.BUILD)
+                .onItems(multi)
+                .to(VICTIM));
 
         JenkinsRule.WebClient client = j.createWebClient();
         client.withBasicCredentials(VICTIM);
@@ -57,9 +61,13 @@ class MultiJobResumeBuildTest {
         j.waitUntilNoActivity();
 
         assertAll(
-                () -> assertEquals(HttpURLConnection.HTTP_BAD_METHOD, response.getStatusCode(),
+                () -> assertEquals(
+                        HttpURLConnection.HTTP_BAD_METHOD,
+                        response.getStatusCode(),
                         "GET /resume/ should be rejected before the resume action is processed"),
-                () -> assertEquals(1, multi.getLastBuild().getNumber(),
+                () -> assertEquals(
+                        1,
+                        multi.getLastBuild().getNumber(),
                         "GET /resume/ without a crumb must not schedule a new build"));
     }
 
@@ -69,14 +77,19 @@ class MultiJobResumeBuildTest {
         multi.setQuietPeriod(0);
         multi.getBuildersList().add(new FailureBuilder());
 
-        MultiJobBuild failedBuild = j.assertBuildStatus(Result.FAILURE, multi.scheduleBuild2(0).get());
+        MultiJobBuild failedBuild =
+                j.assertBuildStatus(Result.FAILURE, multi.scheduleBuild2(0).get());
         assertNotNull(failedBuild.getAction(MultiJobResumeBuild.class));
 
         j.jenkins.setCrumbIssuer(new DefaultCrumbIssuer(false));
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
-                .grant(Jenkins.READ).everywhere().to(VICTIM)
-                .grant(Item.READ, Item.BUILD).onItems(multi).to(VICTIM));
+                .grant(Jenkins.READ)
+                .everywhere()
+                .to(VICTIM)
+                .grant(Item.READ, Item.BUILD)
+                .onItems(multi)
+                .to(VICTIM));
 
         JenkinsRule.WebClient client = j.createWebClient();
         client.withBasicCredentials(VICTIM);
@@ -90,13 +103,17 @@ class MultiJobResumeBuildTest {
         WebResponse response = client.loadWebResponse(resumePost);
         j.waitUntilNoActivity();
 
-        assertEquals(HttpURLConnection.HTTP_MOVED_TEMP, response.getStatusCode(),
+        assertEquals(
+                HttpURLConnection.HTTP_MOVED_TEMP,
+                response.getStatusCode(),
                 "POST /resume/ with a crumb should redirect after scheduling the resumed build");
-        assertEquals(2, multi.getLastBuild().getNumber(),
+        assertEquals(
+                2,
+                multi.getLastBuild().getNumber(),
                 "POST /resume/ with a crumb should schedule exactly one resumed build");
         MultiJobBuild resumedBuild = multi.getBuildByNumber(2);
         assertNotNull(resumedBuild, "POST /resume/ with a crumb should create build #2");
-        assertNotNull(resumedBuild.getAction(MultiJobResumeControl.class),
-                "build #2 should carry the resume control action");
+        assertNotNull(
+                resumedBuild.getAction(MultiJobResumeControl.class), "build #2 should carry the resume control action");
     }
 }

@@ -1,27 +1,23 @@
 package com.tikal.jenkins.plugins.multijob.views;
 
+import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import hudson.model.BallColor;
 import hudson.model.HealthReport;
+import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
-import hudson.model.Result;
-import hudson.model.TopLevelItemDescriptor;
-import hudson.model.AbstractProject;
-import hudson.model.Hudson;
 import hudson.model.Job;
+import hudson.model.Result;
 import hudson.model.Run;
-import hudson.search.SearchIndex;
+import hudson.model.TopLevelItemDescriptor;
 import hudson.search.Search;
+import hudson.search.SearchIndex;
 import hudson.security.Permission;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-
 import org.acegisecurity.AccessDeniedException;
-
-import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 
 @SuppressWarnings("rawtypes")
 public class ProjectWrapper extends AbstractWrapper {
@@ -30,8 +26,7 @@ public class ProjectWrapper extends AbstractWrapper {
     final BuildState buildState;
     final Run build;
 
-    public ProjectWrapper(MultiJobProject multijob, Job project,
-            BuildState buildState, int nestLevel, Run build) {
+    public ProjectWrapper(MultiJobProject multijob, Job project, BuildState buildState, int nestLevel, Run build) {
         super(project, nestLevel);
         this.multijob = multijob;
         this.buildState = buildState;
@@ -53,8 +48,7 @@ public class ProjectWrapper extends AbstractWrapper {
 
     public String getDisplayName() {
         String displayName = buildState.getJobName();
-        if (buildState.getJobAlias() != null)
-        {
+        if (buildState.getJobAlias() != null) {
             if (!buildState.getJobAlias().equals("")) {
                 displayName += " (" + buildState.getJobAlias() + ")";
             }
@@ -74,15 +68,16 @@ public class ProjectWrapper extends AbstractWrapper {
         return this.build.getNumber();
     }
 
-    public String getBuildDuration() { return  this.build.getDurationString(); }
+    public String getBuildDuration() {
+        return this.build.getDurationString();
+    }
 
     public String getShortUrl() {
         return project.getShortUrl();
     }
 
     @SuppressWarnings("unchecked")
-    public void onLoad(ItemGroup<? extends Item> parent, String name)
-            throws IOException {
+    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         project.onLoad(parent, name);
     }
 
@@ -122,8 +117,7 @@ public class ProjectWrapper extends AbstractWrapper {
         return project.getSearchIndex();
     }
 
-    public void checkPermission(Permission permission)
-            throws AccessDeniedException {
+    public void checkPermission(Permission permission) throws AccessDeniedException {
         project.checkPermission(permission);
     }
 
@@ -136,8 +130,8 @@ public class ProjectWrapper extends AbstractWrapper {
     }
 
     public TopLevelItemDescriptor getDescriptor() {
-        return (TopLevelItemDescriptor) project.getDescriptorByName(project
-                .getClass().getName());
+        return (TopLevelItemDescriptor)
+                project.getDescriptorByName(project.getClass().getName());
     }
 
     Run findLastBuildForResult(Result result) {
@@ -148,12 +142,10 @@ public class ProjectWrapper extends AbstractWrapper {
             return null;
         }
         if (Result.SUCCESS.equals(result)) {
-            return project.getBuildByNumber(buildState
-                    .getLastSuccessBuildNumber());
+            return project.getBuildByNumber(buildState.getLastSuccessBuildNumber());
         }
         if (Result.FAILURE.equals(result)) {
-            return project.getBuildByNumber(buildState
-                    .getLastFailureBuildNumber());
+            return project.getBuildByNumber(buildState.getLastFailureBuildNumber());
         }
         return this.build;
     }
@@ -185,8 +177,7 @@ public class ProjectWrapper extends AbstractWrapper {
             return lastBuild.getIconColor();
         else
             return BallColor.GREY;*/
-        if( build != null )
-        {
+        if (build != null) {
             return this.build.getIconColor();
         }
         return BallColor.GREY;
@@ -225,5 +216,4 @@ public class ProjectWrapper extends AbstractWrapper {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

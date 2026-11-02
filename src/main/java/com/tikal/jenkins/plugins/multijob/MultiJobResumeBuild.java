@@ -1,6 +1,9 @@
 package com.tikal.jenkins.plugins.multijob;
 
 import hudson.model.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.RunAction2;
 import org.kohsuke.stapler.Stapler;
@@ -8,10 +11,6 @@ import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
 
@@ -23,19 +22,19 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
 
     public String getIconFileName() {
         return isAvailable() ? "plugin/jenkins-multijob-plugin/tool32.png" : null;
-	}
+    }
 
     public String getDisplayName() {
-		return Messages.MultiJobResumeBuild_DisplayName();
-	}
+        return Messages.MultiJobResumeBuild_DisplayName();
+    }
 
     public String getUrlName() {
-		return "resume";
-	}
+        return "resume";
+    }
 
     public String getInfo() {
-		return "Resume build";
-	}
+        return "Resume build";
+    }
 
     @RequirePOST
     public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
@@ -47,11 +46,9 @@ public class MultiJobResumeBuild implements RunAction2, StaplerProxy {
         rsp.sendRedirect2(Jenkins.get().getRootUrl() + run.getParent().getUrl());
     }
 
-    public void onAttached(Run<?, ?> run) {
-    }
+    public void onAttached(Run<?, ?> run) {}
 
-    public void onLoad(Run<?, ?> run) {
-    }
+    public void onLoad(Run<?, ?> run) {}
 
     private List<Action> copyBuildCauses() {
         List<Action> actions = new ArrayList<Action>();

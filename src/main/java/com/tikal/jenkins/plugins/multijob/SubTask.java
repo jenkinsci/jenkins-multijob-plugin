@@ -1,26 +1,24 @@
 package com.tikal.jenkins.plugins.multijob;
 
-
 import hudson.model.Action;
 import hudson.model.BuildListener;
-import hudson.model.Run;
-import hudson.model.Result;
-import hudson.model.Job;
 import hudson.model.Cause;
-import hudson.model.CauseAction;
 import hudson.model.Cause.UpstreamCause;
+import hudson.model.CauseAction;
+import hudson.model.Job;
 import hudson.model.Queue.Executable;
+import hudson.model.Result;
+import hudson.model.Run;
 import hudson.model.queue.QueueTaskFuture;
+import java.util.List;
 import jenkins.model.ParameterizedJobMixIn;
 
-import java.util.List;
-
 public final class SubTask {
-    final public Job subJob;
-    final public PhaseJobsConfig phaseConfig;
-    final public List<Action> actions;
+    public final Job subJob;
+    public final PhaseJobsConfig phaseConfig;
+    public final List<Action> actions;
     QueueTaskFuture<? extends Executable> future;
-    final public MultiJobBuild multiJobBuild;
+    public final MultiJobBuild multiJobBuild;
     private final int enabledIndex;
     private final String quietPeriodGroovy;
     private final BuildListener listener;
@@ -28,8 +26,15 @@ public final class SubTask {
     private boolean cancel;
     private boolean isShouldTrigger;
 
-    SubTask(Job subJob, PhaseJobsConfig phaseConfig, List<Action> actions, MultiJobBuild multiJobBuild,
-            boolean isShouldTrigger, final int enabledIndex, final String quietPeriodGroovy, final BuildListener listener) {
+    SubTask(
+            Job subJob,
+            PhaseJobsConfig phaseConfig,
+            List<Action> actions,
+            MultiJobBuild multiJobBuild,
+            boolean isShouldTrigger,
+            final int enabledIndex,
+            final String quietPeriodGroovy,
+            final BuildListener listener) {
         this.subJob = subJob;
         this.phaseConfig = phaseConfig;
         this.actions = actions;
@@ -71,9 +76,11 @@ public final class SubTask {
 
             ((ParameterizedJobMixIn.ParameterizedJob) subJob).isDisabled();
             final String subJobName = subJob.getName();
-            final int quietPeriod = new QuietPeriodCalculator(listener, subJobName).calculate(quietPeriodGroovy, enabledIndex);
+            final int quietPeriod =
+                    new QuietPeriodCalculator(listener, subJobName).calculate(quietPeriodGroovy, enabledIndex);
             listener.getLogger().printf("quiet period for %s is %d seconds.", subJobName, quietPeriod);
-            this.future = parameterizedJobMixIn.scheduleBuild2(quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
+            this.future = parameterizedJobMixIn.scheduleBuild2(
+                    quietPeriod, queueActions.toArray(new Action[queueActions.size()]));
         }
     }
 }

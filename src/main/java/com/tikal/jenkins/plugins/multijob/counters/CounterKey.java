@@ -92,7 +92,7 @@ public enum CounterKey {
     static {
         final String[] keys = new String[CounterKey.values().length * 2];
         int index = 0;
-        for (CounterKey key: CounterKey.values()) {
+        for (CounterKey key : CounterKey.values()) {
             keys[index++] = key.getMultiJobKey();
             keys[index++] = key.getPhaseKey();
         }
@@ -136,7 +136,6 @@ public enum CounterKey {
     public String getPhaseKey() {
         return this.phaseKey;
     }
-
 
     /**
      * A convenient way to encapsulate logic to avoid an IllegalArgumentException when

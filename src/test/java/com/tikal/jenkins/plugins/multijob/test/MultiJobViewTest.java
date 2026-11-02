@@ -6,13 +6,12 @@ import com.tikal.jenkins.plugins.multijob.MultiJobProject;
 import com.tikal.jenkins.plugins.multijob.PhaseJobsConfig;
 import hudson.model.Cause;
 import hudson.model.queue.QueueTaskFuture;
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 class MultiJobViewTest {
@@ -24,13 +23,43 @@ class MultiJobViewTest {
         MultiJobProject mj = j.createProject(MultiJobProject.class, "root");
         // create 'FirstPhase' containing job 'free'
         List<PhaseJobsConfig> jobs = new ArrayList<>();
-        jobs.add(new PhaseJobsConfig("job1", "job1Alias", null, true, null,
-                PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-                false, false, "", false, false));
-        jobs.add(new PhaseJobsConfig("job2", "job2Alias", null, true, null,
-                PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER, false, false, "", 0,
-                false, false, "", false, false));
-        MultiJobBuilder phase1Builder = new MultiJobBuilder("FirstPhase", jobs, MultiJobBuilder.ContinuationCondition.SUCCESSFUL, MultiJobBuilder.ExecutionType.PARALLEL,
+        jobs.add(new PhaseJobsConfig(
+                "job1",
+                "job1Alias",
+                null,
+                true,
+                null,
+                PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false));
+        jobs.add(new PhaseJobsConfig(
+                "job2",
+                "job2Alias",
+                null,
+                true,
+                null,
+                PhaseJobsConfig.KillPhaseOnJobResultCondition.NEVER,
+                false,
+                false,
+                "",
+                0,
+                false,
+                false,
+                "",
+                false,
+                false));
+        MultiJobBuilder phase1Builder = new MultiJobBuilder(
+                "FirstPhase",
+                jobs,
+                MultiJobBuilder.ContinuationCondition.SUCCESSFUL,
+                MultiJobBuilder.ExecutionType.PARALLEL,
                 null);
         mj.getBuildersList().add(phase1Builder);
 

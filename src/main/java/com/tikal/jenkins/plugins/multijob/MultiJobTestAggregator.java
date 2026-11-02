@@ -3,20 +3,19 @@ Similar to build-flow-test-aggregator (https://github.com/zeroturnaround/build-f
 */
 package com.tikal.jenkins.plugins.multijob;
 
-import java.util.concurrent.ExecutionException;
-
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixRun;
 import hudson.maven.MavenModuleSetBuild;
 import hudson.maven.reporters.SurefireAggregatedReport;
-import hudson.model.Run;
 import hudson.model.BuildListener;
+import hudson.model.Run;
 import hudson.tasks.junit.TestResultAction;
 import hudson.tasks.test.AggregatedTestResultAction.Child;
-
+import java.util.concurrent.ExecutionException;
 
 public class MultiJobTestAggregator {
-    public static void aggregateResultsFromBuild(Run subbuild, MultiJobTestResults testResults, BuildListener listener) throws ExecutionException, InterruptedException {
+    public static void aggregateResultsFromBuild(Run subbuild, MultiJobTestResults testResults, BuildListener listener)
+            throws ExecutionException, InterruptedException {
         if (subbuild == null) {
             return;
         }
@@ -31,16 +30,19 @@ public class MultiJobTestAggregator {
         }
     }
 
-    private static void aggregateResultsFromMatrixJob(MatrixBuild run, MultiJobTestResults testResults, BuildListener listener) {
+    private static void aggregateResultsFromMatrixJob(
+            MatrixBuild run, MultiJobTestResults testResults, BuildListener listener) {
         listener.getLogger().println("Going to gather results from matrix job " + run);
         for (MatrixRun matrixRun : run.getRuns()) {
             addTestResultFromBuild(matrixRun, testResults, listener);
         }
     }
 
-    private static void aggregateResultsFromMavenMultiModuleJob(Run<?, ?> subbuild, MultiJobTestResults testResults, BuildListener listener) {
+    private static void aggregateResultsFromMavenMultiModuleJob(
+            Run<?, ?> subbuild, MultiJobTestResults testResults, BuildListener listener) {
         listener.getLogger().println("Going to gather results from Maven multi module job " + subbuild);
-        SurefireAggregatedReport aggregatedTestReport = subbuild.getAction(hudson.maven.reporters.SurefireAggregatedReport.class);
+        SurefireAggregatedReport aggregatedTestReport =
+                subbuild.getAction(hudson.maven.reporters.SurefireAggregatedReport.class);
         if (aggregatedTestReport != null) {
             listener.getLogger().println("Adding test result for job " + subbuild);
             for (Child child : aggregatedTestReport.children) {

@@ -2,13 +2,11 @@ package com.tikal.jenkins.plugins.multijob.views;
 
 import hudson.Extension;
 import hudson.views.ListViewColumnDescriptor;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class LastSuccessColumn extends MultiJobListViewColumn {
     @DataBoundConstructor
-    public LastSuccessColumn() {
-    }
+    public LastSuccessColumn() {}
 
     @Extension
     public static class DescriptorImpl extends ListViewColumnDescriptor {
@@ -16,6 +14,7 @@ public class LastSuccessColumn extends MultiJobListViewColumn {
         public String getDisplayName() {
             return "MultiJob - Last Success";
         }
+
         public boolean shownByDefault() {
             return false;
         }
