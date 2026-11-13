@@ -18,6 +18,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Copy artifacts from the build that was part of this MultiJob build.
+ *
  * @author Ray Sennewald
  */
 public class MultiJobBuildSelector extends BuildSelector {
@@ -29,13 +30,16 @@ public class MultiJobBuildSelector extends BuildSelector {
     @Override
     public Run<?, ?> getBuild(Job<?, ?> job, EnvVars env, BuildFilter filter, Run<?, ?> parent) {
         MultiJobBuild multiJobBuild = null;
-        // Are we in the MultiJob itself and trying to get an artifact from a Phase Build?
+        // Are we in the MultiJob itself and trying to get an artifact from a Phase
+        // Build?
         if (parent instanceof MultiJobBuild) {
             multiJobBuild = (MultiJobBuild) parent;
         }
-        // Nope, look for Upstream MultiJob that triggered this run (Are we in a Phase job?)
+        // Nope, look for Upstream MultiJob that triggered this run (Are we in a Phase
+        // job?)
         else {
-            // Matrix run is triggered by its parent project, so check causes of parent build:
+            // Matrix run is triggered by its parent project, so check causes of parent
+            // build:
             for (Cause cause : parent instanceof MatrixRun
                     ? ((MatrixRun) parent).getParentBuild().getCauses()
                     : parent.getCauses()) {
@@ -65,10 +69,26 @@ public class MultiJobBuildSelector extends BuildSelector {
         }
         // Get the run for our source Job in the current MultiJob Project's Build
         for (MultiJobBuild.SubBuild subBuild : multiJobBuild.getSubBuilds()) {
-            // Find Job's specific build we want
-            if (subBuild.getJobName().equals(job.getDisplayName())) {
-                Run run = job.getBuildByNumber(subBuild.getBuildNumber());
-                if (filter.isSelectable(run, env)) {
+            Run<?, ?> run = subBuild.getBuild();
+
+            // Modern SubBuilds contain the exact Run identity.
+            // Use it to correctly handle jobs in folders and custom display names.
+            if (run != null) {
+                if (run.getParent().getFullName().equals(job.getFullName()) && filter.isSelectable(run, env)) {
+                    return run;
+                }
+                continue;
+            }
+
+            /*
+             * Backward compatibility for historical SubBuild records
+             * which do not contain a build ID.
+             */
+            if (subBuild.getJobName().equals(job.getFullName())
+                    || subBuild.getJobName().equals(job.getName())
+                    || subBuild.getJobName().equals(job.getDisplayName())) {
+                run = job.getBuildByNumber(subBuild.getBuildNumber());
+                if (run != null && filter.isSelectable(run, env)) {
                     return run;
                 }
             }
